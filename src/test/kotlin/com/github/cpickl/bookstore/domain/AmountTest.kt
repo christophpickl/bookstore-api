@@ -28,4 +28,11 @@ class AmountTest {
             assertThat(amount.formatted).isEqualTo("${anyCurrency.code} $expected")
         }
     }
+
+    @Test
+    fun toEuroCents() {
+        assertThat(Amount(Currency.Euro, 100, 0).toEuroCents()).isEqualTo(100)
+        assertThat(Amount(Currency.Euro, 10, 1).toEuroCents()).isEqualTo(100)
+        assertThat(Amount(Currency.Euro, 1, 2).toEuroCents()).isEqualTo(100)
+    }
 }

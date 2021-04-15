@@ -5,19 +5,22 @@ import java.util.*
 import kotlin.math.pow
 
 data class User(
+    val id: UUID,
     val authorPseudonym: String,
     val username: String,
     val passwordHash: String,
 ) {
-    companion object
+    companion object;
+
+    override fun toString() = "User[username='$username',id=$id,authorPseudonym='$authorPseudonym']"
 }
 
 data class Book(
-    val id: Int,
+    val id: UUID,
     val title: String,
     val description: String,
     val author: User,
-    val coverImage: Image,
+    val cover: Image,
     val price: Amount,
 ) {
     companion object
@@ -26,10 +29,12 @@ data class Book(
 }
 
 data class Image(
-    val id: String,
+    val id: UUID,
     val data: ByteArray,
 ) {
-    companion object;
+    companion object {
+        fun empty() = Image(UUID.randomUUID(), byteArrayOf(0, 0))
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -63,9 +68,14 @@ data class Amount(
     val value: Int,
     val precision: Int,
 ) {
+    fun toEuroCents(): Int {
+        require(currency == Currency.Euro)
+        return if(precision == 0) value else { value * (10.0.pow(precision)).toInt() }
+    }
+
     companion object {
-        fun euro(euro: Int) = Amount(Currency.Euro, euro * 100, 2)
-        fun euroCent(cents: Int) = Amount(Currency.Euro, cents, 0)
+        fun euro(euro: Int) = euroCent(euro * 100)
+        fun euroCent(cents: Int) = Amount(Currency.Euro, cents, 2)
     }
 
     val formatted by lazy {

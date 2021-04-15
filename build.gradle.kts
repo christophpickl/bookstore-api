@@ -22,8 +22,9 @@ dependencies {
         implementation("org.springframework.boot:spring-boot-starter-$artifactSuffix")
     }
     spring("web")
-    // data-jpa, jdbc, security, validation
-
+    spring("security")
+    implementation("com.auth0:java-jwt:3.11.0")
+    // data-jpa, jdbc
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
