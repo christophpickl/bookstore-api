@@ -1,4 +1,4 @@
-package com.github.cpickl.bookstore
+package com.github.cpickl.bookstore.domain
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo

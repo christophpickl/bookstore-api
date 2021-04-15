@@ -1,4 +1,4 @@
-package com.github.cpickl.bookstore
+package com.github.cpickl.bookstore.domain
 
 import java.text.NumberFormat
 import java.util.*

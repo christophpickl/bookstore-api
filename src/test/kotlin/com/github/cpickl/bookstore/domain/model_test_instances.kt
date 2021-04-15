@@ -1,4 +1,4 @@
-package com.github.cpickl.bookstore
+package com.github.cpickl.bookstore.domain
 
 fun Currency.Companion.any() = Currency.Euro
 

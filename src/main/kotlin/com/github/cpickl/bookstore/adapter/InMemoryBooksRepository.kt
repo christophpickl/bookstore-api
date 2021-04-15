@@ -1,14 +1,11 @@
-package com.github.cpickl.bookstore
+package com.github.cpickl.bookstore.adapter
 
-import org.springframework.stereotype.Service
+import com.github.cpickl.bookstore.domain.*
+import org.springframework.stereotype.Repository
 
-interface BooksService {
-    fun getBooks(): List<Book>
-}
-
-@Service
-class BooksServiceImpl : BooksService {
-    private val dummyBooks = listOf(
+@Repository
+class InMemoryBooksRepository : BooksRepository {
+    private val books = mutableListOf(
         Book(
             id = 1,
             title = "Homo Sapiens",
@@ -19,5 +16,5 @@ class BooksServiceImpl : BooksService {
         )
     )
 
-    override fun getBooks() = dummyBooks
+    override fun findAll() = books
 }
