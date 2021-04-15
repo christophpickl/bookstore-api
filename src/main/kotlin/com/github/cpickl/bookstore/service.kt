@@ -8,6 +8,16 @@ interface BooksService {
 
 @Service
 class BooksServiceImpl : BooksService {
-    private val dummyBooks = listOf(Book(1, "abcc"), Book(2, "deff"))
+    private val dummyBooks = listOf(
+        Book(
+            id = 1,
+            title = "Homo Sapiens",
+            description = "A brief history of humankind",
+            author = User("Harari", "username", "123hash"),
+            coverImage = Image("image ID", byteArrayOf(0, 1)),
+            price = Amount.euro(42),
+        )
+    )
+
     override fun getBooks() = dummyBooks
 }

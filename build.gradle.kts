@@ -7,7 +7,7 @@ plugins {
     kotlin("plugin.spring") version "1.4.32"
 }
 
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
     mavenCentral()
@@ -34,6 +34,7 @@ dependencies {
     }
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.3.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.3.1")
+    // not working properly with kotlin ... testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.0")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.23")
     testImplementation("org.mockito:mockito-core:2.+")
     testImplementation("org.mockito:mockito-junit-jupiter:2.18.3")

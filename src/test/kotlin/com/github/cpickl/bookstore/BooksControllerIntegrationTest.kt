@@ -21,15 +21,15 @@ class BooksControllerIntegrationTests(
     private lateinit var booksService: BooksService
     private val jackson = jacksonObjectMapper()
     private val book = Book.any()
-    private val books = listOf(book)
 
     @Test
     fun `Given book When get all books Then return that book`() {
-        whenever(booksService.getBooks()).thenReturn(books)
+        whenever(booksService.getBooks()).thenReturn(listOf(book))
 
         val response = restTemplate.getForEntity<String>("/books")
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body).isEqualTo(jackson.writeValueAsString(books))
+        assertThat(response.body).isEqualTo("""[{"id":${book.id},"title":"${book.title}","author":"${book.authorName}","price":"${book.price.formatted}"}]""")
+        assertThat(response.body).isEqualTo(jackson.writeValueAsString(listOf(book.toBookListDto())))
     }
 }
