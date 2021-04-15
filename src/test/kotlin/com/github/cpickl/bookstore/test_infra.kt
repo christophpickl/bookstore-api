@@ -2,7 +2,7 @@ package com.github.cpickl.bookstore
 
 fun Currency.Companion.any() = Currency.Euro
 
-fun Amount.Companion.any() = Amount.euro(12)
+fun Amount.Companion.any() = euro(12)
 
 fun Image.Companion.any() = Image("imageId", byteArrayOf(0, 1))
 

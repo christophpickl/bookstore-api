@@ -20,7 +20,7 @@ data class Book(
     val coverImage: Image,
     val price: Amount,
 ) {
-    companion object;
+    companion object
 
     val authorName = author.authorPseudonym
 }
@@ -47,7 +47,7 @@ data class Image(
         var result = id.hashCode()
         result = 31 * result + data.contentHashCode()
         return result
-    };
+    }
 }
 
 enum class Currency(
