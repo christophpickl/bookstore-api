@@ -2,13 +2,9 @@
 
 A sample project for a job assignment using Spring Boot and Kotlin.
 
-## Howto Run
-
-* Startup the `BookstoreApp` class and define via JVM arguments the `-Dspring.profiles.active=prod`
-
 ## Requirements
 
-* [ ] content negotiation (JSON, XML)
+* [x] content negotiation (JSON, XML)
 * [x] User model: author pseudonym field
 * [x] Book model: title, description, author (User reference), cover image, price
 * [ ] JWT auth (user/pass based)
