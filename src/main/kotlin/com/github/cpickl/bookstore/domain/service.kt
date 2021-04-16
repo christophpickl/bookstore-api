@@ -1,5 +1,6 @@
 package com.github.cpickl.bookstore.domain
 
+import com.github.cpickl.bookstore.boundary.BookUpdateDto
 import mu.KotlinLogging.logger
 import org.springframework.stereotype.Service
 
@@ -44,7 +45,21 @@ data class BookUpdateRequest(
     val username: String,
     val id: Id,
     val title: String,
-)
+    val description: String,
+    val euroCent: Int,
+) {
+    constructor(
+        username: String,
+        id: Id,
+        dto: BookUpdateDto,
+    ) : this(
+        username = username,
+        id = id,
+        title = dto.title,
+        description = dto.description,
+        euroCent = dto.euroCent,
+    )
+}
 
 @Service
 class BookServiceImpl(
@@ -99,5 +114,7 @@ class BookServiceImpl(
 }
 
 private fun Book.updateBy(update: BookUpdateRequest) = copy(
-    title = update.title
+    title = update.title,
+    description = update.description,
+    price = Amount.euroCent(update.euroCent),
 )

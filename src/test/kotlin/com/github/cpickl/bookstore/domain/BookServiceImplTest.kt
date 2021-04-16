@@ -4,6 +4,8 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFailure
 import assertk.assertions.isNull
+import com.github.cpickl.bookstore.boundary.BookUpdateDto
+import com.github.cpickl.bookstore.boundary.any
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -75,12 +77,16 @@ class BookServiceImplTest {
 
     @Test
     fun `update delegates to repo`() {
-        val request = BookUpdateRequest(username, book.id,"title2")
-        val updated = book.copy(title = request.title)
+        val request = BookUpdateRequest(username, book.id, BookUpdateDto.any())
         whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
 
         val actual = service.update(request)
 
+        val updated = book.copy(
+            title = request.title,
+            description = request.description,
+            price = Amount.euroCent(request.euroCent),
+        )
         assertThat(actual).isEqualTo(updated)
         verify(bookRepository, times(1)).update(updated)
     }

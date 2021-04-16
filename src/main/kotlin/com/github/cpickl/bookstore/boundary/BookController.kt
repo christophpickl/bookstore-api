@@ -52,7 +52,7 @@ class BookController(
         @RequestBody update: BookUpdateDto,
         auth: Authentication
     ): ResponseEntity<BookDetailDto> =
-        service.update(BookUpdateRequest(auth.username, Id(id), update.title))?.let {
+        service.update(BookUpdateRequest(auth.username, Id(id), update))?.let {
             ResponseEntity.ok(it.toBookDetailDto())
         } ?: ResponseEntity.notFound().build()
 
@@ -60,9 +60,9 @@ class BookController(
     fun deleteBook(
         @PathVariable id: UUID,
         auth: Authentication
-    ): ResponseEntity<Any> =
-        service.delete(auth.username, Id(id))?.let {
-            ResponseEntity.ok().build()
+    ): ResponseEntity<BookDetailDto> =
+        service.delete(auth.username, Id(id))?.let { book ->
+            ResponseEntity.ok(book.toBookDetailDto())
         } ?: ResponseEntity.notFound().build()
 }
 
@@ -81,7 +81,7 @@ private fun BookCreateDto.toBookCreateRequest(username: String) = BookCreateRequ
     username = username,
     title = title,
     description = description,
-    euroCent = euroCents,
+    euroCent = euroCent,
 )
 
 private fun Book.toBookDetailDto() = BookDetailDto(

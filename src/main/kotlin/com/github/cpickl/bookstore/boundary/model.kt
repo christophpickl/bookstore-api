@@ -21,14 +21,17 @@ data class BookDetailDto(
 data class BookCreateDto(
     val title: String,
     val description: String,
-    val euroCents: Int,
+    val euroCent: Int,
+    // cover: Image?
 ) {
     companion object
 }
 
 data class BookUpdateDto(
     val title: String,
-    // FIXME make more fields updatable
+    val description: String,
+    val euroCent: Int,
+    // cover: Image?,
 ) {
     companion object
 }

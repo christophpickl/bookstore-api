@@ -15,7 +15,6 @@ import com.github.cpickl.bookstore.isBadRequest
 import com.github.cpickl.bookstore.isForbidden
 import com.github.cpickl.bookstore.isNotFound
 import com.github.cpickl.bookstore.isOk
-import com.github.cpickl.bookstore.isStatus
 import com.github.cpickl.bookstore.requestPost
 import com.github.cpickl.bookstore.requestPut
 import com.github.cpickl.bookstore.read
@@ -25,14 +24,12 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -171,7 +168,7 @@ class BookControllerApiTest(
                         username = userPreparer.userLogin.username,
                         title = requestBody.title,
                         description = requestBody.description,
-                        euroCent = requestBody.euroCents,
+                        euroCent = requestBody.euroCent,
                     )
                 )
             )
@@ -206,11 +203,10 @@ class BookControllerApiTest(
         @Test
         fun `When update non existing book Then not found`() {
             val jwt = restTemplate.login(loginDto)
-            val updateDto = BookUpdateDto.any()
-            whenever(bookService.update(BookUpdateRequest(loginDto.username, book.id, updateDto.title)))
-                .thenReturn(null)
+            val update = BookUpdateDto.any()
+            whenever(bookService.update(BookUpdateRequest(loginDto.username, book.id, update))).thenReturn(null)
 
-            val response = restTemplate.requestPut("/books/${book.id}", body = updateDto, HttpHeaders().withJwt(jwt))
+            val response = restTemplate.requestPut("/books/${book.id}", body = update, HttpHeaders().withJwt(jwt))
 
             assertThat(response).isNotFound()
         }
@@ -218,14 +214,12 @@ class BookControllerApiTest(
         @Test
         fun `Given book When update it Then succeed`() {
             val jwt = restTemplate.login(loginDto)
-            val updateDto = BookUpdateDto(title = "title2")
-            val book2 = book.copy(title = updateDto.title)
-            whenever(bookService.update(BookUpdateRequest(loginDto.username, book.id, updateDto.title)))
-                .thenReturn(book2)
+            val update = BookUpdateDto.any()
+            whenever(bookService.update(BookUpdateRequest(loginDto.username, book.id, update))).thenReturn(book)
 
-            val response = restTemplate.requestPut("/books/${book.id}", body = updateDto, HttpHeaders().withJwt(jwt))
+            val response = restTemplate.requestPut("/books/${book.id}", body = update, HttpHeaders().withJwt(jwt))
 
-            assertThat(response.read<BookDetailDto>()).isEqualTo(book2.toBookDetailDto())
+            assertThat(response.read<BookDetailDto>()).isEqualTo(book.toBookDetailDto())
         }
     }
 
@@ -256,6 +250,7 @@ class BookControllerApiTest(
             val response = restTemplate.requestDelete("/books/$bookId", headers = HttpHeaders().withJwt(jwt))
 
             assertThat(response).isOk()
+            assertThat(response.read<BookDetailDto>()).isEqualTo(book.toBookDetailDto())
             verify(bookService).delete(loginDto.username, bookId)
         }
     }

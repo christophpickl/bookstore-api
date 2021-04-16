@@ -54,15 +54,15 @@ class SystemApiTest(
 
     @Tag("system")
     @Test
-    fun `Given token and created book When update Then return updated book`() {
+    fun `Given token and book When update Then return updated book`() {
         val jwt = restTemplate.login(loginDto)
         val created = postBookDto(jwt, BookCreateDto.any())
 
-        val updateDto = BookUpdateDto(title = "title2")
-        putBookDto(jwt, created.id, updateDto)
+        val update = BookUpdateDto.any()
+        putBookDto(jwt, created.id, update)
 
-        val updated = created.copy(title = updateDto.title)
-        assertThat(restTemplate.requestGet("/books/${created.id}").read<BookDetailDto>()).isEqualTo(updated)
+        val recentBook = restTemplate.requestGet("/books/${created.id}").read<BookDetailDto>()
+        assertThat(recentBook.title).isEqualTo(update.title) // only check for title for simplicity
     }
 
     @Tag("system")

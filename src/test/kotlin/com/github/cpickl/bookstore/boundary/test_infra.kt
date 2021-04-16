@@ -13,11 +13,13 @@ import org.springframework.http.MediaType
 fun BookCreateDto.Companion.any() = BookCreateDto(
     title = "anyTitle",
     description = "anyDescription",
-    euroCents = 12,
+    euroCent = 12,
 )
 
 fun BookUpdateDto.Companion.any() = BookUpdateDto(
     title = "anyTitleUpdate",
+    description = "anyDescriptionUpdate",
+    euroCent = 942,
 )
 
 fun LoginDto.Companion.any() = LoginDto(
