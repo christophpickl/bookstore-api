@@ -18,10 +18,17 @@ data class BookDetailDto(
     val author: String,
 )
 
-data class BookCreateRequestDto(
+data class BookCreateDto(
     val title: String,
     val description: String,
     val euroCents: Int,
+) {
+    companion object
+}
+
+data class BookUpdateDto(
+    val title: String,
+    // FIXME make more fields updatable
 ) {
     companion object
 }

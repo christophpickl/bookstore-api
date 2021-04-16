@@ -1,11 +1,11 @@
 package com.github.cpickl.bookstore.domain
 
 import java.text.NumberFormat
-import java.util.*
+import java.util.Locale
 import kotlin.math.pow
 
 data class User(
-    val id: UUID,
+    val id: Id,
     val authorPseudonym: String,
     val username: String,
     val passwordHash: String,
@@ -16,7 +16,7 @@ data class User(
 }
 
 data class Book(
-    val id: UUID,
+    val id: Id,
     val title: String,
     val description: String,
     val author: User,
@@ -29,11 +29,12 @@ data class Book(
 }
 
 data class Image(
-    val id: UUID,
+    val id: Id,
     val data: ByteArray,
 ) {
     companion object {
-        fun empty() = Image(UUID.randomUUID(), byteArrayOf(0, 0))
+        fun empty(id: Id = RandomIdGenerator.generate()) =
+            Image(id, byteArrayOf(0, 0))
     }
 
     override fun equals(other: Any?): Boolean {
@@ -53,6 +54,8 @@ data class Image(
         result = 31 * result + data.contentHashCode()
         return result
     }
+
+    override fun toString() = "Image[id=$id]"
 }
 
 enum class Currency(
@@ -70,7 +73,9 @@ data class Amount(
 ) {
     fun toEuroCents(): Int {
         require(currency == Currency.Euro)
-        return if(precision == 0) value else { value * (10.0.pow(precision)).toInt() }
+        return if (precision == 0) value else {
+            value * (10.0.pow(precision)).toInt()
+        }
     }
 
     companion object {
@@ -79,11 +84,14 @@ data class Amount(
     }
 
     val formatted by lazy {
-        "${currency.code} ${if(precision == 0) value else {
-            val format = NumberFormat.getNumberInstance(Locale.ENGLISH).apply { 
+        val numberPart = if (precision == 0) {
+            value
+        } else {
+            val format = NumberFormat.getNumberInstance(Locale.ENGLISH).apply {
                 minimumFractionDigits = precision
             }
             format.format(value.toDouble() / (10.0.pow(precision)))
-        }}"
+        }
+        "${currency.code} $numberPart"
     }
 }

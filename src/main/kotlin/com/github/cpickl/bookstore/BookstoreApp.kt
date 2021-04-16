@@ -1,17 +1,23 @@
 package com.github.cpickl.bookstore
 
-import com.github.cpickl.bookstore.boundary.SecurityConfig
-import com.github.cpickl.bookstore.domain.*
+import com.github.cpickl.bookstore.boundary.SecurityConstants
+import com.github.cpickl.bookstore.domain.Amount
+import com.github.cpickl.bookstore.domain.Book
+import com.github.cpickl.bookstore.domain.BookRepository
+import com.github.cpickl.bookstore.domain.Image
+import com.github.cpickl.bookstore.domain.RandomIdGenerator
+import com.github.cpickl.bookstore.domain.User
+import com.github.cpickl.bookstore.domain.UserRepository
 import mu.KotlinLogging.logger
 import org.springframework.boot.Banner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.runApplication
 import org.springframework.context.ApplicationListener
+import org.springframework.context.annotation.Bean
 import org.springframework.core.env.AbstractEnvironment
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
-import java.util.*
 
 @SpringBootApplication
 class BookstoreApp {
@@ -26,6 +32,9 @@ class BookstoreApp {
             }
         }
     }
+
+    @Bean
+    fun bCryptPasswordEncoder() = BCryptPasswordEncoder()
 }
 
 const val PROFILE_DUMMY_DATA = "dummyData"
@@ -33,18 +42,18 @@ const val PROFILE_DUMMY_DATA = "dummyData"
 @Component
 class SetupDummyUser(
     private val userRepository: UserRepository,
-    private val encoder: BCryptPasswordEncoder,
+    private val passwordEncoder: BCryptPasswordEncoder,
     private val bookRepository: BookRepository,
     private val environment: AbstractEnvironment,
 ) : ApplicationListener<ApplicationReadyEvent> {
 
     private val log = logger {}
     private val book = Book(
-        id = UUID.randomUUID(),
+        id = RandomIdGenerator.generate(),
         title = "Homo Sapiens",
         description = "A brief history of humankind",
-        author = User(UUID.randomUUID(), "Harari", "username", "123hash"),
-        cover = Image(UUID.randomUUID(), byteArrayOf(0, 1)),
+        author = User(RandomIdGenerator.generate(), "Harari", "username", "123hash"),
+        cover = Image(RandomIdGenerator.generate(), byteArrayOf(0, 1)),
         price = Amount.euro(42),
     )
 
@@ -53,13 +62,13 @@ class SetupDummyUser(
             return
         }
         log.info { "Setting up dummy data." }
-        val user = SecurityConfig.admin
-        val id = UUID.randomUUID()
-        val authorPseudonym = SecurityConfig.adminAuthorName
-        val passwordHash = encoder.encode(user.password)
-        userRepository.save(User(id, authorPseudonym, user.username, passwordHash))
+        val user = SecurityConstants.admin
+        val id = RandomIdGenerator.generate()
+        val authorPseudonym = SecurityConstants.adminAuthorName
+        val passwordHash = passwordEncoder.encode(user.password)
+        userRepository.create(User(id, authorPseudonym, user.username, passwordHash))
 
-        bookRepository.save(book)
+        bookRepository.create(book)
     }
 
 }

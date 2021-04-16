@@ -26,12 +26,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.stereotype.Service
-import java.util.*
+import java.util.Date
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-object SecurityConfig {
+object SecurityConstants {
     val PERMIT_ALL_PATHS = listOf(
         HttpMethod.POST to "/login",
         HttpMethod.GET to "/books",
@@ -41,7 +41,7 @@ object SecurityConfig {
     const val SECRET = "my_top_secret"
 
     val admin = LoginDto("admin", "admin")
-    val adminAuthorName = "admin author"
+    const val adminAuthorName = "admin author"
 }
 
 data class LoginDto(
@@ -74,7 +74,7 @@ class SecurityConfiguration(
     override fun configure(http: HttpSecurity) {
         http.cors().and().csrf().disable().authorizeRequests()
             .let {
-                SecurityConfig.PERMIT_ALL_PATHS.fold(it) { acc, path ->
+                SecurityConstants.PERMIT_ALL_PATHS.fold(it) { acc, path ->
                     acc.antMatchers(path.first, path.second).permitAll()
                 }
             }
@@ -115,12 +115,12 @@ class JWTAuthenticationFilter(
         chain: FilterChain,
         auth: Authentication
     ) {
-        log.debug { "Successfully authenticated user." }
         val user = auth.principal as User
+        log.debug { "Successfully authenticated: ${user.username}" }
         val token = JWT.create()
             .withSubject(user.username)
-            .withExpiresAt(Date(System.currentTimeMillis() + SecurityConfig.EXPIRATION_TIME))
-            .sign(Algorithm.HMAC512(SecurityConfig.SECRET.toByteArray()))
+            .withExpiresAt(Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
+            .sign(Algorithm.HMAC512(SecurityConstants.SECRET.toByteArray()))
         response.addHeader(HttpHeaders.AUTHORIZATION, "Bearer $token")
     }
 
@@ -143,7 +143,7 @@ class JWTAuthorizationFilter(
 
     private fun getAuthentication(request: HttpServletRequest): UsernamePasswordAuthenticationToken? {
         val token = request.getHeader(HttpHeaders.AUTHORIZATION) ?: return null
-        val user = JWT.require(Algorithm.HMAC512(SecurityConfig.SECRET.toByteArray()))
+        val user = JWT.require(Algorithm.HMAC512(SecurityConstants.SECRET.toByteArray()))
             .build()
             .verify(token.replace("Bearer ", ""))
             .subject
