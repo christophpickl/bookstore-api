@@ -1,7 +1,7 @@
 package com.github.cpickl.bookstore.domain
 
 interface BookRepository {
-    fun findAll(): List<Book>
+    fun findAll(search: Search = Search.Off): List<Book>
     fun findOrNull(id: Id): Book?
     fun create(book: Book)
     fun update(book: Book)

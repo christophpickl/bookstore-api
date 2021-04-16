@@ -8,6 +8,7 @@ import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookCreateRequest
 import com.github.cpickl.bookstore.domain.BookService
 import com.github.cpickl.bookstore.domain.BookUpdateRequest
+import com.github.cpickl.bookstore.domain.Search
 import com.github.cpickl.bookstore.domain.any
 import com.github.cpickl.bookstore.requestGet
 import com.github.cpickl.bookstore.isBadRequest
@@ -17,9 +18,12 @@ import com.github.cpickl.bookstore.isOk
 import com.github.cpickl.bookstore.requestPost
 import com.github.cpickl.bookstore.requestPut
 import com.github.cpickl.bookstore.read
+import com.github.cpickl.bookstore.withJwt
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -40,6 +44,7 @@ class BookControllerApiTest(
     private val book = Book.any()
     private val invalidBookId = UUID1
     private val loginDto = userPreparer.userLogin
+    private val anyBooks = emptyList<Book>()
 
     @BeforeAll
     fun `init user`() {
@@ -82,8 +87,26 @@ class BookControllerApiTest(
             })
 
             assertThat(response).isOk()
-            // TODO fine-tune XML node name
             assertThat(response.body).isEqualTo("""<List><item><id>${book.id}</id><title>${book.title}</title><author>${book.authorName}</author><price>${book.price.formatted}</price></item></List>""")
+        }
+
+        @Test
+        fun `When find all with search term Then search object passed`() {
+            val search = Search.On("testSearch")
+            whenever(bookService.findAll(search)).thenReturn(anyBooks)
+            val response = restTemplate.requestGet("/books?search=${search.term}")
+
+            assertThat(response).isOk()
+            verify(bookService).findAll(search)
+        }
+
+        @Test
+        fun `When find all without search term Then no search object passed`() {
+            whenever(bookService.findAll(Search.Off)).thenReturn(anyBooks)
+            val response = restTemplate.requestGet("/books")
+
+            assertThat(response).isOk()
+            verify(bookService).findAll(Search.Off)
         }
     }
 
@@ -150,9 +173,7 @@ class BookControllerApiTest(
             )
                 .thenReturn(book)
 
-            val response = restTemplate.requestPost("/books", requestBody, HttpHeaders().apply {
-                this[HttpHeaders.AUTHORIZATION] = "Bearer $jwt"
-            })
+            val response = restTemplate.requestPost("/books", requestBody, HttpHeaders().withJwt(jwt))
 
             assertThat(response).isOk()
             assertThat(response.read<BookDetailDto>()).isEqualTo(
@@ -185,9 +206,7 @@ class BookControllerApiTest(
             whenever(bookService.update(BookUpdateRequest(loginDto.username, book.id, updateDto.title)))
                 .thenReturn(null)
 
-            val response = restTemplate.requestPut("/books/${book.id}", body = updateDto, HttpHeaders().apply {
-                this[HttpHeaders.AUTHORIZATION] = "Bearer $jwt"
-            })
+            val response = restTemplate.requestPut("/books/${book.id}", body = updateDto, HttpHeaders().withJwt(jwt))
 
             assertThat(response).isNotFound()
         }
@@ -200,9 +219,7 @@ class BookControllerApiTest(
             whenever(bookService.update(BookUpdateRequest(loginDto.username, book.id, updateDto.title)))
                 .thenReturn(book2)
 
-            val response = restTemplate.requestPut("/books/${book.id}", body = updateDto, HttpHeaders().apply {
-                this[HttpHeaders.AUTHORIZATION] = "Bearer $jwt"
-            })
+            val response = restTemplate.requestPut("/books/${book.id}", body = updateDto, HttpHeaders().withJwt(jwt))
 
             assertThat(response.read<BookDetailDto>()).isEqualTo(book2.toBookDetailDto())
         }

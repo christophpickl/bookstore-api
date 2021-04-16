@@ -23,11 +23,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpHeaders
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class IntegrationApiTest(
+class SystemApiTest(
     @Autowired val restTemplate: TestRestTemplate,
     @Autowired private val userPreparer: UserTestPreparer,
     @Autowired private val bookRepository: InMemoryBookRepository,
-    ) {
+) {
 
     private val loginDto = userPreparer.userLogin
 
@@ -41,18 +41,18 @@ class IntegrationApiTest(
         bookRepository.clear()
     }
 
-    @Tag("overall")
+    @Tag("system")
     @Test
     fun `Given token When create book Then read all and single returns book`() {
         val jwt = restTemplate.login(loginDto)
 
         val created = postBook(jwt, BookCreateDto.any())
 
-        assertThat(getAllBooks()).containsExactly(created.toBookListDto())
-        assertThat(restTemplate.requestGet("/books/${created.id}").read<BookDetailDto>()).isEqualTo(created)
+        assertThat(getBooks()).containsExactly(created.toBookListDto())
+        assertThat(getBook(created.id)).isEqualTo(created)
     }
 
-    @Tag("overall")
+    @Tag("system")
     @Test
     fun `Given token and created book When update Then return updated book`() {
         val jwt = restTemplate.login(loginDto)
@@ -65,16 +65,29 @@ class IntegrationApiTest(
         assertThat(restTemplate.requestGet("/books/${created.id}").read<BookDetailDto>()).isEqualTo(updated)
     }
 
-    private fun getAllBooks() =
-        restTemplate.requestGet("/books").read<List<BookListDto>>()
+    @Tag("system")
+    @Test
+    fun `Given token and two books When search Then return proper book`() {
+        val jwt = restTemplate.login(loginDto)
+        postBook(jwt, BookCreateDto.any().copy(title = "a"))
+        postBook(jwt, BookCreateDto.any().copy(title = "b"))
+
+        assertThat(getBooks(search = "a").map { it.title }).containsExactly("a")
+    }
+
+    private fun getBook(id: String) =
+        restTemplate.requestGet("/books/$id").read<BookDetailDto>()
+
+    private fun getBooks(search: String? = null) =
+        restTemplate.requestGet("/books${search.buildQuery()}").read<List<BookListDto>>()
 
     private fun postBook(jwt: Jwt, dto: BookCreateDto) =
-        restTemplate.requestPost("/books", dto, HttpHeaders().apply {
-            this[HttpHeaders.AUTHORIZATION] = "Bearer $jwt"
-        }).read<BookDetailDto>()
+        restTemplate.requestPost("/books", dto, HttpHeaders().withJwt(jwt)).read<BookDetailDto>()
 
     private fun putBook(jwt: Jwt, id: Id, dto: BookUpdateDto) =
-        restTemplate.requestPut("/books/$id", body = dto, HttpHeaders().apply {
-            this[HttpHeaders.AUTHORIZATION] = "Bearer $jwt"
-        }).read<BookDetailDto>()
+        restTemplate.requestPut("/books/$id", body = dto, HttpHeaders().withJwt(jwt)).read<BookDetailDto>()
+
+    private fun String?.buildQuery() = if (this == null) "" else {
+        "?search=${this}"
+    }
 }

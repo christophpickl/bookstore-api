@@ -5,6 +5,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.github.cpickl.bookstore.boundary.Jwt
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.client.exchange
 import org.springframework.http.HttpHeaders
@@ -37,7 +38,6 @@ fun Assert<ResponseEntity<*>>.isStatus(code: HttpStatus) {
         assertThat(it.statusCode).isEqualTo(code)
     }
 }
-
 
 fun TestRestTemplate.requestGet(path: String, headers: HttpHeaders = HttpHeaders.EMPTY): ResponseEntity<String> =
     requestAny(HttpMethod.GET, path, headers = headers)
@@ -72,4 +72,8 @@ inline fun <reified T> ResponseEntity<String>.read(status: HttpStatus? = HttpSta
         assertThat(this).isStatus(status)
     }
     return jackson.readValue(body!!)
+}
+
+fun HttpHeaders.withJwt(jwt: Jwt) = apply {
+    this[HttpHeaders.AUTHORIZATION] = "Bearer $jwt"
 }

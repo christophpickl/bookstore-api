@@ -3,6 +3,7 @@ package com.github.cpickl.bookstore.adapter
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookRepository
 import com.github.cpickl.bookstore.domain.Id
+import com.github.cpickl.bookstore.domain.Search
 import mu.KotlinLogging.logger
 import org.springframework.stereotype.Repository
 import java.lang.IllegalArgumentException
@@ -13,7 +14,10 @@ class InMemoryBookRepository : BookRepository {
     private val log = logger {}
     private val books = mutableListOf<Book>()
 
-    override fun findAll() = books
+    override fun findAll(search: Search) = when (search) {
+        is Search.Off -> books
+        is Search.On -> books.filter { it.title.toLowerCase().contains(search.term) }
+    }
 
     override fun findOrNull(id: Id) =
         books.firstOrNull { it.id == id }

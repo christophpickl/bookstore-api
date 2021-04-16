@@ -3,10 +3,27 @@ package com.github.cpickl.bookstore.domain
 import org.springframework.stereotype.Service
 
 interface BookService {
-    fun findAll(): List<Book>
+    fun findAll(search: Search = Search.Off): List<Book>
     fun findOrNull(id: Id): Book?
     fun create(request: BookCreateRequest): Book
     fun update(request: BookUpdateRequest): Book?
+}
+
+sealed class Search {
+    object Off : Search()
+    class On(term: String) : Search() {
+        init {
+            require(term.trim().isNotEmpty())
+        }
+        val term = term.toLowerCase() // FUTURE with kotlin 1.5 use lowercase()
+
+        override fun equals(other: Any?): Boolean {
+            if(other !is On) return false
+            return this.term == other.term
+        }
+
+        override fun hashCode() = term.hashCode()
+    }
 }
 
 data class BookCreateRequest(
@@ -31,7 +48,7 @@ class BookServiceImpl(
     private val idGenerator: IdGenerator,
 ) : BookService {
 
-    override fun findAll() = bookRepository.findAll()
+    override fun findAll(search: Search) = bookRepository.findAll(search)
 
     override fun findOrNull(id: Id) = bookRepository.findOrNull(id)
 

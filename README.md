@@ -10,15 +10,22 @@ A sample project for a job assignment using Spring Boot and Kotlin.
 * [X] JWT auth (user/pass based)
 * `/books` resource
     * [x] GET list and detail (public, no auth required)
-    * [ ] search book list via query params
+    * [x] search book list via query params
     * [x] CRU_ operations (for auth only)
     * [ ] DELETE unpublishes a book (only when user owns it)
 
-### Technical
+## Outlook
 
-* [ ] JPA persistence
-* [ ] hardening (input validation, exception handling)
-* [ ] openAPI doc (+postman collection)
-* [ ] docker container (+compose for real DBMS)
-* [ ] build plugins (static code analysis, coverage, dependencies)
-* [ ] replace password:String with password:CharArray for improved security
+### Business
+
+* enhanced search query (multiple terms, wildcards)
+* custom sort
+
+### Technical
+* JPA persistence
+* hardening (input validation, exception handling)
+* openAPI doc (+postman collection)
+* docker container (+compose for real DBMS)
+* build plugins (static code analysis, coverage, dependencies)
+* replace password type from String to CharArray for security reasons
+* fine-tune XML representation

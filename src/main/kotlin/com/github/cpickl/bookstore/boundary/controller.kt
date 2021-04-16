@@ -5,6 +5,7 @@ import com.github.cpickl.bookstore.domain.BookCreateRequest
 import com.github.cpickl.bookstore.domain.BookService
 import com.github.cpickl.bookstore.domain.BookUpdateRequest
 import com.github.cpickl.bookstore.domain.Id
+import com.github.cpickl.bookstore.domain.Search
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
@@ -23,8 +25,10 @@ class BookController(
     private val service: BookService
 ) {
     @GetMapping("")
-    fun findAllBooks(): List<BookListDto> =
-        service.findAll().map { it.toBookListDto() }
+    fun findAllBooks(
+        @RequestParam(name = "search", required = false) searchTerm: String?
+    ): List<BookListDto> =
+        service.findAll(searchTerm.toSearch()).map { it.toBookListDto() }
 
     @GetMapping("/{id}")
     fun findSingleBook(
@@ -52,7 +56,8 @@ class BookController(
         } ?: ResponseEntity.notFound().build()
     }
 
-    // DELETE == UNPUBLISH
+    private fun String?.toSearch() = if(this == null) Search.Off else Search.On(this)
+
 }
 
 private fun Book.toBookListDto() = BookListDto(
