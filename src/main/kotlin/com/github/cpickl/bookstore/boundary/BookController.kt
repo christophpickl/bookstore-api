@@ -8,6 +8,7 @@ import com.github.cpickl.bookstore.domain.Id
 import com.github.cpickl.bookstore.domain.Search
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.http.ResponseEntity.ok
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -36,7 +37,7 @@ class BookController(
         @PathVariable id: UUID
     ): ResponseEntity<BookDetailDto> =
         service.findOrNull(Id(id))?.let {
-            ResponseEntity.ok(it.toBookDetailDto())
+            ok(it.toBookDetailDto())
         } ?: ResponseEntity.notFound().build()
 
     @PostMapping("")
@@ -53,7 +54,7 @@ class BookController(
         auth: Authentication
     ): ResponseEntity<BookDetailDto> =
         service.update(BookUpdateRequest(auth.username, Id(id), update))?.let {
-            ResponseEntity.ok(it.toBookDetailDto())
+            ok(it.toBookDetailDto())
         } ?: ResponseEntity.notFound().build()
 
     @DeleteMapping("/{id}")
@@ -62,7 +63,7 @@ class BookController(
         auth: Authentication
     ): ResponseEntity<BookDetailDto> =
         service.delete(auth.username, Id(id))?.let { book ->
-            ResponseEntity.ok(book.toBookDetailDto())
+            ok(book.toBookDetailDto())
         } ?: ResponseEntity.notFound().build()
 }
 
@@ -90,4 +91,5 @@ private fun Book.toBookDetailDto() = BookDetailDto(
     description = description,
     price = price.formatted,
     author = authorName,
+    coverLink = "/books/$id/cover",
 )

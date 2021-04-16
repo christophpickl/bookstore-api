@@ -9,8 +9,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import java.util.UUID
 
-val UUID1: UUID = UUID.fromString("f81d4fae-7dec-11d0-a765-00a0c91e6bf6")
-
 @Service
 class UserTestPreparer(
     private val userRepository: UserRepository,

@@ -37,12 +37,16 @@ enum class BookState {
 }
 
 data class Image(
-    val id: Id,
-    val data: ByteArray,
+    val id: Id, // FUTURE make use of image ID
+    val bytes: ByteArray,
 ) {
     companion object {
-        fun empty(id: Id = RandomIdGenerator.generate()) =
-            Image(id, byteArrayOf(0, 0))
+        val default = Image::class.java.getResourceAsStream("/bookstore/icon_default_book.png")!!.readAllBytes()
+
+        fun empty(id: Id = RandomIdGenerator.generate()) = Image(
+            id = id,
+            bytes = default,
+        )
     }
 
     override fun equals(other: Any?): Boolean {
@@ -52,14 +56,14 @@ data class Image(
         other as Image
 
         if (id != other.id) return false
-        if (!data.contentEquals(other.data)) return false
+        if (!bytes.contentEquals(other.bytes)) return false
 
         return true
     }
 
     override fun hashCode(): Int {
         var result = id.hashCode()
-        result = 31 * result + data.contentHashCode()
+        result = 31 * result + bytes.contentHashCode()
         return result
     }
 

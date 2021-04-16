@@ -60,4 +60,5 @@ fun Book.toBookDetailDto() = BookDetailDto(
     author = authorName,
     price = price.formatted,
     description = description,
+    coverLink = "/books/$id/cover",
 )

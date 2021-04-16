@@ -1,8 +1,10 @@
 package com.github.cpickl.bookstore.boundary
 
 import assertk.assertThat
+import assertk.assertions.containsExactly
 import assertk.assertions.isEqualTo
-import com.github.cpickl.bookstore.UUID1
+import assertk.assertions.isNotNull
+import assertk.assertions.isTrue
 import com.github.cpickl.bookstore.UserTestPreparer
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookCreateRequest
@@ -18,6 +20,7 @@ import com.github.cpickl.bookstore.isOk
 import com.github.cpickl.bookstore.requestPost
 import com.github.cpickl.bookstore.requestPut
 import com.github.cpickl.bookstore.read
+import com.github.cpickl.bookstore.requestAny
 import com.github.cpickl.bookstore.requestDelete
 import com.github.cpickl.bookstore.withJwt
 import org.junit.jupiter.api.BeforeAll
@@ -30,7 +33,9 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod.GET
 import org.springframework.http.MediaType
+import java.util.UUID
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class BookControllerApiTest(
@@ -43,7 +48,7 @@ class BookControllerApiTest(
 
     private val book = Book.any()
     private val bookId = book.id
-    private val invalidBookId = UUID1
+    private val invalidBookId = UUID.randomUUID()
     private val loginDto = userPreparer.userLogin
     private val anyBooks = emptyList<Book>()
 
@@ -142,6 +147,7 @@ class BookControllerApiTest(
                     description = book.description,
                     price = book.price.formatted,
                     author = book.authorName,
+                    coverLink = "/books/${book.id}/cover",
                 )
             )
         }
@@ -184,6 +190,7 @@ class BookControllerApiTest(
                     description = book.description,
                     price = book.price.formatted,
                     author = userPreparer.user.authorPseudonym,
+                    coverLink = "/books/${book.id}/cover",
                 )
             )
         }
@@ -231,6 +238,7 @@ class BookControllerApiTest(
 
             assertThat(response).isForbidden()
         }
+
         @Test
         fun `Given token and no book When delete book Then not found`() {
             val jwt = restTemplate.login(loginDto)

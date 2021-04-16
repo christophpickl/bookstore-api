@@ -63,12 +63,12 @@ fun TestRestTemplate.requestDelete(
 ): ResponseEntity<String> =
     requestAny(HttpMethod.DELETE, path, body, headers)
 
-fun TestRestTemplate.requestAny(
+inline fun <reified BODY : Any> TestRestTemplate.requestAny(
     method: HttpMethod,
     path: String,
     body: Any? = null,
     headers: HttpHeaders = HttpHeaders.EMPTY
-): ResponseEntity<String> =
+): ResponseEntity<BODY> =
     exchange(RequestEntity<Any>(body, headers, method, URI(path)))
 
 fun HttpHeaders.readAuthorization() =

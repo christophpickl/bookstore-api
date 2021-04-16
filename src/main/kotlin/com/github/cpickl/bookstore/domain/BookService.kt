@@ -83,7 +83,7 @@ class BookServiceImpl(
             title = request.title,
             description = request.description,
             author = user,
-            cover = Image.empty(), // FIXME implement images
+            cover = Image.empty(),
             price = Amount.euroCent(request.euroCent),
             state = BookState.Published,
         )

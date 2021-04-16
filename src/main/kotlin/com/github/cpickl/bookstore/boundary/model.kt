@@ -16,13 +16,13 @@ data class BookDetailDto(
     val description: String,
     val price: String,
     val author: String,
+    val coverLink: String,
 )
 
 data class BookCreateDto(
     val title: String,
     val description: String,
     val euroCent: Int,
-    // cover: Image?
 ) {
     companion object
 }
@@ -31,7 +31,6 @@ data class BookUpdateDto(
     val title: String,
     val description: String,
     val euroCent: Int,
-    // cover: Image?,
 ) {
     companion object
 }

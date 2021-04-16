@@ -54,7 +54,7 @@ class SetupDummyUser(
         title = "Homo Sapiens",
         description = "A brief history of humankind",
         author = User(RandomIdGenerator.generate(), "Harari", "username", "123hash"),
-        cover = Image(RandomIdGenerator.generate(), byteArrayOf(0, 1)),
+        cover = Image.empty(),
         price = Amount.euro(42),
         state = BookState.Published,
     )

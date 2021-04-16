@@ -32,10 +32,12 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 object SecurityConstants {
+    // FUTURE annotate controller methods instead
     val PERMIT_ALL_PATHS = listOf(
         HttpMethod.POST to "/login",
         HttpMethod.GET to "/books",
         HttpMethod.GET to "/books/*",
+        HttpMethod.GET to "/books/*/cover",
     )
     const val EXPIRATION_TIME = 864000000 // 10 days
     const val SECRET = "my_top_secret"

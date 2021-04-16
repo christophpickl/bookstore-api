@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import assertk.assertions.isTrue
 import com.github.cpickl.bookstore.adapter.InMemoryBookRepository
 import com.github.cpickl.bookstore.boundary.BookCreateDto
 import com.github.cpickl.bookstore.boundary.BookDetailDto
@@ -13,6 +14,7 @@ import com.github.cpickl.bookstore.boundary.Jwt
 import com.github.cpickl.bookstore.boundary.any
 import com.github.cpickl.bookstore.boundary.login
 import com.github.cpickl.bookstore.boundary.toBookListDto
+import com.github.cpickl.bookstore.domain.Image
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
@@ -21,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SystemApiTest(
@@ -50,6 +53,7 @@ class SystemApiTest(
 
         assertThat(getBooksDto()).containsExactly(created.toBookListDto())
         assertThat(getBookDto(created.id)).isEqualTo(created)
+        assertThat(getBookCover(created.id).body.contentEquals(Image.default)).isTrue()
     }
 
     @Tag("system")
@@ -91,6 +95,9 @@ class SystemApiTest(
 
     private fun getBookDto(id: String) =
         getBook(id).read<BookDetailDto>()
+
+    private fun getBookCover(id: String) =
+        restTemplate.requestAny<ByteArray>(HttpMethod.GET, "/books/$id/cover")
 
     private fun getBooksDto(search: String? = null) =
         restTemplate.requestGet("/books${search.buildQuery()}").read<List<BookListDto>>()
