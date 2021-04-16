@@ -11,6 +11,7 @@ interface BookService {
 
 sealed class Search {
     object Off : Search()
+    // FUTURE support multiple terms (and wildcards)
     class On(term: String) : Search() {
         init {
             require(term.trim().isNotEmpty())

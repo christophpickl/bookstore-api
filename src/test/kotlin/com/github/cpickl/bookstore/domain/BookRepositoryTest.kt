@@ -38,6 +38,16 @@ abstract class BookRepositoryTest {
         }
 
         @Test
+        fun `Given two books When find all Then return sorted`() {
+            testee.create(Book.any().copy(title = "b"))
+            testee.create(Book.any().copy(title = "a"))
+
+            val found = testee.findAll()
+
+            assertThat(found.map { it.title }).containsExactly("a", "b")
+        }
+
+        @Test
         fun `Given book When find all search off Then return single book`() {
             testee.create(book)
 

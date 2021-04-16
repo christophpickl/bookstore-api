@@ -17,14 +17,14 @@ class InMemoryBookRepository : BookRepository {
     override fun findAll(search: Search) = when (search) {
         is Search.Off -> books
         is Search.On -> books.filter { it.title.toLowerCase().contains(search.term) }
-    }
+    }.sortedBy { it.title } // FUTURE custom sort order
 
     override fun findOrNull(id: Id) =
         books.firstOrNull { it.id == id }
 
     override fun create(book: Book) {
         log.debug { "create: $book" }
-        require(findOrNull(book.id) == null)
+        require(findOrNull(book.id) == null) { "duplicate ID: ${book.id}"}
         books += book
     }
 

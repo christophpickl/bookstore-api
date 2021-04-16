@@ -14,18 +14,12 @@ A sample project for a job assignment using Spring Boot and Kotlin.
     * [x] CRU_ operations (for auth only)
     * [ ] DELETE unpublishes a book (only when user owns it)
 
-## Outlook
+## Technical Ideas
 
-### Business
-
-* enhanced search query (multiple terms, wildcards)
-* custom sort
-
-### Technical
 * JPA persistence
-* hardening (input validation, exception handling)
-* openAPI doc (+postman collection)
 * docker container (+compose for real DBMS)
-* build plugins (static code analysis, coverage, dependencies)
+* openAPI doc (+postman collection)
+* hardening (input validation, exception handling)
 * replace password type from String to CharArray for security reasons
+* build plugins (static code analysis, coverage, dependencies)
 * fine-tune XML representation
