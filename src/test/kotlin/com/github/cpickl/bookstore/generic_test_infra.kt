@@ -56,6 +56,13 @@ fun TestRestTemplate.requestPut(
 ): ResponseEntity<String> =
     requestAny(HttpMethod.PUT, path, body, headers)
 
+fun TestRestTemplate.requestDelete(
+    path: String,
+    body: Any? = null,
+    headers: HttpHeaders = HttpHeaders.EMPTY
+): ResponseEntity<String> =
+    requestAny(HttpMethod.DELETE, path, body, headers)
+
 fun TestRestTemplate.requestAny(
     method: HttpMethod,
     path: String,

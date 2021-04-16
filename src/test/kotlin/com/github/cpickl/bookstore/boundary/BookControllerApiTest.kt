@@ -15,21 +15,24 @@ import com.github.cpickl.bookstore.isBadRequest
 import com.github.cpickl.bookstore.isForbidden
 import com.github.cpickl.bookstore.isNotFound
 import com.github.cpickl.bookstore.isOk
+import com.github.cpickl.bookstore.isStatus
 import com.github.cpickl.bookstore.requestPost
 import com.github.cpickl.bookstore.requestPut
 import com.github.cpickl.bookstore.read
+import com.github.cpickl.bookstore.requestDelete
 import com.github.cpickl.bookstore.withJwt
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -42,6 +45,7 @@ class BookControllerApiTest(
     private lateinit var bookService: BookService
 
     private val book = Book.any()
+    private val bookId = book.id
     private val invalidBookId = UUID1
     private val loginDto = userPreparer.userLogin
     private val anyBooks = emptyList<Book>()
@@ -158,7 +162,7 @@ class BookControllerApiTest(
         }
 
         @Test
-        fun `Given proper token When create book with token Then created`() {
+        fun `Given token When create book with token Then created`() {
             val jwt = restTemplate.login(loginDto)
             val requestBody = BookCreateDto.any()
             whenever(
@@ -225,4 +229,34 @@ class BookControllerApiTest(
         }
     }
 
+    @Nested
+    inner class DeleteBookTest {
+        @Test
+        fun `Given not logged in When delete Then fail`() {
+            val response = restTemplate.requestDelete("/books/$bookId")
+
+            assertThat(response).isForbidden()
+        }
+        @Test
+        fun `Given token and no book When delete book Then not found`() {
+            val jwt = restTemplate.login(loginDto)
+            whenever(bookService.delete(loginDto.username, bookId)).thenReturn(null)
+
+            val response = restTemplate.requestDelete("/books/$bookId", headers = HttpHeaders().withJwt(jwt))
+
+            assertThat(response).isNotFound()
+            verify(bookService).delete(loginDto.username, bookId)
+        }
+
+        @Test
+        fun `Given token and book When delete it Then unpublished`() {
+            val jwt = restTemplate.login(loginDto)
+            whenever(bookService.delete(loginDto.username, bookId)).thenReturn(book)
+
+            val response = restTemplate.requestDelete("/books/$bookId", headers = HttpHeaders().withJwt(jwt))
+
+            assertThat(response).isOk()
+            verify(bookService).delete(loginDto.username, bookId)
+        }
+    }
 }

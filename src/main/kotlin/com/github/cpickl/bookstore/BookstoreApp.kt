@@ -4,6 +4,7 @@ import com.github.cpickl.bookstore.boundary.SecurityConstants
 import com.github.cpickl.bookstore.domain.Amount
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookRepository
+import com.github.cpickl.bookstore.domain.BookState
 import com.github.cpickl.bookstore.domain.Image
 import com.github.cpickl.bookstore.domain.RandomIdGenerator
 import com.github.cpickl.bookstore.domain.User
@@ -55,6 +56,7 @@ class SetupDummyUser(
         author = User(RandomIdGenerator.generate(), "Harari", "username", "123hash"),
         cover = Image(RandomIdGenerator.generate(), byteArrayOf(0, 1)),
         price = Amount.euro(42),
+        state = BookState.Published,
     )
 
     override fun onApplicationEvent(event: ApplicationReadyEvent) {

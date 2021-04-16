@@ -2,6 +2,7 @@ package com.github.cpickl.bookstore.adapter
 
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookRepository
+import com.github.cpickl.bookstore.domain.BookState
 import com.github.cpickl.bookstore.domain.Id
 import com.github.cpickl.bookstore.domain.Search
 import mu.KotlinLogging.logger
@@ -17,26 +18,30 @@ class InMemoryBookRepository : BookRepository {
     override fun findAll(search: Search) = when (search) {
         is Search.Off -> books
         is Search.On -> books.filter { it.title.toLowerCase().contains(search.term) }
-    }.sortedBy { it.title } // FUTURE custom sort order
+    }
+        .filter { it.state == BookState.Published }
+        .sortedBy { it.title } // FUTURE custom sort order
 
     override fun findOrNull(id: Id) =
-        books.firstOrNull { it.id == id }
+        books.firstOrNull { it.id == id && it.state == BookState.Published }
 
     override fun create(book: Book) {
         log.debug { "create: $book" }
-        require(findOrNull(book.id) == null) { "duplicate ID: ${book.id}"}
+        require(findOrNull(book.id) == null) { "duplicate ID: ${book.id}" }
+
         books += book
     }
 
     override fun update(book: Book) {
         log.debug { "update: $book" }
         val found = findOrNull(book.id) ?: throw IllegalArgumentException("Book not found: ${book.id}")
+
         require(books.remove(found))
         books += book
     }
 
     fun clear() {
-        log.info { "clear() ... for TEST only!" }
+        log.info { "clear books ... for TEST only!" }
         books.clear()
     }
 }

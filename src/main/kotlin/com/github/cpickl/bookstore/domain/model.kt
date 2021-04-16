@@ -22,10 +22,18 @@ data class Book(
     val author: User,
     val cover: Image,
     val price: Amount,
+    val state: BookState,
 ) {
     companion object
 
     val authorName = author.authorPseudonym
+}
+
+enum class BookState {
+    Unpublished,
+    Published;
+
+    companion object
 }
 
 data class Image(

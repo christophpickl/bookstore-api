@@ -23,8 +23,11 @@ fun Book.Companion.any() = Book(
     description = "any description",
     author = User.any(),
     cover = Image.any(),
-    price = Amount.any()
+    price = Amount.any(),
+    state = BookState.any()
 )
+
+fun BookState.Companion.any() = BookState.Unpublished
 
 fun BookCreateRequest.Companion.any() = BookCreateRequest(
     username = "user",

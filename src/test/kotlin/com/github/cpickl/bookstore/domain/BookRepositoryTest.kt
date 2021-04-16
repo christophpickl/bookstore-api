@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 abstract class BookRepositoryTest {
 
     private lateinit var testee: BookRepository
-    private val book = Book.any()
+    private val book = Book.any().copy(state = BookState.Published)
 
     @BeforeEach
     fun `init testee`() {
@@ -39,8 +39,8 @@ abstract class BookRepositoryTest {
 
         @Test
         fun `Given two books When find all Then return sorted`() {
-            testee.create(Book.any().copy(title = "b"))
-            testee.create(Book.any().copy(title = "a"))
+            testee.create(Book.any().copy(title = "b", state = BookState.Published))
+            testee.create(Book.any().copy(title = "a", state = BookState.Published))
 
             val found = testee.findAll()
 
@@ -94,6 +94,15 @@ abstract class BookRepositoryTest {
 
             assertThat(found).isEmpty()
         }
+
+        @Test
+        fun `Given unpublished book When find all Then return empty`() {
+            testee.create(book.copy(state = BookState.Unpublished))
+
+            val found = testee.findAll()
+
+            assertThat(found).isEmpty()
+        }
     }
 
     @Nested
@@ -111,6 +120,15 @@ abstract class BookRepositoryTest {
             val found = testee.findOrNull(book.id)
 
             assertThat(found).isEqualTo(book)
+        }
+
+        @Test
+        fun `Given unpublished book When find single Then return null`() {
+            testee.create(book.copy(state = BookState.Unpublished))
+
+            val found = testee.findOrNull(book.id)
+
+            assertThat(found).isNull()
         }
 
     }

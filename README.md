@@ -12,11 +12,11 @@ A sample project for a job assignment using Spring Boot and Kotlin.
     * [x] GET list and detail (public, no auth required)
     * [x] search book list via query params
     * [x] CRU_ operations (for auth only)
-    * [ ] DELETE unpublishes a book (only when user owns it)
+    * [x] DELETE unpublishes a book
 
 ## Technical Ideas
 
-* JPA persistence
+* JPA/exposed persistence
 * docker container (+compose for real DBMS)
 * openAPI doc (+postman collection)
 * hardening (input validation, exception handling)

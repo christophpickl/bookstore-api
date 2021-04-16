@@ -2,6 +2,8 @@ package com.github.cpickl.bookstore.domain
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isFailure
+import assertk.assertions.isNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -64,7 +66,8 @@ class BookServiceImplTest {
             description = request.description,
             author = user,
             cover = Image.empty().copy(id = created.cover.id),
-            price = Amount.euroCent(request.euroCent)
+            price = Amount.euroCent(request.euroCent),
+            state = BookState.Published,
         )
         assertThat(created).isEqualTo(expected)
         verify(bookRepository, times(1)).create(expected)
@@ -80,5 +83,35 @@ class BookServiceImplTest {
 
         assertThat(actual).isEqualTo(updated)
         verify(bookRepository, times(1)).update(updated)
+    }
+
+    @Test
+    fun `Given published book When delete it Then update to unpublished`() {
+        val book = book.copy(state = BookState.Published)
+        whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
+
+        val actual = service.delete(username, book.id)
+
+        val deleted = book.copy(state = BookState.Unpublished)
+        assertThat(actual).isEqualTo(deleted)
+        verify(bookRepository).update(deleted)
+    }
+    @Test
+    fun `Given unpublished book When delete it Then fail`() {
+        val book = book.copy(state = BookState.Unpublished)
+        whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
+
+        assertThat {
+            service.delete(username, book.id)
+        }.isFailure()
+    }
+
+    @Test
+    fun `When delete it Then update to unpublished`() {
+        whenever(bookRepository.findOrNull(book.id)).thenReturn(null)
+
+        val actual = service.delete(username, book.id)
+
+        assertThat(actual).isNull()
     }
 }
