@@ -8,7 +8,7 @@
 	},
 	"item": [
 		{
-			"name": "GET home",
+			"name": "home",
 			"request": {
 				"url": "{{baseUrl}}/",
 				"method": "GET",
@@ -31,7 +31,7 @@
 			"response": []
 		},
 		{
-			"name": "GET books",
+			"name": "books",
 			"request": {
 				"url": "{{baseUrl}}/books",
 				"method": "GET",
@@ -42,7 +42,7 @@
 			"response": []
 		},
 		{
-			"name": "GET books XML",
+			"name": "books XML",
 			"request": {
 				"url": "{{baseUrl}}/books",
 				"method": "GET",
@@ -59,7 +59,7 @@
 			"response": []
 		},
 		{
-			"name": "GET book detail",
+			"name": "book detail",
 			"request": {
 				"url": "{{baseUrl}}/books/{{bookId}}",
 				"method": "GET",
@@ -82,7 +82,7 @@
 			"response": []
 		},
 		{
-			"name": "GET book cover",
+			"name": "book cover",
 			"request": {
 				"url": "{{baseUrl}}/books/{{bookId}}/cover",
 				"method": "GET",
@@ -125,7 +125,7 @@
 					},
 					{
 						"key": "Authorization",
-						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTYxOTM4MjE1M30.OGjHzSsEiu-P-quFTPy30nWs-Cl9TgwOpXECk7z9TXBB07NV1yL9t3h3eIggKOqshvl_Yv4hAspcVjI6B7u0hQ",
+						"value": "Bearer {{jwt}}",
 						"description": ""
 					}
 				],
