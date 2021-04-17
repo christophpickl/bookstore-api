@@ -89,7 +89,6 @@ class BookServiceImpl(
             title = request.title,
             description = request.description,
             author = user,
-            cover = Image.empty(),
             price = request.price,
             state = BookState.Published,
         )

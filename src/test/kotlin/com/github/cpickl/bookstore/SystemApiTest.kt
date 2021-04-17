@@ -14,7 +14,7 @@ import com.github.cpickl.bookstore.boundary.Jwt
 import com.github.cpickl.bookstore.boundary.any
 import com.github.cpickl.bookstore.boundary.login
 import com.github.cpickl.bookstore.boundary.toBookSimpleDto
-import com.github.cpickl.bookstore.domain.Image
+import com.github.cpickl.bookstore.domain.CoverImage
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
@@ -52,7 +52,7 @@ class SystemApiTest(
 
         assertThat(getBooksDto().books).containsExactly(created.toBookSimpleDto())
         assertThat(getBookDto(created.id)).isEqualTo(created)
-        assertThat(getBookCover(created.id).body.contentEquals(Image.default)).isTrue()
+        assertThat(getBookCover(created.id).body.contentEquals(CoverImage.DefaultImage.bytes)).isTrue()
     }
 
     @Test

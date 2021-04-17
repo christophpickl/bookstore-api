@@ -8,7 +8,7 @@ fun Currency.Companion.any() = Currency.Euro
 
 fun Money.Companion.any() = euro(12)
 
-fun Image.Companion.any() = Image(RandomIdGenerator.generate(), byteArrayOf(0, 1))
+fun CoverImage.Companion.any() = CoverImage.DefaultImage
 
 fun User.Companion.any() = User(
     id = RandomIdGenerator.generate(),
@@ -22,7 +22,6 @@ fun Book.Companion.any() = Book(
     title = "any title",
     description = "any description",
     author = User.any(),
-    cover = Image.any(),
     price = Money.any(),
     state = BookState.any()
 )

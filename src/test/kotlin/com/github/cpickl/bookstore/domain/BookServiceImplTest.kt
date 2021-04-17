@@ -67,7 +67,6 @@ class BookServiceImplTest {
             title = request.title,
             description = request.description,
             author = user,
-            cover = Image.empty().copy(id = created.cover.id),
             price = request.price,
             state = BookState.Published,
         )

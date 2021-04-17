@@ -5,7 +5,7 @@ import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookRepository
 import com.github.cpickl.bookstore.domain.BookState
-import com.github.cpickl.bookstore.domain.Image
+import com.github.cpickl.bookstore.domain.CoverImage
 import com.github.cpickl.bookstore.domain.RandomIdGenerator
 import com.github.cpickl.bookstore.domain.User
 import com.github.cpickl.bookstore.domain.UserRepository
@@ -50,12 +50,12 @@ class SetupDummyUser(
 ) : ApplicationListener<ApplicationReadyEvent> {
 
     private val log = logger {}
+
     private val book = Book(
         id = RandomIdGenerator.generate(),
         title = "Homo Sapiens",
         description = "A brief history of humankind",
         author = User(RandomIdGenerator.generate(), "Harari", "username", "123hash"),
-        cover =Image.empty(),
         price = Money.euro(@Suppress("MagicNumber") 42),
         state = BookState.Published,
     )

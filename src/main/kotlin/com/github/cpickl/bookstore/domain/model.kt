@@ -21,7 +21,6 @@ data class Book(
     val title: String,
     val description: String,
     val author: User,
-    val cover: Image,
     val price: Money,
     val state: BookState,
 ) {
@@ -37,40 +36,20 @@ enum class BookState {
     companion object
 }
 
-data class Image(
-    val id: Id, // FUTURE make use of image ID
+sealed class CoverImage(
     val bytes: ByteArray,
 ) {
-    companion object {
-        val default: ByteArray = Image::class.java
+    companion object
+
+    object DefaultImage : CoverImage(
+        CoverImage::class.java
             .getResourceAsStream("/bookstore/icon_default_book.png")!!
             .readAllBytes()!!
+    )
 
-        fun empty(id: Id = RandomIdGenerator.generate()) = Image(
-            id = id,
-            bytes = default,
-        )
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Image
-
-        if (id != other.id) return false
-        if (!bytes.contentEquals(other.bytes)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + bytes.contentHashCode()
-        return result
-    }
-
-    override fun toString() = "Image[id=$id]"
+    class CustomImage(
+        bytes: ByteArray,
+    ) : CoverImage(bytes)
 }
 
 enum class Currency(
@@ -83,6 +62,7 @@ enum class Currency(
         private val currenciesByCode by lazy {
             values().associateBy { it.code }
         }
+
         fun of(currencyCode: String) =
             currenciesByCode[currencyCode] ?: throw IllegalArgumentException("Invalid currency code: '$currencyCode'!")
     }
@@ -97,7 +77,7 @@ data class Money(
         fun euro(euro: Int) = euroCent(euro * @Suppress("MagicNumber") 100)
         fun euroCent(cents: Int) = Money(Currency.Euro, cents)
 
-        fun format(currencyCode:String, value: Int, precision: Int): String {
+        fun format(currencyCode: String, value: Int, precision: Int): String {
             val numberPart = if (precision == 0) {
                 value
             } else {
