@@ -18,9 +18,9 @@ A sample project for a job assignment using Spring Boot and Kotlin.
 
 * JPA/exposed persistence layer
 * dockerize (+compose for DBMS)
-* HATEOS API (higher ReST maturity level via hypermedia)
-* openAPI doc
 * hardening (input validation, exception handling)
+* openAPI doc
+* HATEOS API (higher ReST maturity level via hypermedia)
 * build plugins for reports/checks (static code analysis, coverage, dependencies)
 * replace password type from String to CharArray for security reasons
 * fine-tune XML representation

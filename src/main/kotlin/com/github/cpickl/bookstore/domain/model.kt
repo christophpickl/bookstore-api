@@ -72,25 +72,8 @@ data class Money(
     val currency: Currency,
     val value: Int,
 ) {
-
     companion object {
         fun euro(euro: Int) = euroCent(euro * @Suppress("MagicNumber") 100)
         fun euroCent(cents: Int) = Money(Currency.Euro, cents)
-
-        fun format(currencyCode: String, value: Int, precision: Int): String {
-            val numberPart = if (precision == 0) {
-                value
-            } else {
-                val format = NumberFormat.getNumberInstance(Locale.ENGLISH).apply {
-                    minimumFractionDigits = precision
-                }
-                format.format(value.toDouble() / (10.0.pow(precision)))
-            }
-            return "$currencyCode $numberPart"
-        }
-    }
-
-    val formatted by lazy {
-        format(currencyCode = currency.code, value = value, precision = currency.precision)
     }
 }
