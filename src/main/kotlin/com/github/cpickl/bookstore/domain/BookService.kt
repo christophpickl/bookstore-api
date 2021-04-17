@@ -1,7 +1,5 @@
 package com.github.cpickl.bookstore.domain
 
-import com.github.cpickl.bookstore.boundary.BookUpdateDto
-import com.github.cpickl.bookstore.boundary.MoneyDto
 import mu.KotlinLogging.logger
 import org.springframework.stereotype.Service
 
@@ -12,60 +10,6 @@ interface BookService {
     fun update(request: BookUpdateRequest): Book?
     fun delete(username: String, id: Id): Book?
 }
-
-sealed class Search {
-    object Off : Search()
-
-    // FUTURE support multiple terms (and wildcards)
-    class On(term: String) : Search() {
-        init {
-            require(term.trim().isNotEmpty())
-        }
-
-        val term = term.toLowerCase() // FUTURE with kotlin 1.5 use lowercase()
-
-        override fun equals(other: Any?): Boolean {
-            if (other !is On) return false
-            return this.term == other.term
-        }
-
-        override fun hashCode() = term.hashCode()
-    }
-}
-
-data class BookCreateRequest(
-    val username: String,
-    val title: String,
-    val description: String,
-    val price: Money,
-) {
-    companion object
-}
-
-data class BookUpdateRequest(
-    val username: String,
-    val id: Id,
-    val title: String,
-    val description: String,
-    val price: Money,
-) {
-    constructor(
-        username: String,
-        id: Id,
-        dto: BookUpdateDto,
-    ) : this(
-        username = username,
-        id = id,
-        title = dto.title,
-        description = dto.description,
-        price = dto.price.toMoney(),
-    )
-}
-
-private fun MoneyDto.toMoney() = Money(
-    currency = Currency.of(currencyCode),
-    value = value,
-)
 
 @Service
 class BookServiceImpl(

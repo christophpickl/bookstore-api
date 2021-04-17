@@ -1,6 +1,5 @@
 package com.github.cpickl.bookstore.boundary
 
-import com.github.cpickl.bookstore.domain.BookService
 import com.github.cpickl.bookstore.domain.CoverService
 import com.github.cpickl.bookstore.domain.Id
 import org.springframework.http.MediaType
@@ -25,6 +24,6 @@ class CoverController(
             ResponseEntity.ok(it.bytes)
         } ?: ResponseEntity.notFound().build()
 
-    // FUTURE cover update/delete operations
+    // FUTURE update/delete operations
 
 }

@@ -1,5 +1,7 @@
 package com.github.cpickl.bookstore.domain
 
+import com.github.cpickl.bookstore.boundary.BookUpdateDto
+import com.github.cpickl.bookstore.boundary.MoneyDto
 import java.lang.IllegalArgumentException
 import java.text.NumberFormat
 import java.util.Locale
@@ -8,7 +10,7 @@ import kotlin.math.pow
 data class User(
     val id: Id,
     val authorPseudonym: String,
-    val username: String,
+    val username: String, // FUTURE could be custom data type
     val passwordHash: String,
 ) {
     companion object;
@@ -36,6 +38,40 @@ enum class BookState {
     companion object
 }
 
+data class BookCreateRequest(
+    val username: String,
+    val title: String,
+    val description: String,
+    val price: Money,
+) {
+    companion object
+}
+
+data class BookUpdateRequest(
+    val username: String,
+    val id: Id,
+    val title: String,
+    val description: String,
+    val price: Money,
+) {
+    constructor(
+        username: String,
+        id: Id,
+        dto: BookUpdateDto,
+    ) : this(
+        username = username,
+        id = id,
+        title = dto.title,
+        description = dto.description,
+        price = dto.price.toMoney(),
+    )
+}
+
+private fun MoneyDto.toMoney() = Money(
+    currency = Currency.of(currencyCode),
+    value = value,
+)
+
 sealed class CoverImage(
     val bytes: ByteArray,
 ) {
@@ -50,30 +86,4 @@ sealed class CoverImage(
     class CustomImage(
         bytes: ByteArray,
     ) : CoverImage(bytes)
-}
-
-enum class Currency(
-    val code: String,
-    val precision: Int
-) {
-    Euro("EUR", 2);
-
-    companion object {
-        private val currenciesByCode by lazy {
-            values().associateBy { it.code }
-        }
-
-        fun of(currencyCode: String) =
-            currenciesByCode[currencyCode] ?: throw IllegalArgumentException("Invalid currency code: '$currencyCode'!")
-    }
-}
-
-data class Money(
-    val currency: Currency,
-    val value: Int,
-) {
-    companion object {
-        fun euro(euro: Int) = euroCent(euro * @Suppress("MagicNumber") 100)
-        fun euroCent(cents: Int) = Money(Currency.Euro, cents)
-    }
 }

@@ -7,7 +7,6 @@ import com.github.cpickl.bookstore.domain.UserRepository
 import com.github.cpickl.bookstore.domain.any
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
-import java.util.UUID
 
 @Service
 class UserTestPreparer(
@@ -16,6 +15,7 @@ class UserTestPreparer(
 ) {
 
     final val userLogin = LoginDto.any()
+
     val user = User.any().copy(
         username = userLogin.username,
         passwordHash = passwordEncoder.encode(userLogin.password),
