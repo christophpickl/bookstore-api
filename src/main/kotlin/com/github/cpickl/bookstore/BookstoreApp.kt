@@ -28,6 +28,7 @@ class BookstoreApp {
         @JvmStatic
         fun main(args: Array<String>) {
             log.info { "bookstore starting ..." }
+            @Suppress("SpreadOperator")
             runApplication<BookstoreApp>(*args) {
                 setBannerMode(Banner.Mode.OFF)
             }
@@ -54,8 +55,8 @@ class SetupDummyUser(
         title = "Homo Sapiens",
         description = "A brief history of humankind",
         author = User(RandomIdGenerator.generate(), "Harari", "username", "123hash"),
-        cover = Image.empty(),
-        price = Amount.euro(42),
+        cover =Image.empty(),
+        price = Amount.euro(@Suppress("MagicNumber") 42),
         state = BookState.Published,
     )
 

@@ -29,41 +29,41 @@ class BookController(
     @GetMapping("")
     fun findAllBooks(
         @RequestParam(name = "search", required = false) searchTerm: String?
-    ): List<BookListDto> =
-        service.findAll(searchTerm.toSearch()).map { it.toBookListDto() }
+    ): BooksDto =
+        BooksDto(books = service.findAll(searchTerm.toSearch()).map { it.toBookSimpleDto() })
 
     @GetMapping("/{id}")
     fun findSingleBook(
         @PathVariable id: UUID
-    ): ResponseEntity<BookDetailDto> =
+    ): ResponseEntity<BookDto> =
         service.findOrNull(Id(id))?.let {
-            ok(it.toBookDetailDto())
+            ok(it.toBookDto())
         } ?: ResponseEntity.notFound().build()
 
     @PostMapping("")
     fun createBook(
         @RequestBody book: BookCreateDto,
         auth: Authentication
-    ): BookDetailDto =
-        service.create(book.toBookCreateRequest(auth.username)).toBookDetailDto()
+    ): BookDto =
+        service.create(book.toBookCreateRequest(auth.username)).toBookDto()
 
     @PutMapping("/{id}")
     fun updateBook(
         @PathVariable id: UUID,
         @RequestBody update: BookUpdateDto,
         auth: Authentication
-    ): ResponseEntity<BookDetailDto> =
+    ): ResponseEntity<BookDto> =
         service.update(BookUpdateRequest(auth.username, Id(id), update))?.let {
-            ok(it.toBookDetailDto())
+            ok(it.toBookDto())
         } ?: ResponseEntity.notFound().build()
 
     @DeleteMapping("/{id}")
     fun deleteBook(
         @PathVariable id: UUID,
         auth: Authentication
-    ): ResponseEntity<BookDetailDto> =
+    ): ResponseEntity<BookDto> =
         service.delete(auth.username, Id(id))?.let { book ->
-            ok(book.toBookDetailDto())
+            ok(book.toBookDto())
         } ?: ResponseEntity.notFound().build()
 }
 
@@ -71,7 +71,7 @@ private fun String?.toSearch() = if (this == null) Search.Off else Search.On(thi
 
 private val Authentication.username get() = principal as String
 
-private fun Book.toBookListDto() = BookListDto(
+private fun Book.toBookSimpleDto() = BookSimpleDto(
     id = id.toString(),
     title = title,
     author = authorName,
@@ -85,7 +85,7 @@ private fun BookCreateDto.toBookCreateRequest(username: String) = BookCreateRequ
     euroCent = euroCent,
 )
 
-private fun Book.toBookDetailDto() = BookDetailDto(
+private fun Book.toBookDto() = BookDto(
     id = id.toString(),
     title = title,
     description = description,

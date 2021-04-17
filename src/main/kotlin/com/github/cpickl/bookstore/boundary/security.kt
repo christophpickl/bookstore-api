@@ -83,7 +83,8 @@ class SecurityConfiguration(
             .anyRequest().authenticated()
             .and()
             .addFilter(JWTAuthenticationFilter(authenticationManager()))
-            .addFilter(JWTAuthorizationFilter(authenticationManager())) // this disables session creation on Spring Security
+            // this disables session creation on Spring Security
+            .addFilter(JWTAuthorizationFilter(authenticationManager()))
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
     }
 

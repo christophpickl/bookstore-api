@@ -7,13 +7,13 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isTrue
 import com.github.cpickl.bookstore.adapter.InMemoryBookRepository
 import com.github.cpickl.bookstore.boundary.BookCreateDto
-import com.github.cpickl.bookstore.boundary.BookDetailDto
-import com.github.cpickl.bookstore.boundary.BookListDto
+import com.github.cpickl.bookstore.boundary.BookDto
 import com.github.cpickl.bookstore.boundary.BookUpdateDto
+import com.github.cpickl.bookstore.boundary.BooksDto
 import com.github.cpickl.bookstore.boundary.Jwt
 import com.github.cpickl.bookstore.boundary.any
 import com.github.cpickl.bookstore.boundary.login
-import com.github.cpickl.bookstore.boundary.toBookListDto
+import com.github.cpickl.bookstore.boundary.toBookSimpleDto
 import com.github.cpickl.bookstore.domain.Image
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -44,19 +44,17 @@ class SystemApiTest(
         bookRepository.clear()
     }
 
-    @Tag("system")
     @Test
     fun `Given token When create book Then read all and single returns book`() {
         val jwt = restTemplate.login(loginDto)
 
         val created = postBookDto(jwt, BookCreateDto.any())
 
-        assertThat(getBooksDto()).containsExactly(created.toBookListDto())
+        assertThat(getBooksDto().books).containsExactly(created.toBookSimpleDto())
         assertThat(getBookDto(created.id)).isEqualTo(created)
         assertThat(getBookCover(created.id).body.contentEquals(Image.default)).isTrue()
     }
 
-    @Tag("system")
     @Test
     fun `Given token and book When update Then return updated book`() {
         val jwt = restTemplate.login(loginDto)
@@ -65,28 +63,26 @@ class SystemApiTest(
         val update = BookUpdateDto.any()
         putBookDto(jwt, created.id, update)
 
-        val recentBook = restTemplate.requestGet("/books/${created.id}").read<BookDetailDto>()
+        val recentBook = restTemplate.requestGet("/books/${created.id}").read<BookDto>()
         assertThat(recentBook.title).isEqualTo(update.title) // only check for title for simplicity
     }
 
-    @Tag("system")
     @Test
     fun `Given token and two books When search Then return proper book`() {
         val jwt = restTemplate.login(loginDto)
         postBookDto(jwt, BookCreateDto.any().copy(title = "a"))
         postBookDto(jwt, BookCreateDto.any().copy(title = "b"))
 
-        assertThat(getBooksDto(search = "a").map { it.title }).containsExactly("a")
+        assertThat(getBooksDto(search = "a").books.map { it.title }).containsExactly("a")
     }
 
-    @Tag("system")
     @Test
     fun `Given token and deleted book When get Then return empty`() {
         val jwt = restTemplate.login(loginDto)
         val created = postBookDto(jwt, BookCreateDto.any())
         deleteBook(jwt, created.id)
 
-        assertThat(getBooksDto()).isEmpty()
+        assertThat(getBooksDto().books).isEmpty()
         assertThat(getBook(created.id)).isNotFound()
     }
 
@@ -94,19 +90,19 @@ class SystemApiTest(
         restTemplate.requestGet("/books/$id")
 
     private fun getBookDto(id: String) =
-        getBook(id).read<BookDetailDto>()
+        getBook(id).read<BookDto>()
 
     private fun getBookCover(id: String) =
         restTemplate.requestAny<ByteArray>(HttpMethod.GET, "/books/$id/cover")
 
     private fun getBooksDto(search: String? = null) =
-        restTemplate.requestGet("/books${search.buildQuery()}").read<List<BookListDto>>()
+        restTemplate.requestGet("/books${search.buildQuery()}").read<BooksDto>()
 
     private fun postBookDto(jwt: Jwt, dto: BookCreateDto) =
-        restTemplate.requestPost("/books", dto, headers = HttpHeaders().withJwt(jwt)).read<BookDetailDto>()
+        restTemplate.requestPost("/books", dto, headers = HttpHeaders().withJwt(jwt)).read<BookDto>()
 
     private fun putBookDto(jwt: Jwt, id: String, dto: BookUpdateDto) =
-        restTemplate.requestPut("/books/$id", body = dto, headers = HttpHeaders().withJwt(jwt)).read<BookDetailDto>()
+        restTemplate.requestPut("/books/$id", body = dto, headers = HttpHeaders().withJwt(jwt)).read<BookDto>()
 
     private fun deleteBook(jwt: Jwt, id: String) =
         restTemplate.requestDelete("/books/$id", headers = HttpHeaders().withJwt(jwt))

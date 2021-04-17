@@ -1,7 +1,19 @@
 package com.github.cpickl.bookstore.boundary
 
-data class BookListDto(
-    /** A UUID. */
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
+
+@JacksonXmlRootElement(localName = "books")
+data class BooksDto(
+    @JacksonXmlElementWrapper(useWrapping = false)
+    @JacksonXmlProperty(localName = "book")
+    val books: List<BookSimpleDto>
+)
+
+data class BookSimpleDto(
+    /** Of type UUID. */
     val id: String,
     val title: String,
     /** Pseudonym of the published user. */
@@ -10,9 +22,10 @@ data class BookListDto(
     val price: String, // FUTURE could keep Amount type and add custom jackson serializer
 )
 
-data class BookDetailDto(
+data class BookDto(
     val id: String,
     val title: String,
+    @JacksonXmlCData
     val description: String,
     val price: String,
     val author: String,

@@ -1,10 +1,7 @@
 package com.github.cpickl.bookstore.boundary
 
 import assertk.assertThat
-import assertk.assertions.containsExactly
 import assertk.assertions.isEqualTo
-import assertk.assertions.isNotNull
-import assertk.assertions.isTrue
 import com.github.cpickl.bookstore.UserTestPreparer
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookCreateRequest
@@ -20,7 +17,6 @@ import com.github.cpickl.bookstore.isOk
 import com.github.cpickl.bookstore.requestPost
 import com.github.cpickl.bookstore.requestPut
 import com.github.cpickl.bookstore.read
-import com.github.cpickl.bookstore.requestAny
 import com.github.cpickl.bookstore.requestDelete
 import com.github.cpickl.bookstore.withJwt
 import org.junit.jupiter.api.BeforeAll
@@ -33,8 +29,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod.GET
 import org.springframework.http.MediaType
+import org.springframework.util.MimeType
 import java.util.UUID
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -68,8 +64,7 @@ class BookControllerApiTest(
             })
 
             assertThat(response).isOk()
-            assertThat(response.body).isEqualTo("""[{"id":"${book.id}","title":"${book.title}","author":"${book.authorName}","price":"${book.price.formatted}"}]""")
-            assertThat(response.read<List<BookListDto>>()).isEqualTo(listOf(book.toBookListDto()))
+            assertThat(response.headers[HttpHeaders.CONTENT_TYPE]).isEqualTo(listOf(MediaType.APPLICATION_JSON_VALUE))
         }
 
         @Test
@@ -81,7 +76,8 @@ class BookControllerApiTest(
             })
 
             assertThat(response).isOk()
-            assertThat(response.body).isEqualTo("""[{"id":"${book.id}","title":"${book.title}","author":"${book.authorName}","price":"${book.price.formatted}"}]""")
+            assertThat(response.body).isEqualTo("""{"books":[${book.toJson()}]}""")
+            assertThat(response.read<BooksDto>()).isEqualTo(BooksDto(listOf(book.toBookSimpleDto())))
         }
 
         @Test
@@ -93,7 +89,7 @@ class BookControllerApiTest(
             })
 
             assertThat(response).isOk()
-            assertThat(response.body).isEqualTo("""<List><item><id>${book.id}</id><title>${book.title}</title><author>${book.authorName}</author><price>${book.price.formatted}</price></item></List>""")
+            assertThat(response.body).isEqualTo("""<books>${book.toXml()}</books>""")
         }
 
         @Test
@@ -140,8 +136,8 @@ class BookControllerApiTest(
             val response = restTemplate.requestGet("/books/${book.id}")
 
             assertThat(response).isOk()
-            assertThat(response.read<BookDetailDto>()).isEqualTo(
-                BookDetailDto(
+            assertThat(response.read<BookDto>()).isEqualTo(
+                BookDto(
                     id = book.id.toString(),
                     title = book.title,
                     description = book.description,
@@ -183,8 +179,8 @@ class BookControllerApiTest(
             val response = restTemplate.requestPost("/books", requestBody, HttpHeaders().withJwt(jwt))
 
             assertThat(response).isOk()
-            assertThat(response.read<BookDetailDto>()).isEqualTo(
-                BookDetailDto(
+            assertThat(response.read<BookDto>()).isEqualTo(
+                BookDto(
                     id = book.id.toString(),
                     title = book.title,
                     description = book.description,
@@ -226,7 +222,7 @@ class BookControllerApiTest(
 
             val response = restTemplate.requestPut("/books/${book.id}", body = update, HttpHeaders().withJwt(jwt))
 
-            assertThat(response.read<BookDetailDto>()).isEqualTo(book.toBookDetailDto())
+            assertThat(response.read<BookDto>()).isEqualTo(book.toBookDto())
         }
     }
 
@@ -258,8 +254,24 @@ class BookControllerApiTest(
             val response = restTemplate.requestDelete("/books/$bookId", headers = HttpHeaders().withJwt(jwt))
 
             assertThat(response).isOk()
-            assertThat(response.read<BookDetailDto>()).isEqualTo(book.toBookDetailDto())
+            assertThat(response.read<BookDto>()).isEqualTo(book.toBookDto())
             verify(bookService).delete(loginDto.username, bookId)
         }
     }
 }
+
+private fun Book.toJson() =
+    """{
+                |"id":"$id",
+                |"title":"$title",
+                |"author":"$authorName",
+                |"price":"${price.formatted}"
+                |}""".trimMargin().replace("\n", "")
+
+private fun Book.toXml() =
+    """<book>
+        |<id>$id</id>
+        |<title>$title</title>
+        |<author>$authorName</author>
+        |<price>${price.formatted}</price>
+        |</book>""".trimMargin().replace("\n", "")

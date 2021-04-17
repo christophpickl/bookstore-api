@@ -40,21 +40,21 @@ inline class Jwt(private val value: String) {
     override fun toString() = value
 }
 
-fun BookDetailDto.toBookListDto() = BookListDto(
+fun BookDto.toBookSimpleDto() = BookSimpleDto(
     id = id,
     title = title,
     author = author,
     price = price,
 )
 
-fun Book.toBookListDto() = BookListDto(
+fun Book.toBookSimpleDto() = BookSimpleDto(
     id = id.toString(),
     title = title,
     author = authorName,
     price = price.formatted
 )
 
-fun Book.toBookDetailDto() = BookDetailDto(
+fun Book.toBookDto() = BookDto(
     id = id.toString(),
     title = title,
     author = authorName,

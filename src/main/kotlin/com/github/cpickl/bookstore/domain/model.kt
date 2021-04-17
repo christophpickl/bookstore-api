@@ -41,7 +41,9 @@ data class Image(
     val bytes: ByteArray,
 ) {
     companion object {
-        val default = Image::class.java.getResourceAsStream("/bookstore/icon_default_book.png")!!.readAllBytes()
+        val default: ByteArray = Image::class.java
+            .getResourceAsStream("/bookstore/icon_default_book.png")!!
+            .readAllBytes()!!
 
         fun empty(id: Id = RandomIdGenerator.generate()) = Image(
             id = id,
@@ -91,7 +93,7 @@ data class Amount(
     }
 
     companion object {
-        fun euro(euro: Int) = euroCent(euro * 100)
+        fun euro(euro: Int) = euroCent(euro * @Suppress("MagicNumber") 100)
         fun euroCent(cents: Int) = Amount(Currency.Euro, cents, 2)
     }
 
