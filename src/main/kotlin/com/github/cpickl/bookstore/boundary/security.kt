@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse
 object SecurityConstants {
     // FUTURE annotate controller methods instead
     val PERMIT_ALL_PATHS = listOf(
+        HttpMethod.GET to "/",
         HttpMethod.POST to "/login",
         HttpMethod.GET to "/books",
         HttpMethod.GET to "/books/*",
