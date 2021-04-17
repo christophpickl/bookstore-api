@@ -4,7 +4,9 @@ import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookCreateRequest
 import com.github.cpickl.bookstore.domain.BookService
 import com.github.cpickl.bookstore.domain.BookUpdateRequest
+import com.github.cpickl.bookstore.domain.Currency
 import com.github.cpickl.bookstore.domain.Id
+import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Search
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -74,22 +76,30 @@ private val Authentication.username get() = principal as String
 private fun Book.toBookSimpleDto() = BookSimpleDto(
     id = id.toString(),
     title = title,
-    author = authorName,
-    price = price.formatted // FUTURE render complex Amount object instead
 )
 
 private fun BookCreateDto.toBookCreateRequest(username: String) = BookCreateRequest(
     username = username,
     title = title,
     description = description,
-    euroCent = euroCent,
+    price = price.toMoney(),
 )
 
 private fun Book.toBookDto() = BookDto(
     id = id.toString(),
     title = title,
     description = description,
-    price = price.formatted,
+    price = price.toMoneyDto(),
     author = authorName,
-    coverLink = "/books/$id/cover",
+)
+
+private fun Money.toMoneyDto() = MoneyDto(
+    currencyCode = currency.code,
+    value = value,
+    precision = currency.precision,
+)
+
+private fun MoneyDto.toMoney() = Money(
+    currency = Currency.of(currencyCode),
+    value = value,
 )

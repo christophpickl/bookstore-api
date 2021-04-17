@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.provider.Arguments
 import java.util.stream.Stream
 
-class AmountTest {
+class MoneyTest {
 
-    private val anyCurrency = Currency.any()
+    private val currencyCode = "CUR"
 
     private val amountsToFormat = Stream.of(
         Arguments.of(1, 0, "1"),
@@ -23,16 +23,15 @@ class AmountTest {
     fun `Given each amount When format Then format expectedly`() {
         amountsToFormat.forEach {
             val (value, precision, expected) = it.get()
-            val amount = Amount(anyCurrency, value as Int, precision as Int)
 
-            assertThat(amount.formatted).isEqualTo("${anyCurrency.code} $expected")
+            assertThat(Money.format(currencyCode, value as Int, precision as Int))
+                .isEqualTo("$currencyCode $expected")
         }
     }
 
     @Test
-    fun toEuroCents() {
-        assertThat(Amount(Currency.Euro, 100, 0).toEuroCents()).isEqualTo(100)
-        assertThat(Amount(Currency.Euro, 10, 1).toEuroCents()).isEqualTo(100)
-        assertThat(Amount(Currency.Euro, 1, 2).toEuroCents()).isEqualTo(100)
+    fun `money factories`() {
+        assertThat(Money.euro(1)).isEqualTo(Money(Currency.Euro, 100))
+        assertThat(Money.euroCent(1)).isEqualTo(Money(Currency.Euro, 1))
     }
 }

@@ -1,6 +1,7 @@
 package com.github.cpickl.bookstore.domain
 
 import com.github.cpickl.bookstore.boundary.BookUpdateDto
+import com.github.cpickl.bookstore.boundary.MoneyDto
 import mu.KotlinLogging.logger
 import org.springframework.stereotype.Service
 
@@ -36,7 +37,7 @@ data class BookCreateRequest(
     val username: String,
     val title: String,
     val description: String,
-    val euroCent: Int,
+    val price: Money,
 ) {
     companion object
 }
@@ -46,7 +47,7 @@ data class BookUpdateRequest(
     val id: Id,
     val title: String,
     val description: String,
-    val euroCent: Int,
+    val price: Money,
 ) {
     constructor(
         username: String,
@@ -57,9 +58,14 @@ data class BookUpdateRequest(
         id = id,
         title = dto.title,
         description = dto.description,
-        euroCent = dto.euroCent,
+        price = dto.price.toMoney(),
     )
 }
+
+private fun MoneyDto.toMoney() = Money(
+    currency = Currency.of(currencyCode),
+    value = value,
+)
 
 @Service
 class BookServiceImpl(
@@ -84,7 +90,7 @@ class BookServiceImpl(
             description = request.description,
             author = user,
             cover = Image.empty(),
-            price = Amount.euroCent(request.euroCent),
+            price = request.price,
             state = BookState.Published,
         )
         bookRepository.create(book)
@@ -116,5 +122,5 @@ class BookServiceImpl(
 private fun Book.updateBy(update: BookUpdateRequest) = copy(
     title = update.title,
     description = update.description,
-    price = Amount.euroCent(update.euroCent),
+    price = update.price,
 )

@@ -16,26 +16,30 @@ data class BookSimpleDto(
     /** Of type UUID. */
     val id: String,
     val title: String,
-    /** Pseudonym of the published user. */
-    val author: String,
-    /** Preformatted amount. */
-    val price: String, // FUTURE could keep Amount type and add custom jackson serializer
-)
+) {
+    @Suppress("unused")
+    val detailLink: String = "/books/$id"
+}
 
+@JacksonXmlRootElement(localName = "book")
 data class BookDto(
     val id: String,
+    @JacksonXmlCData
     val title: String,
     @JacksonXmlCData
     val description: String,
-    val price: String,
-    val author: String,
-    val coverLink: String,
-)
+    val price: MoneyDto,
+    /** Pseudonym of the published user. */
+    val author: String
+) {
+    @Suppress("unused")
+    val coverLink: String = "/books/$id/cover"
+}
 
 data class BookCreateDto(
     val title: String,
     val description: String,
-    val euroCent: Int,
+    val price: MoneyDto,
 ) {
     companion object
 }
@@ -43,7 +47,13 @@ data class BookCreateDto(
 data class BookUpdateDto(
     val title: String,
     val description: String,
-    val euroCent: Int,
+    val price: MoneyDto,
 ) {
     companion object
 }
+
+data class MoneyDto(
+    val currencyCode: String,
+    val value: Int,
+    val precision: Int,
+)

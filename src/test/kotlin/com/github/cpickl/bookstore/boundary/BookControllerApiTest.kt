@@ -7,6 +7,7 @@ import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookCreateRequest
 import com.github.cpickl.bookstore.domain.BookService
 import com.github.cpickl.bookstore.domain.BookUpdateRequest
+import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Search
 import com.github.cpickl.bookstore.domain.any
 import com.github.cpickl.bookstore.requestGet
@@ -30,7 +31,6 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import org.springframework.util.MimeType
 import java.util.UUID
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -76,7 +76,7 @@ class BookControllerApiTest(
             })
 
             assertThat(response).isOk()
-            assertThat(response.body).isEqualTo("""{"books":[${book.toJson()}]}""")
+            assertThat(response.body).isEqualTo("""{"books":[${book.toSimpleJson()}]}""")
             assertThat(response.read<BooksDto>()).isEqualTo(BooksDto(listOf(book.toBookSimpleDto())))
         }
 
@@ -89,7 +89,7 @@ class BookControllerApiTest(
             })
 
             assertThat(response).isOk()
-            assertThat(response.body).isEqualTo("""<books>${book.toXml()}</books>""")
+            assertThat(response.body).isEqualTo("""<books>${book.toSimpleXml()}</books>""")
         }
 
         @Test
@@ -141,11 +141,34 @@ class BookControllerApiTest(
                     id = book.id.toString(),
                     title = book.title,
                     description = book.description,
-                    price = book.price.formatted,
+                    price = book.price.toMoneyDto(),
                     author = book.authorName,
-                    coverLink = "/books/${book.id}/cover",
                 )
             )
+        }
+
+        @Test
+        fun `Given book When get book as JSON Then return JSON`() {
+            whenever(bookService.findOrNull(bookId)).thenReturn(book)
+
+            val response = restTemplate.requestGet("/books/$bookId", HttpHeaders().apply {
+                this[HttpHeaders.ACCEPT] = MediaType.APPLICATION_JSON_VALUE
+            })
+
+            assertThat(response).isOk()
+            assertThat(response.body).isEqualTo(book.toDetailJson())
+        }
+
+        @Test
+        fun `Given book When get book as XML Then return XML`() {
+            whenever(bookService.findOrNull(bookId)).thenReturn(book)
+
+            val response = restTemplate.requestGet("/books/$bookId", HttpHeaders().apply {
+                this[HttpHeaders.ACCEPT] = MediaType.APPLICATION_XML_VALUE
+            })
+
+            assertThat(response).isOk()
+            assertThat(response.body).isEqualTo(book.toDetailXml())
         }
     }
 
@@ -170,7 +193,7 @@ class BookControllerApiTest(
                         username = userPreparer.userLogin.username,
                         title = requestBody.title,
                         description = requestBody.description,
-                        euroCent = requestBody.euroCent,
+                        price = requestBody.price.toMoney(),
                     )
                 )
             )
@@ -184,14 +207,11 @@ class BookControllerApiTest(
                     id = book.id.toString(),
                     title = book.title,
                     description = book.description,
-                    price = book.price.formatted,
+                    price = book.price.toMoneyDto(),
                     author = userPreparer.user.authorPseudonym,
-                    coverLink = "/books/${book.id}/cover",
                 )
             )
         }
-
-        // FUTURE test for bad requests
     }
 
     @Nested
@@ -260,18 +280,44 @@ class BookControllerApiTest(
     }
 }
 
-private fun Book.toJson() =
+// FUTURE use JSON/XML object (library) to compare instead string literals
+private fun Book.toSimpleJson() =
     """{
-                |"id":"$id",
-                |"title":"$title",
-                |"author":"$authorName",
-                |"price":"${price.formatted}"
-                |}""".trimMargin().replace("\n", "")
+        |"id":"$id",
+        |"title":"$title",
+        |"detailLink":"/books/$id"
+        |}""".trimMargin().replace("\n", "")
 
-private fun Book.toXml() =
+private fun Book.toSimpleXml() =
     """<book>
         |<id>$id</id>
         |<title>$title</title>
-        |<author>$authorName</author>
-        |<price>${price.formatted}</price>
+        |<detailLink>/books/$id</detailLink>
         |</book>""".trimMargin().replace("\n", "")
+
+private fun Book.toDetailJson() =
+    """{
+        |"id":"$id",
+        |"title":"$title",
+        |"description":"$description",
+        |"price":${price.toJson()},
+        |"author":"$authorName",
+        |"coverLink":"/books/$id/cover"
+        |}""".trimMargin().replace("\n", "")
+
+
+private fun Book.toDetailXml() =
+    """<book>
+        |<id>$id</id>
+        |<title><![CDATA[$title]]></title>
+        |<description><![CDATA[$description]]></description>
+        |<price>${price.toXml()}</price>
+        |<author>$authorName</author>
+        |<coverLink>/books/$id/cover</coverLink>
+        |</book>""".trimMargin().replace("\n", "")
+
+private fun Money.toJson() =
+    """{"currencyCode":"${currency.code}","value":$value,"precision":${currency.precision}}"""
+
+private fun Money.toXml() =
+    """<currencyCode>${currency.code}</currencyCode><value>$value</value><precision>${currency.precision}</precision>"""

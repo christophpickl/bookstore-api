@@ -68,7 +68,7 @@ class BookServiceImplTest {
             description = request.description,
             author = user,
             cover = Image.empty().copy(id = created.cover.id),
-            price = Amount.euroCent(request.euroCent),
+            price = request.price,
             state = BookState.Published,
         )
         assertThat(created).isEqualTo(expected)
@@ -85,7 +85,7 @@ class BookServiceImplTest {
         val updated = book.copy(
             title = request.title,
             description = request.description,
-            price = Amount.euroCent(request.euroCent),
+            price = request.price,
         )
         assertThat(actual).isEqualTo(updated)
         verify(bookRepository, times(1)).update(updated)

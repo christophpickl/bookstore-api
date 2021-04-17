@@ -2,6 +2,8 @@ package com.github.cpickl.bookstore.boundary
 
 import assertk.assertThat
 import com.github.cpickl.bookstore.domain.Book
+import com.github.cpickl.bookstore.domain.Currency
+import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.isOk
 import com.github.cpickl.bookstore.jackson
 import com.github.cpickl.bookstore.requestPost
@@ -13,13 +15,13 @@ import org.springframework.http.MediaType
 fun BookCreateDto.Companion.any() = BookCreateDto(
     title = "anyTitle",
     description = "anyDescription",
-    euroCent = 12,
+    price = Money.euroCent(490).toMoneyDto(),
 )
 
 fun BookUpdateDto.Companion.any() = BookUpdateDto(
     title = "anyTitleUpdate",
     description = "anyDescriptionUpdate",
-    euroCent = 942,
+    price = Money.euroCent(990).toMoneyDto(),
 )
 
 fun LoginDto.Companion.any() = LoginDto(
@@ -43,22 +45,28 @@ inline class Jwt(private val value: String) {
 fun BookDto.toBookSimpleDto() = BookSimpleDto(
     id = id,
     title = title,
-    author = author,
-    price = price,
 )
 
 fun Book.toBookSimpleDto() = BookSimpleDto(
     id = id.toString(),
     title = title,
-    author = authorName,
-    price = price.formatted
 )
 
 fun Book.toBookDto() = BookDto(
     id = id.toString(),
     title = title,
     author = authorName,
-    price = price.formatted,
+    price = price.toMoneyDto(),
     description = description,
-    coverLink = "/books/$id/cover",
+)
+
+fun Money.toMoneyDto() = MoneyDto(
+    currencyCode = currency.code,
+    value = value,
+    precision = currency.precision,
+)
+
+fun MoneyDto.toMoney() = Money(
+    currency = Currency.of(currencyCode),
+    value = value,
 )

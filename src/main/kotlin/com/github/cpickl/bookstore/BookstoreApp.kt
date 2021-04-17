@@ -1,7 +1,7 @@
 package com.github.cpickl.bookstore
 
 import com.github.cpickl.bookstore.boundary.SecurityConstants
-import com.github.cpickl.bookstore.domain.Amount
+import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookRepository
 import com.github.cpickl.bookstore.domain.BookState
@@ -56,7 +56,7 @@ class SetupDummyUser(
         description = "A brief history of humankind",
         author = User(RandomIdGenerator.generate(), "Harari", "username", "123hash"),
         cover =Image.empty(),
-        price = Amount.euro(@Suppress("MagicNumber") 42),
+        price = Money.euro(@Suppress("MagicNumber") 42),
         state = BookState.Published,
     )
 

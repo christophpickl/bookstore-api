@@ -1,5 +1,6 @@
 package com.github.cpickl.bookstore.domain
 
+import java.lang.IllegalArgumentException
 import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.pow
@@ -21,7 +22,7 @@ data class Book(
     val description: String,
     val author: User,
     val cover: Image,
-    val price: Amount,
+    val price: Money,
     val state: BookState,
 ) {
     companion object
@@ -74,38 +75,42 @@ data class Image(
 
 enum class Currency(
     val code: String,
+    val precision: Int
 ) {
-    Euro("EUR");
+    Euro("EUR", 2);
 
-    companion object
+    companion object {
+        private val currenciesByCode by lazy {
+            values().associateBy { it.code }
+        }
+        fun of(currencyCode: String) =
+            currenciesByCode[currencyCode] ?: throw IllegalArgumentException("Invalid currency code: '$currencyCode'!")
+    }
 }
 
-data class Amount(
+data class Money(
     val currency: Currency,
     val value: Int,
-    val precision: Int,
 ) {
-    fun toEuroCents(): Int {
-        require(currency == Currency.Euro)
-        return if (precision == 0) value else {
-            value * (10.0.pow(precision)).toInt()
-        }
-    }
 
     companion object {
         fun euro(euro: Int) = euroCent(euro * @Suppress("MagicNumber") 100)
-        fun euroCent(cents: Int) = Amount(Currency.Euro, cents, 2)
+        fun euroCent(cents: Int) = Money(Currency.Euro, cents)
+
+        fun format(currencyCode:String, value: Int, precision: Int): String {
+            val numberPart = if (precision == 0) {
+                value
+            } else {
+                val format = NumberFormat.getNumberInstance(Locale.ENGLISH).apply {
+                    minimumFractionDigits = precision
+                }
+                format.format(value.toDouble() / (10.0.pow(precision)))
+            }
+            return "$currencyCode $numberPart"
+        }
     }
 
     val formatted by lazy {
-        val numberPart = if (precision == 0) {
-            value
-        } else {
-            val format = NumberFormat.getNumberInstance(Locale.ENGLISH).apply {
-                minimumFractionDigits = precision
-            }
-            format.format(value.toDouble() / (10.0.pow(precision)))
-        }
-        "${currency.code} $numberPart"
+        format(currencyCode = currency.code, value = value, precision = currency.precision)
     }
 }
