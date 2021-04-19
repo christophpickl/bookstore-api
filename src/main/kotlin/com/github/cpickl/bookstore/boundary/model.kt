@@ -4,6 +4,10 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
+import com.github.cpickl.bookstore.domain.BookUpdateRequest
+import com.github.cpickl.bookstore.domain.Currency
+import com.github.cpickl.bookstore.domain.Id
+import com.github.cpickl.bookstore.domain.Money
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(
@@ -28,7 +32,7 @@ data class BooksDto(
 data class BookSimpleDto(
     @get:Schema(
         description = "Unique identifier of the book as a UUID.",
-        example = "4a7d3dc3-85d3-4356-b260-5373ff54c5e3",
+        example = "00000000-1111-2222-3333-444444444444",
         required = true,
     )
     val id: String,
@@ -42,7 +46,7 @@ data class BookSimpleDto(
 ) {
     @Schema(
         description = "Path to get the full book details.",
-        example = "/books/4a7d3dc3-85d3-4356-b260-5373ff54c5e3",
+        example = "/books/00000000-1111-2222-3333-444444444444",
         required = true,
     )
     @Suppress("unused")
@@ -57,7 +61,7 @@ data class BookSimpleDto(
 data class BookDto(
     @get:Schema(
         description = "Unique identifier of the book as a UUID.",
-        example = "4a7d3dc3-85d3-4356-b260-5373ff54c5e3",
+        example = "00000000-1111-2222-3333-444444444444",
         required = true,
     )
     val id: String,
@@ -93,7 +97,7 @@ data class BookDto(
 ) {
     @Schema(
         description = "Path to get the book's cover image.",
-        example = "/books/4a7d3dc3-85d3-4356-b260-5373ff54c5e3",
+        example = "/books/00000000-1111-2222-3333-444444444444",
         required = true,
     )
     @Suppress("unused")
@@ -104,9 +108,26 @@ data class BookDto(
     name = "BookCreateRequest",
 )
 data class BookCreateDto(
+
+    @get:Schema(
+        description = "Define the book title.",
+        example = "Homo Sapiens - A brief history of humankind",
+        required = true,
+    )
     val title: String,
+
+    @get:Schema(
+        description = "Define the descriptive text.",
+        example = "A very good book indeed.",
+        required = true,
+    )
     val description: String,
-    val price: MoneyDto,
+
+    @get:Schema(
+        description = "Define the selling price.",
+        required = true,
+    )
+    val price: MoneyRequestDto,
 ) {
     companion object
 }
@@ -134,16 +155,44 @@ data class BookUpdateDto(
         description = "Define the selling price.",
         required = true,
     )
-    val price: MoneyDto,
+    val price: MoneyRequestDto,
 ) {
     companion object
 }
 
 @Schema(
     name = "Money",
+    description = "Multi-currency amount object, avoiding floating point miscalculations (read).",
 )
 data class MoneyDto(
 
+    @get:Schema(
+        description = "ISO 4217 alpha code (uppercase, three letters).",
+        example = "EUR",
+        required = true,
+    )
+    val currencyCode: String,
+
+    @get:Schema(
+        description = "Total amount in cents.",
+        example = "4299",
+        required = true,
+    )
+    val value: Int,
+
+    @get:Schema(
+        description = "Decimal point shift for value.",
+        example = "2",
+        required = true,
+    )
+    val precision: Int,
+)
+
+@Schema(
+    name = "MoneyRequest",
+    description = "Same as money but doesn't support the precision attribute (write).",
+)
+data class MoneyRequestDto(
     @get:Schema(
         description = "ISO 4217 alpha code (uppercase, three letters)",
         example = "EUR",
@@ -153,15 +202,8 @@ data class MoneyDto(
 
     @get:Schema(
         description = "ISO 4217 alpha code (uppercase, three letters)",
-        example = "EUR",
+        example = "3995",
         required = true,
     )
     val value: Int,
-
-    @get:Schema(
-        description = "ISO 4217 alpha code (uppercase, three letters)",
-        example = "EUR",
-        required = true,
-    )
-    val precision: Int,
 )

@@ -6,6 +6,7 @@ import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookRepository
 import com.github.cpickl.bookstore.domain.BookState
 import com.github.cpickl.bookstore.domain.CoverImage
+import com.github.cpickl.bookstore.domain.Id
 import com.github.cpickl.bookstore.domain.RandomIdGenerator
 import com.github.cpickl.bookstore.domain.User
 import com.github.cpickl.bookstore.domain.UserRepository
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.core.env.AbstractEnvironment
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
+import java.util.UUID
 
 @SpringBootApplication
 class BookstoreApp {
@@ -66,9 +68,9 @@ class SetupDummyUser(
         }
         log.info { "Setting up dummy data." }
         val user = SecurityConstants.admin
-        val id = RandomIdGenerator.generate()
         val authorPseudonym = SecurityConstants.adminAuthorName
         val passwordHash = passwordEncoder.encode(user.password)
+        val id = Id(UUID.fromString("00000000-1111-2222-3333-444444444444"))
         userRepository.create(User(id, authorPseudonym, user.username, passwordHash))
 
         bookRepository.create(book)

@@ -34,17 +34,18 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
+@Tag(
+    name = "Book API",
+    description = "CRUD operations for books (partially secured)."
+)
 @RestController
 @RequestMapping("/books",
     produces = [MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE],
 )
-@Tag(
-    name = "Book API",
-    description = "CRUD operations for books (partially secured)"
-)
 class BookController(
     private val service: BookService
 ) {
+
     @Operation(
         operationId = "listBooks",
         summary = "list all books",
@@ -80,6 +81,15 @@ class BookController(
         } ?: ResponseEntity.notFound().build()
 
 
+    @Operation(
+        operationId = "createBook",
+        summary = "create a new book",
+        description = "Define the basic data of a new book.",
+    )
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "book successfully created"),
+        ApiResponse(responseCode = "400", description = "invalid content given", content = [Content()]),
+    ])
     @PostMapping("",
         consumes = [MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE]
     )
@@ -90,6 +100,16 @@ class BookController(
         service.create(book.toBookCreateRequest(auth.username)).toBookDto()
 
 
+    @Operation(
+        operationId = "updateBook",
+        summary = "update an existing book",
+        description = "Update the basic data of a yet existing book.",
+    )
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "book successfully updated"),
+        ApiResponse(responseCode = "400", description = "invalid content given", content = [Content()]),
+        ApiResponse(responseCode = "404", description = "book not found", content = [Content()]),
+    ])
     @PutMapping("/{id}",
         consumes = [MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE]
     )
@@ -98,11 +118,20 @@ class BookController(
         @RequestBody update: BookUpdateDto,
         auth: Authentication
     ): ResponseEntity<BookDto> =
-        service.update(BookUpdateRequest(auth.username, Id(id), update))?.let {
+        service.update(update.toBookUpdateRequest(auth.username, Id(id)))?.let {
             ok(it.toBookDto())
         } ?: ResponseEntity.notFound().build()
 
 
+    @Operation(
+        operationId = "deleteBook",
+        summary = "delete an existing book",
+        description = "Simply sets the internal state to 'unpublished', thus filtering it out.",
+    )
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "book successfully deleted"),
+        ApiResponse(responseCode = "404", description = "book not found", content = [Content()]),
+    ])
     @DeleteMapping("/{id}")
     fun deleteBook(
         @PathVariable id: UUID,
@@ -116,34 +145,3 @@ class BookController(
 private fun String?.toSearch() = if (this == null) Search.Off else Search.On(this)
 
 private val Authentication.username get() = principal as String
-
-private fun Book.toBookSimpleDto() = BookSimpleDto(
-    id = id.toString(),
-    title = title,
-)
-
-private fun BookCreateDto.toBookCreateRequest(username: String) = BookCreateRequest(
-    username = username,
-    title = title,
-    description = description,
-    price = price.toMoney(),
-)
-
-private fun Book.toBookDto() = BookDto(
-    id = id.toString(),
-    title = title,
-    description = description,
-    price = price.toMoneyDto(),
-    author = authorName,
-)
-
-private fun Money.toMoneyDto() = MoneyDto(
-    currencyCode = currency.code,
-    value = value,
-    precision = currency.precision,
-)
-
-private fun MoneyDto.toMoney() = Money(
-    currency = Currency.of(currencyCode),
-    value = value,
-)

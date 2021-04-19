@@ -6,7 +6,6 @@ import com.github.cpickl.bookstore.UserTestPreparer
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookCreateRequest
 import com.github.cpickl.bookstore.domain.BookService
-import com.github.cpickl.bookstore.domain.BookUpdateRequest
 import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Search
 import com.github.cpickl.bookstore.domain.any
@@ -184,7 +183,7 @@ class BookControllerApiTest(
         }
 
         @Test
-        fun `Given token When create book with token Then created`() {
+        fun `Given token When create book Then created`() {
             val jwt = restTemplate.login(loginDto)
             val requestBody = BookCreateDto.any()
             whenever(
@@ -212,6 +211,8 @@ class BookControllerApiTest(
                 )
             )
         }
+
+        // FUTURE test invalid currencyCode; defining precision will be ignored
     }
 
     @Nested
@@ -227,7 +228,7 @@ class BookControllerApiTest(
         fun `When update non existing book Then not found`() {
             val jwt = restTemplate.login(loginDto)
             val update = BookUpdateDto.any()
-            whenever(bookService.update(BookUpdateRequest(loginDto.username, book.id, update))).thenReturn(null)
+            whenever(bookService.update(update.toBookUpdateRequest(loginDto.username, book.id))).thenReturn(null)
 
             val response = restTemplate.requestPut("/books/${book.id}", body = update, HttpHeaders().withJwt(jwt))
 
@@ -238,7 +239,7 @@ class BookControllerApiTest(
         fun `Given book When update it Then succeed`() {
             val jwt = restTemplate.login(loginDto)
             val update = BookUpdateDto.any()
-            whenever(bookService.update(BookUpdateRequest(loginDto.username, book.id, update))).thenReturn(book)
+            whenever(bookService.update(update.toBookUpdateRequest(loginDto.username, book.id))).thenReturn(book)
 
             val response = restTemplate.requestPut("/books/${book.id}", body = update, HttpHeaders().withJwt(jwt))
 

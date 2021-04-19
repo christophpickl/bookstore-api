@@ -6,6 +6,7 @@ import assertk.assertions.isFailure
 import assertk.assertions.isNull
 import com.github.cpickl.bookstore.boundary.BookUpdateDto
 import com.github.cpickl.bookstore.boundary.any
+import com.github.cpickl.bookstore.boundary.toBookUpdateRequest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -76,7 +77,7 @@ class BookServiceImplTest {
 
     @Test
     fun `update delegates to repo`() {
-        val request = BookUpdateRequest(username, book.id, BookUpdateDto.any())
+        val request = BookUpdateDto.any().toBookUpdateRequest(username, book.id)
         whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
 
         val actual = service.update(request)

@@ -26,6 +26,7 @@ Or make use of the [Postman collection](https://github.com/christophpickl/bookst
 * Spring Boot 2.4.5, Jackson
 * OpenAPI 3
 * JUnit 5, Mockito, Assertk
+* Detekt
 
 ### Ideas
 
@@ -33,7 +34,6 @@ Or make use of the [Postman collection](https://github.com/christophpickl/bookst
 * dockerize (+compose for DBMS)
 * hardening (input validation, exception handling)
 * HATEOS API (higher ReST maturity level via hypermedia)
-* build plugins for reports/checks (static code analysis, coverage, dependencies)
 * replace password type from String to CharArray for security reasons
 * fine-tune XML representation
 * reactive API

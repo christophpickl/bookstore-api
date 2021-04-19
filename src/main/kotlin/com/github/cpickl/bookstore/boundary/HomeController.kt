@@ -1,6 +1,7 @@
 package com.github.cpickl.bookstore.boundary
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -13,6 +14,9 @@ class HomeController {
     fun getHome() = HomeDto()
 }
 
+@Schema(
+    name = "Home",
+)
 @Suppress("unused")
 @JacksonXmlRootElement(localName = "home")
 class HomeDto {

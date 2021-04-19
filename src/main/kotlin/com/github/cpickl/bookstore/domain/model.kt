@@ -1,12 +1,5 @@
 package com.github.cpickl.bookstore.domain
 
-import com.github.cpickl.bookstore.boundary.BookUpdateDto
-import com.github.cpickl.bookstore.boundary.MoneyDto
-import java.lang.IllegalArgumentException
-import java.text.NumberFormat
-import java.util.Locale
-import kotlin.math.pow
-
 data class User(
     val id: Id,
     val authorPseudonym: String,
@@ -53,23 +46,6 @@ data class BookUpdateRequest(
     val title: String,
     val description: String,
     val price: Money,
-) {
-    constructor(
-        username: String,
-        id: Id,
-        dto: BookUpdateDto,
-    ) : this(
-        username = username,
-        id = id,
-        title = dto.title,
-        description = dto.description,
-        price = dto.price.toMoney(),
-    )
-}
-
-private fun MoneyDto.toMoney() = Money(
-    currency = Currency.of(currencyCode),
-    value = value,
 )
 
 sealed class CoverImage(
