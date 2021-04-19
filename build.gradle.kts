@@ -27,6 +27,7 @@ dependencies {
     spring("web")
     spring("security")
     implementation("com.auth0:java-jwt:3.15.0")
+    implementation("org.springdoc:springdoc-openapi-ui:1.5.2")
 
     // dont upgrade to 2.12.3 as spring boot will have binary incompatibilities
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

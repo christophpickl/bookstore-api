@@ -8,6 +8,15 @@ import com.github.cpickl.bookstore.domain.Currency
 import com.github.cpickl.bookstore.domain.Id
 import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Search
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.ok
@@ -20,20 +29,48 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-@RequestMapping("/books", produces = [MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE])
+@RequestMapping("/books",
+    produces = [MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE],
+)
+@Tag(
+    name = "Book API",
+    description = "CRUD operations for books (partially secured)"
+)
 class BookController(
     private val service: BookService
 ) {
+    @Operation(
+        operationId = "listBooks",
+        summary = "list all books",
+        description = "List or search books by given search term.",
+    )
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "Some books might be found."),
+    ])
     @GetMapping("")
     fun findAllBooks(
-        @RequestParam(name = "search", required = false) searchTerm: String?
+        @RequestParam(name = "search", required = false)
+        @Parameter(description="Single search term to filter books.")
+        searchTerm: String?
     ): BooksDto =
         BooksDto(books = service.findAll(searchTerm.toSearch()).map { it.toBookSimpleDto() })
 
+
+    @Operation(
+        operationId = "findBook",
+        summary = "get a single book",
+        description = "Try to find a single book by it's ID.",
+    )
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "book found by ID"),
+        ApiResponse(responseCode = "404", description = "book not found", content = [Content()]),
+    ])
     @GetMapping("/{id}")
     fun findSingleBook(
         @PathVariable id: UUID
@@ -42,14 +79,20 @@ class BookController(
             ok(it.toBookDto())
         } ?: ResponseEntity.notFound().build()
 
-    @PostMapping("")
+
+    @PostMapping("",
+        consumes = [MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE]
+    )
     fun createBook(
         @RequestBody book: BookCreateDto,
         auth: Authentication
     ): BookDto =
         service.create(book.toBookCreateRequest(auth.username)).toBookDto()
 
-    @PutMapping("/{id}")
+
+    @PutMapping("/{id}",
+        consumes = [MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE]
+    )
     fun updateBook(
         @PathVariable id: UUID,
         @RequestBody update: BookUpdateDto,
@@ -58,6 +101,7 @@ class BookController(
         service.update(BookUpdateRequest(auth.username, Id(id), update))?.let {
             ok(it.toBookDto())
         } ?: ResponseEntity.notFound().build()
+
 
     @DeleteMapping("/{id}")
     fun deleteBook(

@@ -39,11 +39,12 @@ object SecurityConstants {
         HttpMethod.GET to "/books",
         HttpMethod.GET to "/books/*",
         HttpMethod.GET to "/books/*/cover",
-    )
-    const val EXPIRATION_TIME = 864000000 // 10 days
-    const val SECRET = "my_top_secret"
+    ).plus(OpenApiConfig.securityPermitPaths)
 
-    val admin = LoginDto("admin", "admin")
+    const val EXPIRATION_TIME = 864000000 // 10 days
+    const val SECRET = "my_top_secret" // FUTURE inject during build
+
+    val admin = LoginDto("admin", "admin") // FUTURE inject during build
     const val adminAuthorName = "admin author"
 }
 
