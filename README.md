@@ -25,7 +25,7 @@ or make use of the provided [Postman collection](https://github.com/christophpic
 * Kotlin 1.4, JDK 11, Gradle 6
 * Spring Boot 2.4.5, Jackson
 * OpenAPI 3
-* JUnit 5, Mockito, Assertk
+* JUnit 5, Mockito, Assertk, JSONAssert, XMLUnit
 * Detekt
 
 ### Ideas

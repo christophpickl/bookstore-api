@@ -1,5 +1,5 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("org.springframework.boot") version "2.4.5"
@@ -47,6 +47,9 @@ dependencies {
     testImplementation("org.mockito:mockito-core:3.9.0")
     testImplementation("org.mockito:mockito-junit-jupiter:3.9.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:3.1.0")
+    testImplementation("org.skyscreamer:jsonassert:1.5.0")
+    testImplementation("org.xmlunit:xmlunit-core:2.8.2")
+    testImplementation("org.xmlunit:xmlunit-matchers:2.8.2")
 }
 
 

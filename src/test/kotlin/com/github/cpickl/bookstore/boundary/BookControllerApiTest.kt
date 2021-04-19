@@ -9,15 +9,15 @@ import com.github.cpickl.bookstore.domain.BookService
 import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Search
 import com.github.cpickl.bookstore.domain.any
-import com.github.cpickl.bookstore.requestGet
 import com.github.cpickl.bookstore.isBadRequest
 import com.github.cpickl.bookstore.isForbidden
 import com.github.cpickl.bookstore.isNotFound
 import com.github.cpickl.bookstore.isOk
-import com.github.cpickl.bookstore.requestPost
-import com.github.cpickl.bookstore.requestPut
 import com.github.cpickl.bookstore.read
 import com.github.cpickl.bookstore.requestDelete
+import com.github.cpickl.bookstore.requestGet
+import com.github.cpickl.bookstore.requestPost
+import com.github.cpickl.bookstore.requestPut
 import com.github.cpickl.bookstore.withJwt
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
@@ -63,7 +63,7 @@ class BookControllerApiTest(
             })
 
             assertThat(response).isOk()
-            assertThat(response.headers[HttpHeaders.CONTENT_TYPE]).isEqualTo(listOf(MediaType.APPLICATION_JSON_VALUE))
+            assertThat(response).contentTypeIs(MediaType.APPLICATION_JSON)
         }
 
         @Test
@@ -75,9 +75,11 @@ class BookControllerApiTest(
             })
 
             assertThat(response).isOk()
-            assertThat(response.body).isEqualTo("""{"books":[${book.toSimpleJson()}]}""")
+            assertThat(response).contentTypeIs(MediaType.APPLICATION_JSON)
+            assertThat(response).bodyIsEqualJson("""{"books":[${book.toSimpleJson()}]}""")
             assertThat(response.read<BooksDto>()).isEqualTo(BooksDto(listOf(book.toBookSimpleDto())))
         }
+
 
         @Test
         fun `Given book When get all books as XML Then return XML`() {
@@ -88,7 +90,8 @@ class BookControllerApiTest(
             })
 
             assertThat(response).isOk()
-            assertThat(response.body).isEqualTo("""<books>${book.toSimpleXml()}</books>""")
+            assertThat(response).contentTypeIs(MediaType.APPLICATION_XML)
+            assertThat(response).bodyIsEqualXml("""<books>${book.toSimpleXml()}</books>""")
         }
 
         @Test
@@ -155,7 +158,8 @@ class BookControllerApiTest(
             })
 
             assertThat(response).isOk()
-            assertThat(response.body).isEqualTo(book.toDetailJson())
+            assertThat(response).contentTypeIs(MediaType.APPLICATION_JSON)
+            assertThat(response).bodyIsEqualJson(book.toDetailJson())
         }
 
         @Test
@@ -167,7 +171,8 @@ class BookControllerApiTest(
             })
 
             assertThat(response).isOk()
-            assertThat(response.body).isEqualTo(book.toDetailXml())
+            assertThat(response).contentTypeIs(MediaType.APPLICATION_XML)
+            assertThat(response).bodyIsEqualXml(book.toDetailXml())
         }
     }
 
@@ -212,7 +217,7 @@ class BookControllerApiTest(
             )
         }
 
-        // FUTURE test invalid currencyCode; defining precision will be ignored
+        // FUTURE test invalid currencyCode
     }
 
     @Nested
@@ -281,46 +286,44 @@ class BookControllerApiTest(
     }
 }
 
-private fun Book.toSimpleJson() =
-    """{
-        |"id":"$id",
-        |"title":"$title",
-        |"detailLink":{"method":"GET","path":"/books/$id"}
-        |}""".trimMargin().replace("\n", "")
+private fun Book.toSimpleJson() = """{
+    "id": "$id",
+    "title": "$title",
+    "detailLink": { "method": "GET", "path": "/books/$id" }
+}"""
 
-private fun Book.toSimpleXml() =
-    """<book>
-        |<id>$id</id>
-        |<title>$title</title>
-        |<detailLink><method>GET</method><path>/books/$id</path></detailLink>
-        |</book>""".trimMargin().replace("\n", "")
+private fun Book.toDetailXml() = """<book>
+    <id>$id</id>
+    <title><![CDATA[$title]]></title>
+    <description><![CDATA[$description]]></description>
+    <price>${price.toXml()}</price>
+    <author>$authorName</author>
+    <coverLink><method>GET</method><path>/books/$id/cover</path></coverLink>
+    <updateLink><method>PUT</method><path>/books/$id</path></updateLink>
+    <deleteLink><method>DELETE</method><path>/books/$id</path></deleteLink>
+</book>"""
 
-private fun Book.toDetailJson() =
-    """{
-        |"id":"$id",
-        |"title":"$title",
-        |"description":"$description",
-        |"price":${price.toJson()},
-        |"author":"$authorName",
-        |"coverLink":{"method":"GET","path":"/books/$id/cover"},
-        |"updateLink":{"method":"PUT","path":"/books/$id"},
-        |"deleteLink":{"method":"DELETE","path":"/books/$id"}
-        |}""".trimMargin().replace("\n", "")
+private fun Book.toDetailJson() = """{
+    "id": "$id",
+    "title": "$title",
+    "description": "$description",
+    "price": ${price.toJson()},
+    "author": "$authorName",
+    "coverLink": { "method": "GET", "path": "/books/$id/cover" },
+    "updateLink": { "method": "PUT", "path": "/books/$id" },
+    "deleteLink": { "method": "DELETE", "path": "/books/$id" }
+}"""
 
-private fun Book.toDetailXml() =
-    """<book>
-        |<id>$id</id>
-        |<title><![CDATA[$title]]></title>
-        |<description><![CDATA[$description]]></description>
-        |<price>${price.toXml()}</price>
-        |<author>$authorName</author>
-        |<coverLink><method>GET</method><path>/books/$id/cover</path></coverLink>
-        |<updateLink><method>PUT</method><path>/books/$id</path></updateLink>
-        |<deleteLink><method>DELETE</method><path>/books/$id</path></deleteLink>
-        |</book>""".trimMargin().replace("\n", "")
+private fun Book.toSimpleXml() = """<book>
+    <id>$id</id>
+    <title>$title</title>
+    <detailLink><method>GET</method><path>/books/$id</path></detailLink>
+</book>"""
 
 private fun Money.toJson() =
     """{"currencyCode":"${currency.code}","value":$value,"precision":${currency.precision}}"""
 
 private fun Money.toXml() =
-    """<currencyCode>${currency.code}</currencyCode><value>$value</value><precision>${currency.precision}</precision>"""
+    """<currencyCode>${currency.code}</currencyCode>
+    <value>$value</value>
+    <precision>${currency.precision}</precision>"""
