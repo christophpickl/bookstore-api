@@ -50,7 +50,7 @@ data class BookSimpleDto(
         required = true,
     )
     @Suppress("unused")
-    val detailLink: String = "/books/$id"
+    val detailLink: LinkDto = LinkDto.get("/books/$id")
 }
 
 @Schema(
@@ -101,7 +101,7 @@ data class BookDto(
         required = true,
     )
     @Suppress("unused")
-    val coverLink: String = "/books/$id/cover"
+    val coverLink: LinkDto = LinkDto(Method.GET, path = "/books/$id/cover")
 }
 
 @Schema(
@@ -207,3 +207,38 @@ data class MoneyRequestDto(
     )
     val value: Int,
 )
+
+@Schema(
+    name = "HttpMethod",
+    description = "One of the common methods.",
+)
+enum class Method {
+    GET,
+    POST,
+    PUT,
+    DELETE,
+}
+
+@Schema(
+    name = "Link",
+    description = "Hypermedia like navigation object.",
+)
+data class LinkDto(
+    @get:Schema(
+        description = "Which HTTP method to use.",
+        example = "GET",
+        required = true,
+    )
+    val method: Method,
+
+    @get:Schema(
+        description = "Relative path to the target site.",
+        example = "/books",
+        required = true,
+    )
+    val path: String,
+) {
+    companion object {
+        fun get(path: String) = LinkDto(Method.GET, path)
+    }
+}

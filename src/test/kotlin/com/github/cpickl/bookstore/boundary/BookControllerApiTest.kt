@@ -281,19 +281,18 @@ class BookControllerApiTest(
     }
 }
 
-// FUTURE use JSON/XML object (library) to compare instead string literals
 private fun Book.toSimpleJson() =
     """{
         |"id":"$id",
         |"title":"$title",
-        |"detailLink":"/books/$id"
+        |"detailLink":{"method":"GET","path":"/books/$id"}
         |}""".trimMargin().replace("\n", "")
 
 private fun Book.toSimpleXml() =
     """<book>
         |<id>$id</id>
         |<title>$title</title>
-        |<detailLink>/books/$id</detailLink>
+        |<detailLink><method>GET</method><path>/books/$id</path></detailLink>
         |</book>""".trimMargin().replace("\n", "")
 
 private fun Book.toDetailJson() =
@@ -303,9 +302,8 @@ private fun Book.toDetailJson() =
         |"description":"$description",
         |"price":${price.toJson()},
         |"author":"$authorName",
-        |"coverLink":"/books/$id/cover"
+        |"coverLink":{"method":"GET","path":"/books/$id/cover"}
         |}""".trimMargin().replace("\n", "")
-
 
 private fun Book.toDetailXml() =
     """<book>
@@ -314,7 +312,7 @@ private fun Book.toDetailXml() =
         |<description><![CDATA[$description]]></description>
         |<price>${price.toXml()}</price>
         |<author>$authorName</author>
-        |<coverLink>/books/$id/cover</coverLink>
+        |<coverLink><method>GET</method><path>/books/$id/cover</path></coverLink>
         |</book>""".trimMargin().replace("\n", "")
 
 private fun Money.toJson() =

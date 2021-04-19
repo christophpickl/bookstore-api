@@ -1,10 +1,10 @@
-# bookstore-api
+# Bookstore API
 
-A sample project for a job assignment using Spring Boot and Kotlin.
+A sample ReST(-like) (Web-)API for a job assignment using Spring Boot and Kotlin.
 
-Run the class [`BookstoreApp`](https://github.com/christophpickl/bookstore-api/blob/master/src/main/kotlin/com/github/cpickl/bookstore/BookstoreApp.kt) and open [http://localhost/swagger-ui.html] in your browser.
-
-Or make use of the [Postman collection](https://github.com/christophpickl/bookstore-api/tree/master/src/doc).
+Simply run the class [`BookstoreApp`](https://github.com/christophpickl/bookstore-api/blob/master/src/main/kotlin/com/github/cpickl/bookstore/BookstoreApp.kt) 
+and open [http://localhost/swagger-ui.html](http://localhost/swagger-ui.html) in your browser, 
+or make use of the provided [Postman collection](https://github.com/christophpickl/bookstore-api/tree/master/src/doc).
 
 ## Business Requirements
 
@@ -14,8 +14,8 @@ Or make use of the [Postman collection](https://github.com/christophpickl/bookst
 * [X] JWT auth (user/pass based)
 * `/books` resource
     * [x] GET list and detail (public, no auth required)
-    * [x] search book list via query params
-    * [x] CRU_ operations (for auth only)
+    * [x] search books via query params
+    * [x] CRUD operations (for auth only)
     * [x] DELETE unpublishes a book
 
 ## Technical

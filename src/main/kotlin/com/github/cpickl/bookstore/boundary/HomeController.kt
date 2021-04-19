@@ -20,7 +20,7 @@ class HomeController {
 @Suppress("unused")
 @JacksonXmlRootElement(localName = "home")
 class HomeDto {
-    val selfLink = "/"
-    val loginLink = "/login"
-    val booksLink = "/books"
+    val selfLink = LinkDto.get("/")
+    val loginLink = LinkDto(Method.POST, "/login")
+    val booksLink = LinkDto.get("/books")
 }
