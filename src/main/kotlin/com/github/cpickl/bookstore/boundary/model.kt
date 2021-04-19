@@ -96,12 +96,25 @@ data class BookDto(
     val author: String
 ) {
     @Schema(
-        description = "Path to get the book's cover image.",
-        example = "/books/00000000-1111-2222-3333-444444444444",
+        description = "Link to get the book's cover image.",
         required = true,
     )
     @Suppress("unused")
     val coverLink: LinkDto = LinkDto(Method.GET, path = "/books/$id/cover")
+
+    @Schema(
+        description = "Link to update this book.",
+        required = true,
+    )
+    @Suppress("unused")
+    val updateLink: LinkDto = LinkDto(Method.PUT, path = "/books/$id")
+
+    @Schema(
+        description = "Link to delete/unpublish this book.",
+        required = true,
+    )
+    @Suppress("unused")
+    val deleteLink: LinkDto = LinkDto(Method.DELETE, path = "/books/$id")
 }
 
 @Schema(

@@ -302,7 +302,9 @@ private fun Book.toDetailJson() =
         |"description":"$description",
         |"price":${price.toJson()},
         |"author":"$authorName",
-        |"coverLink":{"method":"GET","path":"/books/$id/cover"}
+        |"coverLink":{"method":"GET","path":"/books/$id/cover"},
+        |"updateLink":{"method":"PUT","path":"/books/$id"},
+        |"deleteLink":{"method":"DELETE","path":"/books/$id"}
         |}""".trimMargin().replace("\n", "")
 
 private fun Book.toDetailXml() =
@@ -313,6 +315,8 @@ private fun Book.toDetailXml() =
         |<price>${price.toXml()}</price>
         |<author>$authorName</author>
         |<coverLink><method>GET</method><path>/books/$id/cover</path></coverLink>
+        |<updateLink><method>PUT</method><path>/books/$id</path></updateLink>
+        |<deleteLink><method>DELETE</method><path>/books/$id</path></deleteLink>
         |</book>""".trimMargin().replace("\n", "")
 
 private fun Money.toJson() =
