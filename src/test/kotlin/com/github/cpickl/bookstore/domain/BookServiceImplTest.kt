@@ -3,11 +3,12 @@ package com.github.cpickl.bookstore.domain
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFailure
-import assertk.assertions.isNull
 import com.github.cpickl.bookstore.boundary.BookUpdateDto
 import com.github.cpickl.bookstore.boundary.any
 import com.github.cpickl.bookstore.boundary.toBookUpdateRequest
+import com.github.cpickl.bookstore.throws
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -33,91 +34,121 @@ class BookServiceImplTest {
         service = BookServiceImpl(bookRepository, userRepository, idGenerator)
     }
 
-    @Test
-    fun `find all delegates to repo`() {
-        whenever(bookRepository.findAll()).thenReturn(books)
+    @Nested
+    inner class FindAllTest {
+        @Test
+        fun `find all delegates to repo`() {
+            whenever(bookRepository.findAll()).thenReturn(books)
 
-        val found = service.findAll()
+            val found = service.findAll()
 
-        assertThat(found).isEqualTo(books)
-        verify(bookRepository, times(1)).findAll()
-        verifyNoMoreInteractions(bookRepository)
+            assertThat(found).isEqualTo(books)
+            verify(bookRepository, times(1)).findAll()
+            verifyNoMoreInteractions(bookRepository)
+        }
+
     }
 
-    @Test
-    fun `find single delegates to repo`() {
-        whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
+    @Nested
+    inner class FindSingleTest {
+        @Test
+        fun `find single delegates to repo`() {
+            whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
 
-        val found = service.findOrNull(book.id)
+            val found = service.find(book.id)
 
-        assertThat(found).isEqualTo(book)
-        verify(bookRepository, times(1)).findOrNull(book.id)
-        verifyNoMoreInteractions(bookRepository)
+            assertThat(found).isEqualTo(book)
+            verify(bookRepository, times(1)).findOrNull(book.id)
+            verifyNoMoreInteractions(bookRepository)
+        }
     }
 
-    @Test
-    fun `save delegates to repo`() {
-        val user = User.any().copy(username = username)
-        whenever(userRepository.findOrNull(username)).thenReturn(user)
-        val request = BookCreateRequest.any().copy(username = username)
+    @Nested
+    inner class CreateTest {
+        @Test
+        fun `Given user When create Then return new book and delegate to repo`() {
+            val user = User.any().copy(username = username)
+            whenever(userRepository.findOrNull(username)).thenReturn(user)
+            val request = BookCreateRequest.any().copy(username = username)
 
-        val created = service.create(request)
+            val created = service.create(request)
 
-        val expected = Book(
-            id = created.id,
-            title = request.title,
-            description = request.description,
-            author = user,
-            price = request.price,
-            state = BookState.Published,
-        )
-        assertThat(created).isEqualTo(expected)
-        verify(bookRepository, times(1)).create(expected)
+            val expected = Book(
+                id = created.id,
+                title = request.title,
+                description = request.description,
+                author = user,
+                price = request.price,
+                state = BookState.Published,
+            )
+            assertThat(created).isEqualTo(expected)
+            verify(bookRepository, times(1)).create(expected)
+        }
+
+        @Test
+        fun `Given user not exists When create book Then throw`() {
+            whenever(userRepository.findOrNull(username)).thenReturn(null)
+            val request = BookCreateRequest.any().copy(username = username)
+
+            assertThat {
+                service.create(request)
+
+            }.throws<InternalException>(messageContains = username)
+        }
     }
 
-    @Test
-    fun `update delegates to repo`() {
-        val request = BookUpdateDto.any().toBookUpdateRequest(username, book.id)
-        whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
+    @Nested
+    inner class UpdateTest {
+        @Test
+        fun `update delegates to repo`() {
+            val request = BookUpdateDto.any().toBookUpdateRequest(username, book.id)
+            whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
 
-        val actual = service.update(request)
+            val actual = service.update(request)
 
-        val updated = book.copy(
-            title = request.title,
-            description = request.description,
-            price = request.price,
-        )
-        assertThat(actual).isEqualTo(updated)
-        verify(bookRepository, times(1)).update(updated)
+            val updated = book.copy(
+                title = request.title,
+                description = request.description,
+                price = request.price,
+            )
+            assertThat(actual).isEqualTo(updated)
+            verify(bookRepository, times(1)).update(updated)
+        }
     }
 
-    @Test
-    fun `Given published book When delete it Then update to unpublished`() {
-        val book = book.copy(state = BookState.Published)
-        whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
+    @Nested
+    inner class DeleteTest {
+        @Test
+        fun `Given published book When delete it Then update to unpublished`() {
+            val book = book.copy(state = BookState.Published)
+            whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
 
-        val actual = service.delete(username, book.id)
+            val actual = service.delete(username, book.id)
 
-        val deleted = book.copy(state = BookState.Unpublished)
-        assertThat(actual).isEqualTo(deleted)
-        verify(bookRepository).update(deleted)
-    }
-    @Test
-    fun `Given unpublished book When delete it Then fail`() {
-        val book = book.copy(state = BookState.Unpublished)
-        whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
+            val deleted = book.copy(state = BookState.Unpublished)
+            assertThat(actual).isEqualTo(deleted)
+            verify(bookRepository).update(deleted)
+        }
 
-        assertThat {
-            service.delete(username, book.id)
-        }.isFailure()
-    }
+        @Test
+        fun `Given unpublished book When delete it Then fail`() {
+            val book = book.copy(state = BookState.Unpublished)
+            whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
 
-    @Test
-    fun `When delete it Then update to unpublished`() {
-        whenever(bookRepository.findOrNull(book.id)).thenReturn(null)
+            assertThat {
+                service.delete(username, book.id)
 
-        val actual = service.delete(username, book.id)
+            }.isFailure()
+        }
 
-        assertThat(actual).isNull()
+        @Test
+        fun `Given book not existing When delete it Then throw not found`() {
+            whenever(bookRepository.findOrNull(book.id)).thenReturn(null)
+
+            assertThat {
+                service.delete(username, book.id)
+
+            }.throws<BookNotFoundException>(messageContains = +book.id)
+        }
     }
 }

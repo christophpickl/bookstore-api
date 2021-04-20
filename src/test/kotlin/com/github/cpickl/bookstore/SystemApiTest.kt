@@ -29,7 +29,8 @@ import org.springframework.boot.test.web.client.exchange
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
-import org.springframework.http.HttpStatus
+import org.springframework.http.HttpMethod.GET
+import org.springframework.http.HttpStatus.NO_CONTENT
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SystemApiTest(
@@ -112,7 +113,7 @@ class SystemApiTest(
                 bookId,
                 buildUploadEntity(NamedByteArrayResource("ignored.png", coverBytes), jwt)
             )
-            assertThat(updated).isStatus(HttpStatus.NO_CONTENT)
+            assertThat(updated).isStatus(NO_CONTENT)
 
             val response = getBookCover(bookId)
             assertThat(response).isOk()
@@ -126,7 +127,7 @@ class SystemApiTest(
             updateCover(bookId, buildUploadEntity(NamedByteArrayResource("ignored.png", coverBytes), jwt))
 
             val deleted = deleteCover(jwt, bookId)
-            assertThat(deleted).isStatus(HttpStatus.NO_CONTENT)
+            assertThat(deleted).isStatus(NO_CONTENT)
 
             val response = getBookCover(bookId)
             assertThat(response).isOk()
@@ -141,7 +142,7 @@ class SystemApiTest(
         getBook(id).read<BookDto>()
 
     private fun getBookCover(id: String) =
-        restTemplate.requestAny<ByteArray>(HttpMethod.GET, "/books/$id/cover")
+        restTemplate.requestAny<ByteArray>(GET, "/books/$id/cover")
 
     private fun getBooksDto(search: String? = null) =
         restTemplate.requestGet("/books${search.buildQuery()}").read<BooksDto>()

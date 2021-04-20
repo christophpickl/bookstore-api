@@ -6,13 +6,13 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import com.github.cpickl.bookstore.UserTestPreparer
 import com.github.cpickl.bookstore.domain.Book
+import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.CoverImage
 import com.github.cpickl.bookstore.domain.CoverService
 import com.github.cpickl.bookstore.domain.CoverUpdateRequest
 import com.github.cpickl.bookstore.domain.Id
 import com.github.cpickl.bookstore.domain.any
 import com.github.cpickl.bookstore.isForbidden
-import com.github.cpickl.bookstore.isNotFound
 import com.github.cpickl.bookstore.isOk
 import com.github.cpickl.bookstore.isStatus
 import com.github.cpickl.bookstore.requestAny
@@ -32,7 +32,7 @@ import org.springframework.http.HttpHeaders.CONTENT_TYPE
 import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.PUT
-import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.NO_CONTENT
 import org.springframework.http.MediaType.IMAGE_PNG_VALUE
 
 
@@ -44,8 +44,7 @@ class CoverControllerApiTest(
 
     private val loginDto = userPreparer.userLogin
     private val book = Book.any()
-    private val anyBookId = Id.any()
-    private val unknownBookId = anyBookId
+    private val unknownBookId = Id.any()
     private val cover = CoverImage.DefaultImage
 
     @MockBean
@@ -60,11 +59,15 @@ class CoverControllerApiTest(
     inner class GetCoverTest {
         @Test
         fun `When get unknown cover Then not found`() {
-            whenever(coverService.find(unknownBookId)).thenReturn(null)
+            whenever(coverService.find(unknownBookId)).thenThrow(BookNotFoundException(unknownBookId))
 
             val response = restTemplate.requestGet("/books/$unknownBookId/cover")
 
-            assertThat(response).isNotFound()
+            assertThat(response).isError(
+                messageContains = +unknownBookId,
+                status = 404,
+                code = ErrorCode.BOOK_NOT_FOUND,
+            )
         }
 
         @Test
@@ -98,14 +101,19 @@ class CoverControllerApiTest(
         }
 
         @Test
-        fun `Given logged-in When update unknown cover Then not found`() {
-            whenever(coverService.update(book.id, CoverUpdateRequest(updateResource.byteArray))).thenReturn(null)
+        fun `Given logged-in When update cover for unknown book Then not found`() {
+            whenever(coverService.update(book.id, CoverUpdateRequest(updateResource.byteArray)))
+                .thenThrow(BookNotFoundException(book.id))
             val jwt = restTemplate.login(loginDto)
 
             val response =
-                restTemplate.exchange<Any>("/books/${book.id}/cover", PUT, buildUploadEntity(updateResource, jwt))
+                restTemplate.exchange<String>("/books/${book.id}/cover", PUT, buildUploadEntity(updateResource, jwt))
 
-            assertThat(response).isNotFound()
+            assertThat(response).isError(
+                messageContains = +book.id,
+                status = 404,
+                code = ErrorCode.BOOK_NOT_FOUND,
+            )
         }
 
         @Test
@@ -116,7 +124,7 @@ class CoverControllerApiTest(
             val response =
                 restTemplate.exchange<Any>("/books/${book.id}/cover", PUT, buildUploadEntity(updateResource, jwt))
 
-            assertThat(response).isStatus(HttpStatus.NO_CONTENT)
+            assertThat(response).isStatus(NO_CONTENT)
         }
     }
 
@@ -133,11 +141,15 @@ class CoverControllerApiTest(
         @Test
         fun `Given logged-in and non-existing cover When delete it Then nothing found`() {
             val jwt = restTemplate.login(loginDto)
-            whenever(coverService.delete(book.id)).thenReturn(null)
+            whenever(coverService.delete(book.id)).thenThrow(BookNotFoundException(book.id))
 
             val response = restTemplate.requestDeleteCover(book.id, jwt)
 
-            assertThat(response).isNotFound()
+            assertThat(response).isError(
+                messageContains = +book.id,
+                status = 404,
+                code = ErrorCode.BOOK_NOT_FOUND,
+            )
         }
 
         @Test
@@ -147,11 +159,11 @@ class CoverControllerApiTest(
 
             val response = restTemplate.requestDeleteCover(book.id, jwt)
 
-            assertThat(response).isStatus(HttpStatus.NO_CONTENT)
+            assertThat(response).isStatus(NO_CONTENT)
         }
 
         private fun TestRestTemplate.requestDeleteCover(id: Id, jwt: Jwt?) =
-            requestAny<Any>(DELETE, "/books/$id/cover", headers = HttpHeaders().apply {
+            requestAny<String>(DELETE, "/books/$id/cover", headers = HttpHeaders().apply {
                 jwt?.let { withJwt(it) }
             })
     }

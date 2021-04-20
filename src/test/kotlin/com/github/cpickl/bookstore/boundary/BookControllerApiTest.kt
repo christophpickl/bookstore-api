@@ -1,18 +1,22 @@
 package com.github.cpickl.bookstore.boundary
 
+import assertk.Assert
 import assertk.assertThat
+import assertk.assertions.contains
 import assertk.assertions.isEqualTo
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.cpickl.bookstore.UserTestPreparer
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookCreateRequest
+import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.BookService
+import com.github.cpickl.bookstore.domain.Id
 import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Search
 import com.github.cpickl.bookstore.domain.any
-import com.github.cpickl.bookstore.isBadRequest
 import com.github.cpickl.bookstore.isForbidden
-import com.github.cpickl.bookstore.isNotFound
 import com.github.cpickl.bookstore.isOk
+import com.github.cpickl.bookstore.jackson
 import com.github.cpickl.bookstore.read
 import com.github.cpickl.bookstore.requestDelete
 import com.github.cpickl.bookstore.requestGet
@@ -29,8 +33,10 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
-import java.util.UUID
+import org.springframework.http.MediaType.ALL
+import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.http.MediaType.APPLICATION_XML
+import org.springframework.http.ResponseEntity
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class BookControllerApiTest(
@@ -43,7 +49,7 @@ class BookControllerApiTest(
 
     private val book = Book.any()
     private val bookId = book.id
-    private val invalidBookId = UUID.randomUUID()
+    private val invalidBookId = Id.any()
     private val loginDto = userPreparer.userLogin
     private val anyBooks = emptyList<Book>()
 
@@ -59,11 +65,11 @@ class BookControllerApiTest(
             whenever(bookService.findAll()).thenReturn(listOf(book))
 
             val response = restTemplate.requestGet("/books", HttpHeaders().apply {
-                accept = listOf(MediaType.ALL)
+                accept = listOf(ALL)
             })
 
             assertThat(response).isOk()
-            assertThat(response).contentTypeIs(MediaType.APPLICATION_JSON)
+            assertThat(response).contentTypeIs(APPLICATION_JSON)
         }
 
         @Test
@@ -71,11 +77,11 @@ class BookControllerApiTest(
             whenever(bookService.findAll()).thenReturn(listOf(book))
 
             val response = restTemplate.requestGet("/books", HttpHeaders().apply {
-                accept = listOf(MediaType.APPLICATION_JSON)
+                accept = listOf(APPLICATION_JSON)
             })
 
             assertThat(response).isOk()
-            assertThat(response).contentTypeIs(MediaType.APPLICATION_JSON)
+            assertThat(response).contentTypeIs(APPLICATION_JSON)
             assertThat(response).bodyIsEqualJson("""{"books":[${book.toSimpleJson()}]}""")
             assertThat(response.read<BooksDto>()).isEqualTo(BooksDto(listOf(book.toBookSimpleDto())))
         }
@@ -86,11 +92,11 @@ class BookControllerApiTest(
             whenever(bookService.findAll()).thenReturn(listOf(book))
 
             val response = restTemplate.requestGet("/books", HttpHeaders().apply {
-                accept = listOf(MediaType.APPLICATION_XML)
+                accept = listOf(APPLICATION_XML)
             })
 
             assertThat(response).isOk()
-            assertThat(response).contentTypeIs(MediaType.APPLICATION_XML)
+            assertThat(response).contentTypeIs(APPLICATION_XML)
             assertThat(response).bodyIsEqualXml("""<books>${book.toSimpleXml()}</books>""")
         }
 
@@ -121,19 +127,29 @@ class BookControllerApiTest(
         fun `When get book by malformed ID Then fail`() {
             val response = restTemplate.requestGet("/books/malformed")
 
-            assertThat(response).isBadRequest()
+            assertThat(response).isError(
+                messageContains = "malformed",
+                status = 400,
+                code = ErrorCode.INVALID_INPUT,
+            )
         }
 
         @Test
         fun `When get non existing book Then not found`() {
+            whenever(bookService.find(invalidBookId)).thenThrow(BookNotFoundException(invalidBookId))
+
             val response = restTemplate.requestGet("/books/$invalidBookId")
 
-            assertThat(response).isNotFound()
+            assertThat(response).isError(
+                messageContains = +invalidBookId,
+                status = 404,
+                code = ErrorCode.BOOK_NOT_FOUND,
+            )
         }
 
         @Test
         fun `Given book When get it Then return`() {
-            whenever(bookService.findOrNull(book.id)).thenReturn(book)
+            whenever(bookService.find(book.id)).thenReturn(book)
 
             val response = restTemplate.requestGet("/books/${book.id}")
 
@@ -151,27 +167,27 @@ class BookControllerApiTest(
 
         @Test
         fun `Given book When get book as JSON Then return JSON`() {
-            whenever(bookService.findOrNull(bookId)).thenReturn(book)
+            whenever(bookService.find(bookId)).thenReturn(book)
 
             val response = restTemplate.requestGet("/books/$bookId", HttpHeaders().apply {
-                accept = listOf(MediaType.APPLICATION_JSON)
+                accept = listOf(APPLICATION_JSON)
             })
 
             assertThat(response).isOk()
-            assertThat(response).contentTypeIs(MediaType.APPLICATION_JSON)
+            assertThat(response).contentTypeIs(APPLICATION_JSON)
             assertThat(response).bodyIsEqualJson(book.toDetailJson())
         }
 
         @Test
         fun `Given book When get book as XML Then return XML`() {
-            whenever(bookService.findOrNull(bookId)).thenReturn(book)
+            whenever(bookService.find(bookId)).thenReturn(book)
 
             val response = restTemplate.requestGet("/books/$bookId", HttpHeaders().apply {
-                accept = listOf(MediaType.APPLICATION_XML)
+                accept = listOf(APPLICATION_XML)
             })
 
             assertThat(response).isOk()
-            assertThat(response).contentTypeIs(MediaType.APPLICATION_XML)
+            assertThat(response).contentTypeIs(APPLICATION_XML)
             assertThat(response).bodyIsEqualXml(book.toDetailXml())
         }
     }
@@ -216,8 +232,6 @@ class BookControllerApiTest(
                 )
             )
         }
-
-        // FUTURE test invalid currencyCode
     }
 
     @Nested
@@ -233,11 +247,16 @@ class BookControllerApiTest(
         fun `When update non existing book Then not found`() {
             val jwt = restTemplate.login(loginDto)
             val update = BookUpdateDto.any()
-            whenever(bookService.update(update.toBookUpdateRequest(loginDto.username, book.id))).thenReturn(null)
+            whenever(bookService.update(update.toBookUpdateRequest(loginDto.username, book.id)))
+                .thenThrow(BookNotFoundException(book.id))
 
             val response = restTemplate.requestPut("/books/${book.id}", body = update, HttpHeaders().withJwt(jwt))
 
-            assertThat(response).isNotFound()
+            assertThat(response).isError(
+                messageContains = +book.id,
+                status = 404,
+                code = ErrorCode.BOOK_NOT_FOUND,
+            )
         }
 
         @Test
@@ -264,11 +283,15 @@ class BookControllerApiTest(
         @Test
         fun `Given token and no book When delete book Then not found`() {
             val jwt = restTemplate.login(loginDto)
-            whenever(bookService.delete(loginDto.username, bookId)).thenReturn(null)
+            whenever(bookService.delete(loginDto.username, bookId)).thenThrow(BookNotFoundException(bookId))
 
             val response = restTemplate.requestDelete("/books/$bookId", headers = HttpHeaders().withJwt(jwt))
 
-            assertThat(response).isNotFound()
+            assertThat(response).isError(
+                messageContains = +bookId,
+                status = 404,
+                code = ErrorCode.BOOK_NOT_FOUND,
+            )
             verify(bookService).delete(loginDto.username, bookId)
         }
 
@@ -283,6 +306,21 @@ class BookControllerApiTest(
             assertThat(response.read<BookDto>()).isEqualTo(book.toBookDto())
             verify(bookService).delete(loginDto.username, bookId)
         }
+    }
+}
+
+fun Assert<ResponseEntity<String>>.isError(
+    messageContains: String? = null,
+    status: Int? = null,
+    code: ErrorCode? = null
+) {
+    given { response ->
+        status?.let { assertThat(response.statusCodeValue).isEqualTo(it) }
+        val dto = jackson.readValue<ErrorDto>(response.body!!)
+
+        messageContains?.let { assertThat(dto.message).contains(it) }
+        status?.let { assertThat(dto.status).isEqualTo(it) }
+        code?.let { assertThat(dto.code).isEqualTo(it) }
     }
 }
 

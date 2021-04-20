@@ -5,10 +5,23 @@ import org.springframework.stereotype.Service
 
 interface BookService {
     fun findAll(search: Search = Search.Off): List<Book>
-    fun findOrNull(id: Id): Book?
+
+    /**
+     * @throws BookNotFoundException
+     */
+    fun find(id: Id): Book
+
     fun create(request: BookCreateRequest): Book
-    fun update(request: BookUpdateRequest): Book?
-    fun delete(username: String, id: Id): Book?
+
+    /**
+     * @throws BookNotFoundException
+     */
+    fun update(request: BookUpdateRequest): Book
+
+    /**
+     * @throws BookNotFoundException
+     */
+    fun delete(username: String, id: Id): Book
 }
 
 @Service
@@ -20,46 +33,52 @@ class BookServiceImpl(
 
     private val log = logger {}
 
-    override fun findAll(search: Search) = bookRepository.findAll(search)
+    override fun findAll(search: Search) =
+        bookRepository.findAll(search)
 
-    override fun findOrNull(id: Id) = bookRepository.findOrNull(id)
+    override fun find(id: Id) =
+        bookRepository.findOrNull(id)
+            ?: throw BookNotFoundException(id)
 
     override fun create(request: BookCreateRequest): Book {
         log.info { "create: $request" }
         val user = userRepository.findOrNull(request.username)
-            ?: throw IllegalArgumentException("User not found: '${request.username}'")
-        val book = Book(
-            id = idGenerator.generate(),
-            title = request.title,
-            description = request.description,
-            author = user,
-            price = request.price,
-            state = BookState.Published,
-        )
-        bookRepository.create(book)
-        return book
+            ?: throw InternalException("System invariance violated! User not found: '${request.username}'")
+
+        return newBook(request, user).also {
+            bookRepository.create(it)
+        }
     }
 
-    override fun update(request: BookUpdateRequest): Book? {
+    override fun update(request: BookUpdateRequest): Book {
         log.info { "update: $request" }
-        val found = bookRepository.findOrNull(request.id) ?: return null
+        val found = bookRepository.findOrNull(request.id) ?: throw BookNotFoundException(request.id)
         // if(found.author.username != request.username) // FUTURE hardening necessary?!
 
-        val updated = found.updateBy(request)
-        bookRepository.update(updated)
-        return updated
+        return found.updateBy(request).also {
+            bookRepository.update(it)
+        }
     }
 
-    override fun delete(username: String, id: Id): Book? {
+    override fun delete(username: String, id: Id): Book {
         log.info { "delete: $id" }
-        val book = bookRepository.findOrNull(id) ?: return null
+        val book = bookRepository.findOrNull(id) ?: throw BookNotFoundException(id)
         require(book.state != BookState.Unpublished)
         // if(book.author.username != username) // FUTURE hardening necessary?!
 
-        val deleted = book.copy(state = BookState.Unpublished)
-        bookRepository.update(deleted)
-        return deleted
+        return book.copy(state = BookState.Unpublished).also {
+            bookRepository.update(it)
+        }
     }
+
+    private fun newBook(request: BookCreateRequest, user: User) = Book(
+        id = idGenerator.generate(),
+        title = request.title,
+        description = request.description,
+        author = user,
+        price = request.price,
+        state = BookState.Published,
+    )
 }
 
 private fun Book.updateBy(update: BookUpdateRequest) = copy(

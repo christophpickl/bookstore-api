@@ -12,7 +12,9 @@ fun Book.toBookSimpleDto() = BookSimpleDto(
     title = title,
 )
 
-fun BookCreateDto.toBookCreateRequest(username: String) = BookCreateRequest(
+fun BookCreateDto.toBookCreateRequest(
+    username: String
+) = BookCreateRequest(
     username = username,
     title = title,
     description = description,
@@ -47,9 +49,4 @@ fun BookUpdateDto.toBookUpdateRequest(
     title = title,
     description = description,
     price = price.toMoney(),
-)
-
-fun MoneyDto.toMoney() = Money(
-    currency = Currency.of(currencyCode),
-    value = value,
 )

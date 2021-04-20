@@ -1,6 +1,13 @@
 server:
   port: 80
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: on_trace_param
+    include-exception: false
 spring:
+  profiles:
+    active: "prod"
   application:
     name: bookstore-api
   servlet:
@@ -8,3 +15,25 @@ spring:
       max-file-size: 2MB
       max-request-size: 2MB
       enabled: true
+
+---
+# -Dspring.profiles.active=dev,dummyData
+spring:
+  config:
+    activate:
+      on-profile: dev
+server:
+  error:
+    include-exception: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dummyData

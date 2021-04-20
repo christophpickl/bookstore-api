@@ -2,7 +2,7 @@ package com.github.cpickl.bookstore.boundary
 
 import com.github.cpickl.bookstore.domain.CoverService
 import com.github.cpickl.bookstore.domain.CoverUpdateRequest
-import com.github.cpickl.bookstore.domain.Id
+import com.github.cpickl.bookstore.domain.unaryPlus
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -37,17 +37,14 @@ class CoverController(
     )
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "200", description = "Book cover found."),
+            ApiResponse(responseCode = "200", description = "Book cover found.", content = [Content()]),
             ApiResponse(responseCode = "404", description = "Book cover not found.", content = [Content()]),
         ]
     )
     @GetMapping("", produces = [MediaType.IMAGE_PNG_VALUE])
     fun findBookCover(
         @PathVariable id: UUID
-    ): ResponseEntity<ByteArray> =
-        service.find(Id(id))?.let {
-            ResponseEntity.ok(it.bytes)
-        } ?: ResponseEntity.notFound().build()
+    ): ByteArray = service.find(+id).bytes
 
     @Operation(
         operationId = "updateBookCover",
@@ -56,7 +53,7 @@ class CoverController(
     )
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "204", description = "Book cover successfully updated."),
+            ApiResponse(responseCode = "204", description = "Book cover successfully updated.", content = [Content()]),
             ApiResponse(responseCode = "404", description = "Book cover not found.", content = [Content()]),
         ]
     )
@@ -67,10 +64,10 @@ class CoverController(
     fun updateBookCover(
         @PathVariable id: UUID,
         @RequestParam("cover-file") file: MultipartFile,
-    ): ResponseEntity<Any> =
-        service.update(Id(id), CoverUpdateRequest(file.bytes))?.let {
-            ResponseEntity.noContent().build()
-        } ?: ResponseEntity.notFound().build()
+    ): ResponseEntity<Any> {
+        service.update(+id, CoverUpdateRequest(file.bytes))
+        return ResponseEntity.noContent().build()
+    }
 
 
     @Operation(
@@ -80,16 +77,18 @@ class CoverController(
     )
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "204", description = "Book cover deleted or none was existing before."),
+            ApiResponse(
+                responseCode = "204", description = "Book cover deleted or none was existing before.",
+                content = [Content()]
+            ),
             ApiResponse(responseCode = "404", description = "Book cover not found.", content = [Content()]),
         ]
     )
     @DeleteMapping("")
     fun deleteBookCover(
         @PathVariable id: UUID,
-    ): ResponseEntity<Any> =
-        service.delete(Id(id))?.let {
-            ResponseEntity.noContent().build()
-        } ?: ResponseEntity.notFound().build()
-
+    ): ResponseEntity<Any> {
+        service.delete(+id)
+        return ResponseEntity.noContent().build()
+    }
 }

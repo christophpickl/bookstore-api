@@ -32,7 +32,7 @@ or make use of the provided [Postman collection](https://github.com/christophpic
 
 * pagination
 * dockerize (+compose for DBMS)
-* hardening (input validation, exception handling)
+* hardening (improve exception handling, input (bean) validation)
 * replace password type from String to CharArray for security reasons
 * JPA/exposed persistence layer
 * mini-frontend (kotlin HTML-DSL)

@@ -120,19 +120,16 @@ class LogResponseAdvice(
     override fun supports(methodParameter: MethodParameter, aClass: Class<out HttpMessageConverter<*>>) = true
 
     override fun beforeBodyWrite(
-        o: Any?,
+        body: Any?,
         methodParameter: MethodParameter,
         mediaType: MediaType,
         aClass: Class<out HttpMessageConverter<*>>,
-        serverHttpRequest: ServerHttpRequest,
-        serverHttpResponse: ServerHttpResponse,
+        request: ServerHttpRequest,
+        response: ServerHttpResponse,
     ): Any? {
-        if (serverHttpRequest is ServletServerHttpRequest && serverHttpResponse is ServletServerHttpResponse) {
-            loggingService.logResponse(
-                serverHttpRequest.servletRequest,
-                serverHttpResponse.servletResponse, o
-            )
+        if (request is ServletServerHttpRequest && response is ServletServerHttpResponse) {
+            loggingService.logResponse(request.servletRequest, response.servletResponse, body)
         }
-        return o
+        return body
     }
 }

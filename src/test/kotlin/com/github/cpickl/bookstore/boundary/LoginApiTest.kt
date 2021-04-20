@@ -9,15 +9,17 @@ import com.github.cpickl.bookstore.UserTestPreparer
 import com.github.cpickl.bookstore.isForbidden
 import com.github.cpickl.bookstore.isOk
 import com.github.cpickl.bookstore.jackson
-import com.github.cpickl.bookstore.requestPost
 import com.github.cpickl.bookstore.readAuthorization
+import com.github.cpickl.bookstore.requestPost
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
+import org.springframework.http.HttpHeaders.AUTHORIZATION
+import org.springframework.http.HttpHeaders.CONTENT_TYPE
+import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class LoginApiTest(
@@ -35,7 +37,7 @@ class LoginApiTest(
         val response = login(userPreparer.userLogin)
 
         assertThat(response).isOk()
-        assertThat(response.headers[HttpHeaders.AUTHORIZATION]).isNotNull().isNotEmpty()
+        assertThat(response.headers[AUTHORIZATION]).isNotNull().isNotEmpty()
         assertThat(JWT.decode(response.headers.readAuthorization()).payload).isNotEmpty()
     }
 
@@ -44,11 +46,11 @@ class LoginApiTest(
         val response = login(userPreparer.userLogin.copy(password = "forbidden"))
 
         assertThat(response).isForbidden()
-        assertThat(response.headers[HttpHeaders.AUTHORIZATION]).isNull()
+        assertThat(response.headers[AUTHORIZATION]).isNull()
     }
 
     private fun login(dto: LoginDto) =
         restTemplate.requestPost("/login", jackson.writeValueAsString(dto), HttpHeaders().apply {
-            this[HttpHeaders.CONTENT_TYPE] = MediaType.APPLICATION_JSON_VALUE
+            this[CONTENT_TYPE] = APPLICATION_JSON_VALUE
         })
 }

@@ -1,9 +1,9 @@
 package com.github.cpickl.bookstore.domain
 
 import assertk.assertThat
-import assertk.assertions.isNull
 import assertk.assertions.isSameAs
 import com.github.cpickl.bookstore.boundary.any
+import com.github.cpickl.bookstore.throws
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -34,9 +34,10 @@ class CoverServiceImplTest {
         fun `Given book repo cant find When find cover Then return null`() {
             whenever(bookRepository.findOrNull(bookId)).thenReturn(null)
 
-            val found = service.find(bookId)
+            assertThat {
+                service.find(bookId)
 
-            assertThat(found).isNull()
+            }.throws<BookNotFoundException>(messageContains = +bookId)
         }
 
         @Test
@@ -58,7 +59,6 @@ class CoverServiceImplTest {
 
             assertThat(found).isSameAs(customCover)
         }
-
     }
 
     @Nested
@@ -67,9 +67,10 @@ class CoverServiceImplTest {
         fun `Given not book existing When update cover Then return null`() {
             whenever(bookRepository.findOrNull(bookId)).thenReturn(null)
 
-            val updated = service.update(bookId, CoverUpdateRequest.any())
+            assertThat {
+                service.update(bookId, CoverUpdateRequest.any())
 
-            assertThat(updated).isNull()
+            }.throws<BookNotFoundException>(messageContains = +bookId)
         }
 
         @Test
@@ -98,9 +99,10 @@ class CoverServiceImplTest {
         fun `Given not book existing When delete cover Then return null`() {
             whenever(bookRepository.findOrNull(bookId)).thenReturn(null)
 
-            val updated = service.delete(bookId)
+            assertThat {
+                service.delete(bookId)
 
-            assertThat(updated).isNull()
+            }.throws<BookNotFoundException>(messageContains = +bookId)
         }
 
         @Test

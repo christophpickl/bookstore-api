@@ -92,7 +92,5 @@ data class CoverUpdateRequest(
         return true
     }
 
-    override fun hashCode(): Int {
-        return bytes.contentHashCode()
-    }
+    override fun hashCode() = bytes.contentHashCode()
 }

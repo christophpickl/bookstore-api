@@ -1,18 +1,22 @@
 package com.github.cpickl.bookstore.domain
 
 import org.springframework.stereotype.Service
-import java.lang.IllegalArgumentException
 import java.util.UUID
 
 inline class Id(
     val uuid: UUID
 ) {
-    constructor(uuid: String) : this (UUID.fromString(uuid))
+    constructor(uuid: String) : this(UUID.fromString(uuid))
 
     companion object;
 
     override fun toString() = uuid.toString()
+
+    operator fun unaryMinus() = uuid
+    operator fun unaryPlus() = uuid.toString()
 }
+
+operator fun UUID.unaryPlus() = Id(this)
 
 // FUTURE could inject other in tests
 interface IdGenerator {
