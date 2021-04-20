@@ -1,4 +1,5 @@
 <configuration>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>
@@ -6,13 +7,12 @@
             </Pattern>
         </layout>
     </appender>
-    <logger name="com.github.cpickl.bookstore" level="all" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-    </logger>
-    <logger name="com.github.cpickl.bookstore.boundary.JWTAuthenticationFilter" level="debug" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-    </logger>
-    <root level="warn">
+
+    <logger name="com.github.cpickl.bookstore" level="ALL"/>
+    <logger name="com.github.cpickl.bookstore.boundary.JWTAuthenticationFilter" level="DEBUG"/>
+
+    <root level="WARN">
         <appender-ref ref="CONSOLE"/>
     </root>
+
 </configuration>

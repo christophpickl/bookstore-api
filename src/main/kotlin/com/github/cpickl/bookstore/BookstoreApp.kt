@@ -10,15 +10,19 @@ import com.github.cpickl.bookstore.domain.RandomIdGenerator
 import com.github.cpickl.bookstore.domain.User
 import com.github.cpickl.bookstore.domain.UserRepository
 import mu.KotlinLogging.logger
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.Banner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.runApplication
 import org.springframework.context.ApplicationListener
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.AbstractEnvironment
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.util.UUID
 
 @SpringBootApplication
@@ -38,6 +42,18 @@ class BookstoreApp {
 
     @Bean
     fun bCryptPasswordEncoder() = BCryptPasswordEncoder()
+
+}
+
+@Configuration
+class WebConfig : WebMvcConfigurer {
+
+    @Autowired
+    private lateinit var logInterceptor: LogGetRequestsInterceptor
+
+    override fun addInterceptors(registry: InterceptorRegistry) {
+        registry.addInterceptor(logInterceptor)
+    }
 }
 
 const val PROFILE_DUMMY_DATA = "dummyData"

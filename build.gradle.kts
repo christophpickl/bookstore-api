@@ -26,6 +26,7 @@ dependencies {
     }
     spring("web")
     spring("security")
+    spring("actuator")
     implementation("com.auth0:java-jwt:3.15.0")
     implementation("org.springdoc:springdoc-openapi-ui:1.5.2")
 
