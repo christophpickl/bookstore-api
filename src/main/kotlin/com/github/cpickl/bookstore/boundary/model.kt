@@ -246,7 +246,7 @@ data class LinkDto(
 
     @get:Schema(
         description = "Relative path to the target site.",
-        example = "/books",
+        example = "/",
         required = true,
     )
     val path: String,
