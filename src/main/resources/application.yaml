@@ -1,2 +1,10 @@
 server:
   port: 80
+spring:
+  application:
+    name: bookstore-api
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
+      enabled: true

@@ -8,11 +8,15 @@ import com.github.cpickl.bookstore.isOk
 import com.github.cpickl.bookstore.jackson
 import com.github.cpickl.bookstore.readAuthorization
 import com.github.cpickl.bookstore.requestPost
+import com.github.cpickl.bookstore.withJwt
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.util.LinkedMultiValueMap
 import org.xmlunit.builder.DiffBuilder
 
 fun TestRestTemplate.login(dto: LoginDto): Jwt {
@@ -23,6 +27,22 @@ fun TestRestTemplate.login(dto: LoginDto): Jwt {
     assertThat(response).isOk()
     return Jwt(response.headers.readAuthorization())
 }
+
+fun buildUploadEntity(
+    bytesResource: ByteArrayResource,
+    jwt: Jwt? = null
+): HttpEntity<LinkedMultiValueMap<String, Any>> = HttpEntity(
+    LinkedMultiValueMap<String, Any>().apply {
+        add("cover-file", HttpEntity(bytesResource, HttpHeaders().apply {
+            contentType = MediaType.IMAGE_PNG
+        }))
+    },
+    HttpHeaders().apply {
+        contentType = MediaType.MULTIPART_FORM_DATA
+        if (jwt != null) {
+            withJwt(jwt)
+        }
+    })
 
 inline class Jwt(private val value: String) {
     override fun toString() = value
@@ -52,4 +72,11 @@ fun Assert<ResponseEntity<*>>.contentTypeIs(type: MediaType) {
     given {
         assertThat(it.headers[HttpHeaders.CONTENT_TYPE]).isEqualTo(listOf(type.toString()))
     }
+}
+
+class NamedByteArrayResource(
+    private val fileName: String,
+    fileContent: ByteArray
+) : ByteArrayResource(fileContent) {
+    override fun getFilename() = fileName
 }

@@ -11,25 +11,31 @@ import com.github.cpickl.bookstore.boundary.BookDto
 import com.github.cpickl.bookstore.boundary.BookUpdateDto
 import com.github.cpickl.bookstore.boundary.BooksDto
 import com.github.cpickl.bookstore.boundary.Jwt
+import com.github.cpickl.bookstore.boundary.NamedByteArrayResource
 import com.github.cpickl.bookstore.boundary.any
+import com.github.cpickl.bookstore.boundary.buildUploadEntity
 import com.github.cpickl.bookstore.boundary.login
 import com.github.cpickl.bookstore.boundary.toBookSimpleDto
 import com.github.cpickl.bookstore.domain.CoverImage
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Tag
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.boot.test.web.client.exchange
+import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SystemApiTest(
     @Autowired val restTemplate: TestRestTemplate,
     @Autowired private val userPreparer: UserTestPreparer,
     @Autowired private val bookRepository: InMemoryBookRepository,
+    @Autowired private val coverRepository: InMemoryBookRepository,
 ) {
 
     private val loginDto = userPreparer.userLogin
@@ -40,50 +46,77 @@ class SystemApiTest(
     }
 
     @BeforeEach
-    fun `reset books`() {
+    fun `reset data`() {
         bookRepository.clear()
+        coverRepository.clear()
     }
 
-    @Test
-    fun `Given token When create book Then read all and single returns book`() {
-        val jwt = restTemplate.login(loginDto)
+    @Nested
+    inner class BookCrudTest {
+        @Test
+        fun `Given logged-in When create a new book Then get operations return that book`() {
+            val jwt = restTemplate.login(loginDto)
 
-        val created = postBookDto(jwt, BookCreateDto.any())
+            val created = postBookDto(jwt, BookCreateDto.any())
 
-        assertThat(getBooksDto().books).containsExactly(created.toBookSimpleDto())
-        assertThat(getBookDto(created.id)).isEqualTo(created)
-        assertThat(getBookCover(created.id).body.contentEquals(CoverImage.DefaultImage.bytes)).isTrue()
+            assertThat(getBooksDto().books).containsExactly(created.toBookSimpleDto())
+            assertThat(getBookDto(created.id)).isEqualTo(created)
+            assertThat(getBookCover(created.id).body.contentEquals(CoverImage.DefaultImage.bytes)).isTrue()
+        }
+
+        @Test
+        fun `Given logged-in and book When update book Then get returns updated version`() {
+            val jwt = restTemplate.login(loginDto)
+            val created = postBookDto(jwt, BookCreateDto.any())
+
+            val update = BookUpdateDto.any()
+            putBookDto(jwt, created.id, update)
+
+            val recentBook = restTemplate.requestGet("/books/${created.id}").read<BookDto>()
+            assertThat(recentBook.title).isEqualTo(update.title) // only check for title for simplicity sake
+        }
+
+        @Test
+        fun `Given logged-in and two books When search Then return proper book`() {
+            val jwt = restTemplate.login(loginDto)
+            postBookDto(jwt, BookCreateDto.any().copy(title = "a"))
+            postBookDto(jwt, BookCreateDto.any().copy(title = "b"))
+
+            assertThat(getBooksDto(search = "a").books.map { it.title }).containsExactly("a")
+        }
+
+        @Test
+        fun `Given logged-in and book When delete book Then return nothing anymore`() {
+            val jwt = restTemplate.login(loginDto)
+            val created = postBookDto(jwt, BookCreateDto.any())
+
+            deleteBook(jwt, created.id)
+
+            assertThat(getBooksDto().books).isEmpty()
+            assertThat(getBook(created.id)).isNotFound()
+        }
     }
 
-    @Test
-    fun `Given token and book When update Then return updated book`() {
-        val jwt = restTemplate.login(loginDto)
-        val created = postBookDto(jwt, BookCreateDto.any())
+    @Nested
+    inner class CoverTest {
 
-        val update = BookUpdateDto.any()
-        putBookDto(jwt, created.id, update)
+        private val coverBytes = byteArrayOf(1, 0, 1, 0)
 
-        val recentBook = restTemplate.requestGet("/books/${created.id}").read<BookDto>()
-        assertThat(recentBook.title).isEqualTo(update.title) // only check for title for simplicity
-    }
+        @Test
+        fun `Given logged-in and book When update cover Then get returns updated version`() {
+            val jwt = restTemplate.login(loginDto)
+            val bookId = postBookDto(jwt, BookCreateDto.any()).id
 
-    @Test
-    fun `Given token and two books When search Then return proper book`() {
-        val jwt = restTemplate.login(loginDto)
-        postBookDto(jwt, BookCreateDto.any().copy(title = "a"))
-        postBookDto(jwt, BookCreateDto.any().copy(title = "b"))
+            val updated = updateCover(
+                bookId,
+                buildUploadEntity(NamedByteArrayResource("ignored.png", coverBytes), jwt)
+            )
+            assertThat(updated).isStatus(HttpStatus.NO_CONTENT)
 
-        assertThat(getBooksDto(search = "a").books.map { it.title }).containsExactly("a")
-    }
-
-    @Test
-    fun `Given token and deleted book When get Then return empty`() {
-        val jwt = restTemplate.login(loginDto)
-        val created = postBookDto(jwt, BookCreateDto.any())
-        deleteBook(jwt, created.id)
-
-        assertThat(getBooksDto().books).isEmpty()
-        assertThat(getBook(created.id)).isNotFound()
+            val response = getBookCover(bookId)
+            assertThat(response).isOk()
+            assertThat(response.body.contentEquals(coverBytes)).isTrue()
+        }
     }
 
     private fun getBook(id: String) =
@@ -106,6 +139,9 @@ class SystemApiTest(
 
     private fun deleteBook(jwt: Jwt, id: String) =
         restTemplate.requestDelete("/books/$id", headers = HttpHeaders().withJwt(jwt))
+
+    private fun updateCover(id: String, requestEntity: HttpEntity<*>) =
+        restTemplate.exchange<Any>("/books/$id/cover", HttpMethod.POST, requestEntity)
 
     private fun String?.buildQuery() = if (this == null) "" else {
         "?search=${this}"

@@ -59,7 +59,7 @@ class BookControllerApiTest(
             whenever(bookService.findAll()).thenReturn(listOf(book))
 
             val response = restTemplate.requestGet("/books", HttpHeaders().apply {
-                this[HttpHeaders.ACCEPT] = "*/*"
+                accept = listOf(MediaType.ALL)
             })
 
             assertThat(response).isOk()
@@ -71,7 +71,7 @@ class BookControllerApiTest(
             whenever(bookService.findAll()).thenReturn(listOf(book))
 
             val response = restTemplate.requestGet("/books", HttpHeaders().apply {
-                this[HttpHeaders.ACCEPT] = MediaType.APPLICATION_JSON_VALUE
+                accept = listOf(MediaType.APPLICATION_JSON)
             })
 
             assertThat(response).isOk()
@@ -86,7 +86,7 @@ class BookControllerApiTest(
             whenever(bookService.findAll()).thenReturn(listOf(book))
 
             val response = restTemplate.requestGet("/books", HttpHeaders().apply {
-                this[HttpHeaders.ACCEPT] = MediaType.APPLICATION_XML_VALUE
+                accept = listOf(MediaType.APPLICATION_XML)
             })
 
             assertThat(response).isOk()
@@ -154,7 +154,7 @@ class BookControllerApiTest(
             whenever(bookService.findOrNull(bookId)).thenReturn(book)
 
             val response = restTemplate.requestGet("/books/$bookId", HttpHeaders().apply {
-                this[HttpHeaders.ACCEPT] = MediaType.APPLICATION_JSON_VALUE
+                accept = listOf(MediaType.APPLICATION_JSON)
             })
 
             assertThat(response).isOk()
@@ -167,7 +167,7 @@ class BookControllerApiTest(
             whenever(bookService.findOrNull(bookId)).thenReturn(book)
 
             val response = restTemplate.requestGet("/books/$bookId", HttpHeaders().apply {
-                this[HttpHeaders.ACCEPT] = MediaType.APPLICATION_XML_VALUE
+                accept = listOf(MediaType.APPLICATION_XML)
             })
 
             assertThat(response).isOk()

@@ -61,5 +61,38 @@ sealed class CoverImage(
 
     class CustomImage(
         bytes: ByteArray,
-    ) : CoverImage(bytes)
+    ) : CoverImage(bytes) {
+
+        companion object;
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is CustomImage) return false
+            return bytes.contentEquals(other.bytes)
+        }
+
+        override fun hashCode() = bytes.hashCode()
+        override fun toString() = "CustomImage[bytes.size=${bytes.size}]"
+    }
+}
+
+data class CoverUpdateRequest(
+    val bytes: ByteArray,
+) {
+    companion object;
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as CoverUpdateRequest
+
+        if (!bytes.contentEquals(other.bytes)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return bytes.contentHashCode()
+    }
 }

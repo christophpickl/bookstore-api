@@ -39,27 +39,30 @@ fun Assert<ResponseEntity<*>>.isStatus(code: HttpStatus) {
     }
 }
 
-fun TestRestTemplate.requestGet(path: String, headers: HttpHeaders = HttpHeaders.EMPTY): ResponseEntity<String> =
+fun TestRestTemplate.requestGet(
+    path: String,
+    headers: HttpHeaders = HttpHeaders.EMPTY,
+): ResponseEntity<String> =
     requestAny(HttpMethod.GET, path, headers = headers)
 
 fun TestRestTemplate.requestPost(
     path: String,
     body: Any? = null,
-    headers: HttpHeaders = HttpHeaders.EMPTY
+    headers: HttpHeaders = HttpHeaders.EMPTY,
 ): ResponseEntity<String> =
     requestAny(HttpMethod.POST, path, body, headers)
 
 fun TestRestTemplate.requestPut(
     path: String,
     body: Any? = null,
-    headers: HttpHeaders = HttpHeaders.EMPTY
+    headers: HttpHeaders = HttpHeaders.EMPTY,
 ): ResponseEntity<String> =
     requestAny(HttpMethod.PUT, path, body, headers)
 
 fun TestRestTemplate.requestDelete(
     path: String,
     body: Any? = null,
-    headers: HttpHeaders = HttpHeaders.EMPTY
+    headers: HttpHeaders = HttpHeaders.EMPTY,
 ): ResponseEntity<String> =
     requestAny(HttpMethod.DELETE, path, body, headers)
 
@@ -67,7 +70,7 @@ inline fun <reified BODY : Any> TestRestTemplate.requestAny(
     method: HttpMethod,
     path: String,
     body: Any? = null,
-    headers: HttpHeaders = HttpHeaders.EMPTY
+    headers: HttpHeaders = HttpHeaders.EMPTY,
 ): ResponseEntity<BODY> =
     exchange(RequestEntity<Any>(body, headers, method, URI(path)))
 

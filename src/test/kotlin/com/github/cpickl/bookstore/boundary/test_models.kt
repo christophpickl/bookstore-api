@@ -1,6 +1,8 @@
 package com.github.cpickl.bookstore.boundary
 
 import com.github.cpickl.bookstore.domain.Book
+import com.github.cpickl.bookstore.domain.CoverImage
+import com.github.cpickl.bookstore.domain.CoverUpdateRequest
 import com.github.cpickl.bookstore.domain.Money
 
 fun BookCreateDto.Companion.any() = BookCreateDto(
@@ -47,4 +49,12 @@ fun Money.toMoneyDto() = MoneyDto(
     currencyCode = currency.code,
     value = value,
     precision = currency.precision,
+)
+
+fun CoverUpdateRequest.Companion.any() = CoverUpdateRequest(
+    bytes = byteArrayOf(0, 1),
+)
+
+fun CoverImage.CustomImage.Companion.any() = CoverImage.CustomImage(
+    bytes = byteArrayOf(1, 0),
 )

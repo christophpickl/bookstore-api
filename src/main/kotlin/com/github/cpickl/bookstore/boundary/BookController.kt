@@ -1,22 +1,14 @@
 package com.github.cpickl.bookstore.boundary
 
-import com.github.cpickl.bookstore.domain.Book
-import com.github.cpickl.bookstore.domain.BookCreateRequest
 import com.github.cpickl.bookstore.domain.BookService
-import com.github.cpickl.bookstore.domain.BookUpdateRequest
-import com.github.cpickl.bookstore.domain.Currency
 import com.github.cpickl.bookstore.domain.Id
-import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Search
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.ok
@@ -29,8 +21,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.ResponseBody
-import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
@@ -135,7 +125,7 @@ class BookController(
     @DeleteMapping("/{id}")
     fun deleteBook(
         @PathVariable id: UUID,
-        auth: Authentication
+        auth: Authentication,
     ): ResponseEntity<BookDto> =
         service.delete(auth.username, Id(id))?.let { book ->
             ok(book.toBookDto())

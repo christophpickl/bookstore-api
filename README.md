@@ -30,10 +30,19 @@ or make use of the provided [Postman collection](https://github.com/christophpic
 
 ### Ideas
 
-* JPA/exposed persistence layer
+* pagination
 * dockerize (+compose for DBMS)
 * hardening (input validation, exception handling)
-* HATEOS API (higher ReST maturity level via hypermedia)
 * replace password type from String to CharArray for security reasons
-* fine-tune XML representation
-* reactive API
+* JPA/exposed persistence layer
+* mini-frontend (kotlin HTML-DSL)
+* CQRS + event sourcing (kafka, reddis, elastic)
+* testcontainer
+* BDD
+* kotlin MPP (javascript, android)
+* CI/CD pipeline (github/gitlab/travis?)
+  * automated release (kotlin scripts)
+  * cloud deployment (heroku?)
+* HATEOS API (higher ReST maturity level via hypermedia)
+* GraphQL API
+* Reactive API

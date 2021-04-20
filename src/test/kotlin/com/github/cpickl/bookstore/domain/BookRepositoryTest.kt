@@ -15,6 +15,8 @@ abstract class BookRepositoryTest {
     private lateinit var testee: BookRepository
     private val book = Book.any().copy(state = BookState.Published)
 
+    abstract fun testee(): BookRepository
+
     @BeforeEach
     fun `init testee`() {
         testee = testee()
@@ -164,6 +166,4 @@ abstract class BookRepositoryTest {
             assertThat(testee.findOrNull(book.id)).isEqualTo(updated)
         }
     }
-
-    abstract fun testee(): BookRepository
 }

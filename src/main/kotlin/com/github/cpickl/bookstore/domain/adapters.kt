@@ -16,5 +16,6 @@ interface UserRepository {
 
 interface CoverRepository {
     fun findOrNull(bookId: Id): CoverImage.CustomImage?
-    // FUTURE save/delete
+    fun update(bookId: Id, image: CoverImage.CustomImage)
+    // FUTURE delete
 }
