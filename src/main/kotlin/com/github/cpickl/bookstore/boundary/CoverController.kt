@@ -7,17 +7,23 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
+@Tag(
+    name = "Cover API",
+    description = "CRUD operations for covers (partially secured)."
+)
 @RestController
 @RequestMapping("/books/{id}/cover")
 class CoverController(
@@ -45,7 +51,7 @@ class CoverController(
 
     @Operation(
         operationId = "updateBookCover",
-        summary = "update cover image for the book",
+        summary = "create/update cover image for the book",
         description = "Send a multipart PNG file named 'cover-file'.",
     )
     @ApiResponses(
@@ -54,7 +60,7 @@ class CoverController(
             ApiResponse(responseCode = "404", description = "Book cover not found.", content = [Content()]),
         ]
     )
-    @PostMapping(
+    @PutMapping(
         "",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
@@ -66,6 +72,24 @@ class CoverController(
             ResponseEntity.noContent().build()
         } ?: ResponseEntity.notFound().build()
 
-    // FUTURE delete cover
+
+    @Operation(
+        operationId = "deleteBookCover",
+        summary = "delete cover image for the book",
+        description = "Resets the book's cover image to the default one.",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "204", description = "Book cover deleted or none was existing before."),
+            ApiResponse(responseCode = "404", description = "Book cover not found.", content = [Content()]),
+        ]
+    )
+    @DeleteMapping("")
+    fun deleteBookCover(
+        @PathVariable id: UUID,
+    ): ResponseEntity<Any> =
+        service.delete(Id(id))?.let {
+            ResponseEntity.noContent().build()
+        } ?: ResponseEntity.notFound().build()
 
 }

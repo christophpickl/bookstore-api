@@ -31,6 +31,17 @@ abstract class CoverRepositoryTest {
     fun `Given custom image When find it Then return it`() {
         testee.update(id, image)
 
-        assertThat(testee.findOrNull(id)).isEqualTo(image)
+        val found = testee.findOrNull(id)
+
+        assertThat(found).isEqualTo(image)
+    }
+
+    @Test
+    fun `Given custom image When delete again Then return null for find`() {
+        testee.update(id, image)
+
+        testee.delete(id)
+
+        assertThat(testee.findOrNull(id)).isNull()
     }
 }

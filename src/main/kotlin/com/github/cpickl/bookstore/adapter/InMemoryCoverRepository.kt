@@ -19,6 +19,11 @@ class InMemoryCoverRepository : CoverRepository {
         imagesById[bookId] = image
     }
 
+    override fun delete(bookId: Id): CoverImage.CustomImage? {
+        log.debug { "delete: $bookId" }
+        return imagesById.remove(bookId)
+    }
+
     fun clear() {
         log.info { "clear covers ... for TEST only!" }
         imagesById.clear()

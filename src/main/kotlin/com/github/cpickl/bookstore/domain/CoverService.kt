@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 interface CoverService {
     fun find(bookId: Id): CoverImage?
     fun update(bookId: Id, request: CoverUpdateRequest): Book?
+    fun delete(bookId: Id): Book?
 }
 
 @Service
@@ -21,6 +22,12 @@ class CoverServiceImpl(
     override fun update(bookId: Id, request: CoverUpdateRequest): Book? {
         val book = bookRepository.findOrNull(bookId) ?: return null
         coverRepository.update(book.id, CoverImage.CustomImage(request.bytes))
+        return book
+    }
+
+    override fun delete(bookId: Id): Book? {
+        val book = bookRepository.findOrNull(bookId) ?: return null
+        coverRepository.delete(bookId)
         return book
     }
 }

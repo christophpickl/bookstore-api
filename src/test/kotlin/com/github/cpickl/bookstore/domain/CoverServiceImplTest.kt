@@ -5,6 +5,7 @@ import assertk.assertions.isNull
 import assertk.assertions.isSameAs
 import com.github.cpickl.bookstore.boundary.any
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -26,60 +27,98 @@ class CoverServiceImplTest {
         service = CoverServiceImpl(bookRepository, coverRepository)
     }
 
-    @Test
-    fun `Given book repo cant find When find cover Then return null`() {
-        whenever(bookRepository.findOrNull(bookId)).thenReturn(null)
+    @Nested
+    inner class FindTest {
 
-        val found = service.find(bookId)
+        @Test
+        fun `Given book repo cant find When find cover Then return null`() {
+            whenever(bookRepository.findOrNull(bookId)).thenReturn(null)
 
-        assertThat(found).isNull()
+            val found = service.find(bookId)
+
+            assertThat(found).isNull()
+        }
+
+        @Test
+        fun `Given book repo has but cover repo has not When find cover Then return default cover`() {
+            whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
+            whenever(coverRepository.findOrNull(bookId)).thenReturn(null)
+
+            val found = service.find(bookId)
+
+            assertThat(found).isSameAs(CoverImage.DefaultImage)
+        }
+
+        @Test
+        fun `Given book repo and cover repo has When find cover Then return cover`() {
+            whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
+            whenever(coverRepository.findOrNull(bookId)).thenReturn(customCover)
+
+            val found = service.find(bookId)
+
+            assertThat(found).isSameAs(customCover)
+        }
+
     }
 
-    @Test
-    fun `Given book repo has but cover repo has not When find cover Then return default cover`() {
-        whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
-        whenever(coverRepository.findOrNull(bookId)).thenReturn(null)
+    @Nested
+    inner class UpdateTest {
+        @Test
+        fun `Given not book existing When update cover Then return null`() {
+            whenever(bookRepository.findOrNull(bookId)).thenReturn(null)
 
-        val found = service.find(bookId)
+            val updated = service.update(bookId, CoverUpdateRequest.any())
 
-        assertThat(found).isSameAs(CoverImage.DefaultImage)
+            assertThat(updated).isNull()
+        }
+
+        @Test
+        fun `Given existing book When update cover Then return that book`() {
+            whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
+
+            val updated = service.update(bookId, CoverUpdateRequest.any())
+
+            assertThat(updated).isSameAs(book)
+        }
+
+        @Test
+        fun `Given existing book When update cover Then delegated to repository`() {
+            whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
+            val request = CoverUpdateRequest.any()
+
+            service.update(bookId, request)
+
+            verify(coverRepository).update(bookId, CoverImage.CustomImage(request.bytes))
+        }
     }
 
-    @Test
-    fun `Given book repo and cover repo has When find cover Then return cover`() {
-        whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
-        whenever(coverRepository.findOrNull(bookId)).thenReturn(customCover)
+    @Nested
+    inner class DeleteTest {
+        @Test
+        fun `Given not book existing When delete cover Then return null`() {
+            whenever(bookRepository.findOrNull(bookId)).thenReturn(null)
 
-        val found = service.find(bookId)
+            val updated = service.delete(bookId)
 
-        assertThat(found).isSameAs(customCover)
-    }
+            assertThat(updated).isNull()
+        }
 
-    @Test
-    fun `Given existing book When update cover Then return that book`() {
-        whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
+        @Test
+        fun `Given existing book When delete cover Then return that book`() {
+            whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
 
-        val updated = service.update(bookId, CoverUpdateRequest.any())
+            val updated = service.delete(bookId)
 
-        assertThat(updated).isSameAs(book)
-    }
+            assertThat(updated).isSameAs(book)
+        }
 
-    @Test
-    fun `Given existing book When update cover Then delegated to repository`() {
-        whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
-        val request = CoverUpdateRequest.any()
+        @Test
+        fun `Given existing book When delete cover Then delegated to repository`() {
+            whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
 
-        service.update(bookId, request)
+            service.delete(bookId)
 
-        verify(coverRepository).update(bookId, CoverImage.CustomImage(request.bytes))
-    }
-
-    @Test
-    fun `Given not book existing When update cover Then return null`() {
-        whenever(bookRepository.findOrNull(bookId)).thenReturn(null)
-
-        val updated = service.update(bookId, CoverUpdateRequest.any())
-
-        assertThat(updated).isNull()
+            verify(coverRepository).delete(bookId)
+        }
     }
 }

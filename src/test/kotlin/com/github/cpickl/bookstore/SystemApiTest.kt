@@ -6,6 +6,7 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isTrue
 import com.github.cpickl.bookstore.adapter.InMemoryBookRepository
+import com.github.cpickl.bookstore.adapter.InMemoryCoverRepository
 import com.github.cpickl.bookstore.boundary.BookCreateDto
 import com.github.cpickl.bookstore.boundary.BookDto
 import com.github.cpickl.bookstore.boundary.BookUpdateDto
@@ -35,7 +36,7 @@ class SystemApiTest(
     @Autowired val restTemplate: TestRestTemplate,
     @Autowired private val userPreparer: UserTestPreparer,
     @Autowired private val bookRepository: InMemoryBookRepository,
-    @Autowired private val coverRepository: InMemoryBookRepository,
+    @Autowired private val coverRepository: InMemoryCoverRepository,
 ) {
 
     private val loginDto = userPreparer.userLogin
@@ -103,7 +104,7 @@ class SystemApiTest(
         private val coverBytes = byteArrayOf(1, 0, 1, 0)
 
         @Test
-        fun `Given logged-in and book When update cover Then get returns updated version`() {
+        fun `Given logged-in and book When update cover Then get returns updated image`() {
             val jwt = restTemplate.login(loginDto)
             val bookId = postBookDto(jwt, BookCreateDto.any()).id
 
@@ -116,6 +117,20 @@ class SystemApiTest(
             val response = getBookCover(bookId)
             assertThat(response).isOk()
             assertThat(response.body.contentEquals(coverBytes)).isTrue()
+        }
+
+        @Test
+        fun `Given logged-in and book and cover When delete cover Then get returns default image`() {
+            val jwt = restTemplate.login(loginDto)
+            val bookId = postBookDto(jwt, BookCreateDto.any()).id
+            updateCover(bookId, buildUploadEntity(NamedByteArrayResource("ignored.png", coverBytes), jwt))
+
+            val deleted = deleteCover(jwt, bookId)
+            assertThat(deleted).isStatus(HttpStatus.NO_CONTENT)
+
+            val response = getBookCover(bookId)
+            assertThat(response).isOk()
+            assertThat(response.body.contentEquals(CoverImage.DefaultImage.bytes)).isTrue()
         }
     }
 
@@ -141,7 +156,10 @@ class SystemApiTest(
         restTemplate.requestDelete("/books/$id", headers = HttpHeaders().withJwt(jwt))
 
     private fun updateCover(id: String, requestEntity: HttpEntity<*>) =
-        restTemplate.exchange<Any>("/books/$id/cover", HttpMethod.POST, requestEntity)
+        restTemplate.exchange<Any>("/books/$id/cover", HttpMethod.PUT, requestEntity)
+
+    private fun deleteCover(jwt: Jwt, id: String) =
+        restTemplate.requestDelete("/books/$id/cover", headers = HttpHeaders().withJwt(jwt))
 
     private fun String?.buildQuery() = if (this == null) "" else {
         "?search=${this}"

@@ -17,6 +17,7 @@ import com.github.cpickl.bookstore.isOk
 import com.github.cpickl.bookstore.isStatus
 import com.github.cpickl.bookstore.requestAny
 import com.github.cpickl.bookstore.requestGet
+import com.github.cpickl.bookstore.withJwt
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -26,9 +27,11 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.client.exchange
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpHeaders.CONTENT_TYPE
+import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
-import org.springframework.http.HttpMethod.POST
+import org.springframework.http.HttpMethod.PUT
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType.IMAGE_PNG_VALUE
 
@@ -84,10 +87,10 @@ class CoverControllerApiTest(
         private val anyResource = updateResource
 
         @Test
-        fun `When update without token Then return forbidden`() {
+        fun `When update cover without token Then return forbidden`() {
             val response = restTemplate.exchange<Any>(
                 "/books/${book.id}/cover",
-                POST,
+                PUT,
                 buildUploadEntity(anyResource, jwt = null)
             )
 
@@ -95,27 +98,61 @@ class CoverControllerApiTest(
         }
 
         @Test
-        fun `Given token When update unknown cover Then not found`() {
+        fun `Given logged-in When update unknown cover Then not found`() {
             whenever(coverService.update(book.id, CoverUpdateRequest(updateResource.byteArray))).thenReturn(null)
             val jwt = restTemplate.login(loginDto)
 
             val response =
-                restTemplate.exchange<Any>("/books/${book.id}/cover", POST, buildUploadEntity(updateResource, jwt))
+                restTemplate.exchange<Any>("/books/${book.id}/cover", PUT, buildUploadEntity(updateResource, jwt))
 
             assertThat(response).isNotFound()
         }
 
         @Test
-        fun `Given token When update cover Then succeed`() {
+        fun `Given logged-in When update cover Then succeed`() {
             whenever(coverService.update(book.id, CoverUpdateRequest(updateResource.byteArray))).thenReturn(book)
             val jwt = restTemplate.login(loginDto)
 
             val response =
-                restTemplate.exchange<Any>("/books/${book.id}/cover", POST, buildUploadEntity(updateResource, jwt))
+                restTemplate.exchange<Any>("/books/${book.id}/cover", PUT, buildUploadEntity(updateResource, jwt))
+
+            assertThat(response).isStatus(HttpStatus.NO_CONTENT)
+        }
+    }
+
+
+    @Nested
+    inner class DeleteCoverTest {
+        @Test
+        fun `When delete cover without token Then return forbidden`() {
+            val response = restTemplate.requestDeleteCover(book.id, jwt = null)
+
+            assertThat(response).isForbidden()
+        }
+
+        @Test
+        fun `Given logged-in and non-existing cover When delete it Then nothing found`() {
+            val jwt = restTemplate.login(loginDto)
+            whenever(coverService.delete(book.id)).thenReturn(null)
+
+            val response = restTemplate.requestDeleteCover(book.id, jwt)
+
+            assertThat(response).isNotFound()
+        }
+
+        @Test
+        fun `Given logged-in and existing cover When delete it Then return no content`() {
+            whenever(coverService.delete(book.id)).thenReturn(book)
+            val jwt = restTemplate.login(loginDto)
+
+            val response = restTemplate.requestDeleteCover(book.id, jwt)
 
             assertThat(response).isStatus(HttpStatus.NO_CONTENT)
         }
 
-
+        private fun TestRestTemplate.requestDeleteCover(id: Id, jwt: Jwt?) =
+            requestAny<Any>(DELETE, "/books/$id/cover", headers = HttpHeaders().apply {
+                jwt?.let { withJwt(it) }
+            })
     }
 }
