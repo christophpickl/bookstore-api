@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component
 import java.util.UUID
 
 @Component
-class SetupDummyUser(
+class DummyDataInitializer(
     private val userRepository: UserRepository,
     private val passwordEncoder: BCryptPasswordEncoder,
     private val bookRepository: BookRepository,

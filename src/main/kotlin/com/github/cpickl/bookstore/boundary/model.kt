@@ -4,10 +4,6 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
-import com.github.cpickl.bookstore.domain.BookUpdateRequest
-import com.github.cpickl.bookstore.domain.Currency
-import com.github.cpickl.bookstore.domain.Id
-import com.github.cpickl.bookstore.domain.Money
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(
@@ -245,11 +241,13 @@ data class LinkDto(
     val method: Method,
 
     @get:Schema(
-        description = "Relative path to the target site.",
-        example = "/",
+        description = "Relative path to the target site; may contain templates.",
+        example = "/foo{?query}",
         required = true,
     )
     val path: String,
+    // TODO val templated: Boolean,
+
 ) {
     companion object {
         fun get(path: String) = LinkDto(Method.GET, path)

@@ -6,6 +6,7 @@ plugins {
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     kotlin("jvm") version "1.4.32"
     kotlin("plugin.spring") version "1.4.32"
+    kotlin("plugin.jpa") version "1.4.32"
     id("io.gitlab.arturbosch.detekt").version("1.16.0")
     id("com.github.ben-manes.versions").version("0.38.0")
 }
@@ -25,18 +26,19 @@ dependencies {
         implementation("org.springframework.boot:spring-boot-starter-$artifactSuffix")
     }
     spring("web")
+    spring("data-jpa")
     spring("security")
-    spring("actuator")
     implementation("com.auth0:java-jwt:3.15.0")
     implementation("org.springdoc:springdoc-openapi-ui:1.5.2")
+    runtimeOnly("com.h2database:h2")
 
-    // dont upgrade to 2.12.3 as spring boot will have binary incompatibilities
+    // jackson: dont upgrade to 2.12.3 as spring boot will have binary incompatibilities
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
 
+    // logging
     implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.6")
-
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude("junit", "junit")

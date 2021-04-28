@@ -17,20 +17,33 @@ spring:
       enabled: true
 
 ---
+spring:
+  config:
+    activate:
+      on-profile: prod
+    #datasource:
+    #url: jdbc:foobar
+    #username: ...
+logging:
+  level:
+    org.hibernate: ERROR
+
+---
 # -Dspring.profiles.active=dev,dummyData
 spring:
   config:
     activate:
       on-profile: dev
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
 server:
   error:
     include-exception: true
-
----
-spring:
-  config:
-    activate:
-      on-profile: prod
+logging:
+  level:
+#    org.hibernate: DEBUG
+#    org.hibernate.sql: DEBUG
 
 ---
 spring:

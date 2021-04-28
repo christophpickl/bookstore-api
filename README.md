@@ -30,19 +30,31 @@ or make use of the provided [Postman collection](https://github.com/christophpic
 
 ### Ideas
 
+_Now_:
+
+* spring rest controller: https://spring.io/guides/gs/accessing-data-rest/
+* improve ErrorDto, add:  path, method, (optional) stacktrace
+* test invalid currencyCode
+* replace "whitelabel error page"
+* DB migration (https://thorben-janssen.com/database-migration-with-spring-boot/)
+* split UT from IT => take coverage
+* document JWT in openAPI spec
 * pagination
-* dockerize (+compose for DBMS)
+* dockerize (+compose for DBMS; introduce prod-ready DBMS)
 * hardening (improve exception handling, input (bean) validation)
 * replace password type from String to CharArray for security reasons
-* JPA/exposed persistence layer
 * mini-frontend (kotlin HTML-DSL)
-* CQRS + event sourcing (kafka, reddis, elastic)
 * testcontainer
+
+_Later_:
+
 * BDD
 * kotlin MPP (javascript, android)
 * CI/CD pipeline (github/gitlab/travis?)
   * automated release (kotlin scripts)
   * cloud deployment (heroku?)
 * HATEOS API (higher ReST maturity level via hypermedia)
+* exposed persistence layer
 * GraphQL API
+* CQRS + event sourcing (kafka, reddis, elastic)
 * Reactive API
