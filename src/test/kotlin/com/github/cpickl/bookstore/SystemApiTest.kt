@@ -6,7 +6,6 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isTrue
 import com.github.cpickl.bookstore.adapter.InMemoryBookRepository
-import com.github.cpickl.bookstore.adapter.InMemoryCoverRepository
 import com.github.cpickl.bookstore.boundary.BookCreateDto
 import com.github.cpickl.bookstore.boundary.BookDto
 import com.github.cpickl.bookstore.boundary.BookUpdateDto
@@ -37,7 +36,6 @@ class SystemApiTest(
     @Autowired val restTemplate: TestRestTemplate,
     @Autowired private val userPreparer: UserTestPreparer,
     @Autowired private val bookRepository: InMemoryBookRepository,
-    @Autowired private val coverRepository: InMemoryCoverRepository,
 ) {
 
     private val loginDto = userPreparer.userLogin
@@ -50,7 +48,7 @@ class SystemApiTest(
     @BeforeEach
     fun `reset data`() {
         bookRepository.clear()
-        coverRepository.clear()
+        // FIXME reset database; dirties context?! entity manager?! coverRepository.clear()
     }
 
     @Nested

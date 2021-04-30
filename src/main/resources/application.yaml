@@ -10,6 +10,8 @@ spring:
     active: "prod"
   application:
     name: bookstore-api
+  main:
+    banner-mode: off
   servlet:
     multipart:
       max-file-size: 2MB

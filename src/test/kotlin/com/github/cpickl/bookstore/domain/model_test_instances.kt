@@ -2,7 +2,12 @@ package com.github.cpickl.bookstore.domain
 
 import java.util.UUID
 
+const val UUID1 = "00000000-0000-0000-0000-000000000001"
+const val UUID2 = "00000000-0000-0000-0000-000000000002"
+
 fun Id.Companion.any() = Id(uuid = UUID.randomUUID())
+val Id.Companion.some1 get() = Id(UUID1)
+val Id.Companion.some2 get() = Id(UUID2)
 
 fun Currency.Companion.any() = Currency.Euro
 

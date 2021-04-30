@@ -112,14 +112,14 @@ abstract class BookRepositoryTest {
 
         @Test
         fun `When find single Then return null`() {
-            assertThat(testee.findOrNull(Id.any())).isNull()
+            assertThat(testee.find(Id.any())).isNull()
         }
 
         @Test
         fun `Given created book When find single Then finds`() {
             testee.create(book)
 
-            val found = testee.findOrNull(book.id)
+            val found = testee.find(book.id)
 
             assertThat(found).isEqualTo(book)
         }
@@ -128,7 +128,7 @@ abstract class BookRepositoryTest {
         fun `Given unpublished book When find single Then return null`() {
             testee.create(book.copy(state = BookState.Unpublished))
 
-            val found = testee.findOrNull(book.id)
+            val found = testee.find(book.id)
 
             assertThat(found).isNull()
         }
@@ -163,7 +163,7 @@ abstract class BookRepositoryTest {
 
             testee.update(updated)
 
-            assertThat(testee.findOrNull(book.id)).isEqualTo(updated)
+            assertThat(testee.find(book.id)).isEqualTo(updated)
         }
     }
 }

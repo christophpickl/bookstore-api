@@ -64,7 +64,7 @@ class AuthenticationUserDetailService(
 
     override fun loadUserByUsername(username: String): UserDetails? {
         log.debug { "Loading user '$username' ..." }
-        val user = userRepository.findOrNull(username) ?: throw UsernameNotFoundException(username)
+        val user = userRepository.find(username) ?: throw UsernameNotFoundException(username)
         return User(user.username, user.passwordHash, emptyList())
     }
 }

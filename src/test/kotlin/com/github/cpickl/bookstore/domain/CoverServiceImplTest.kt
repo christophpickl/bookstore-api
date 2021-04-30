@@ -32,7 +32,7 @@ class CoverServiceImplTest {
 
         @Test
         fun `Given book repo cant find When find cover Then return null`() {
-            whenever(bookRepository.findOrNull(bookId)).thenReturn(null)
+            whenever(bookRepository.find(bookId)).thenReturn(null)
 
             assertThat {
                 service.find(bookId)
@@ -42,8 +42,8 @@ class CoverServiceImplTest {
 
         @Test
         fun `Given book repo has but cover repo has not When find cover Then return default cover`() {
-            whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
-            whenever(coverRepository.findOrNull(bookId)).thenReturn(null)
+            whenever(bookRepository.find(bookId)).thenReturn(book)
+            whenever(coverRepository.find(bookId)).thenReturn(null)
 
             val found = service.find(bookId)
 
@@ -52,8 +52,8 @@ class CoverServiceImplTest {
 
         @Test
         fun `Given book repo and cover repo has When find cover Then return cover`() {
-            whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
-            whenever(coverRepository.findOrNull(bookId)).thenReturn(customCover)
+            whenever(bookRepository.find(bookId)).thenReturn(book)
+            whenever(coverRepository.find(bookId)).thenReturn(customCover)
 
             val found = service.find(bookId)
 
@@ -65,7 +65,7 @@ class CoverServiceImplTest {
     inner class UpdateTest {
         @Test
         fun `Given not book existing When update cover Then return null`() {
-            whenever(bookRepository.findOrNull(bookId)).thenReturn(null)
+            whenever(bookRepository.find(bookId)).thenReturn(null)
 
             assertThat {
                 service.update(bookId, CoverUpdateRequest.any())
@@ -75,7 +75,7 @@ class CoverServiceImplTest {
 
         @Test
         fun `Given existing book When update cover Then return that book`() {
-            whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
+            whenever(bookRepository.find(bookId)).thenReturn(book)
 
             val updated = service.update(bookId, CoverUpdateRequest.any())
 
@@ -84,12 +84,12 @@ class CoverServiceImplTest {
 
         @Test
         fun `Given existing book When update cover Then delegated to repository`() {
-            whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
+            whenever(bookRepository.find(bookId)).thenReturn(book)
             val request = CoverUpdateRequest.any()
 
             service.update(bookId, request)
 
-            verify(coverRepository).update(bookId, CoverImage.CustomImage(request.bytes))
+            verify(coverRepository).insertOrUpdate(bookId, CoverImage.CustomImage(request.bytes))
         }
     }
 
@@ -97,7 +97,7 @@ class CoverServiceImplTest {
     inner class DeleteTest {
         @Test
         fun `Given not book existing When delete cover Then return null`() {
-            whenever(bookRepository.findOrNull(bookId)).thenReturn(null)
+            whenever(bookRepository.find(bookId)).thenReturn(null)
 
             assertThat {
                 service.delete(bookId)
@@ -107,7 +107,7 @@ class CoverServiceImplTest {
 
         @Test
         fun `Given existing book When delete cover Then return that book`() {
-            whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
+            whenever(bookRepository.find(bookId)).thenReturn(book)
 
             val updated = service.delete(bookId)
 
@@ -116,7 +116,7 @@ class CoverServiceImplTest {
 
         @Test
         fun `Given existing book When delete cover Then delegated to repository`() {
-            whenever(bookRepository.findOrNull(bookId)).thenReturn(book)
+            whenever(bookRepository.find(bookId)).thenReturn(book)
 
             service.delete(bookId)
 

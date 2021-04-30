@@ -11,10 +11,11 @@ class JpaUserRepository(
     private val jpaRepo: JpaUserCrudRepository,
 ) : UserRepository {
 
-    override fun findOrNull(username: String) =
+    override fun find(username: String) =
         jpaRepo.findByUsername(username)?.toUser()
 
     override fun create(user: User) {
+        println("save: $user")
         jpaRepo.save(user.toUserJpa())
     }
 

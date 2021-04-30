@@ -26,18 +26,18 @@ class CoverServiceImpl(
 ) : CoverService {
 
     override fun find(bookId: Id): CoverImage {
-        val book = bookRepository.findOrNull(bookId) ?: throw BookNotFoundException(bookId)
-        return coverRepository.findOrNull(book.id) ?: CoverImage.DefaultImage
+        val book = bookRepository.find(bookId) ?: throw BookNotFoundException(bookId)
+        return coverRepository.find(book.id) ?: CoverImage.DefaultImage
     }
 
     override fun update(bookId: Id, request: CoverUpdateRequest): Book {
-        val book = bookRepository.findOrNull(bookId) ?: throw BookNotFoundException(bookId)
-        coverRepository.update(book.id, CoverImage.CustomImage(request.bytes))
+        val book = bookRepository.find(bookId) ?: throw BookNotFoundException(bookId)
+        coverRepository.insertOrUpdate(book.id, CoverImage.CustomImage(request.bytes))
         return book
     }
 
     override fun delete(bookId: Id): Book {
-        val book = bookRepository.findOrNull(bookId) ?: throw BookNotFoundException(bookId)
+        val book = bookRepository.find(bookId) ?: throw BookNotFoundException(bookId)
         coverRepository.delete(bookId)
         return book
     }

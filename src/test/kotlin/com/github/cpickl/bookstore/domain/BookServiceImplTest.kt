@@ -53,12 +53,12 @@ class BookServiceImplTest {
     inner class FindSingleTest {
         @Test
         fun `find single delegates to repo`() {
-            whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
+            whenever(bookRepository.find(book.id)).thenReturn(book)
 
             val found = service.find(book.id)
 
             assertThat(found).isEqualTo(book)
-            verify(bookRepository, times(1)).findOrNull(book.id)
+            verify(bookRepository, times(1)).find(book.id)
             verifyNoMoreInteractions(bookRepository)
         }
     }
@@ -68,7 +68,7 @@ class BookServiceImplTest {
         @Test
         fun `Given user When create Then return new book and delegate to repo`() {
             val user = User.any().copy(username = username)
-            whenever(userRepository.findOrNull(username)).thenReturn(user)
+            whenever(userRepository.find(username)).thenReturn(user)
             val request = BookCreateRequest.any().copy(username = username)
 
             val created = service.create(request)
@@ -87,7 +87,7 @@ class BookServiceImplTest {
 
         @Test
         fun `Given user not exists When create book Then throw`() {
-            whenever(userRepository.findOrNull(username)).thenReturn(null)
+            whenever(userRepository.find(username)).thenReturn(null)
             val request = BookCreateRequest.any().copy(username = username)
 
             assertThat {
@@ -102,7 +102,7 @@ class BookServiceImplTest {
         @Test
         fun `update delegates to repo`() {
             val request = BookUpdateDto.any().toBookUpdateRequest(username, book.id)
-            whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
+            whenever(bookRepository.find(book.id)).thenReturn(book)
 
             val actual = service.update(request)
 
@@ -121,7 +121,7 @@ class BookServiceImplTest {
         @Test
         fun `Given published book When delete it Then update to unpublished`() {
             val book = book.copy(state = BookState.Published)
-            whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
+            whenever(bookRepository.find(book.id)).thenReturn(book)
 
             val actual = service.delete(username, book.id)
 
@@ -133,7 +133,7 @@ class BookServiceImplTest {
         @Test
         fun `Given unpublished book When delete it Then fail`() {
             val book = book.copy(state = BookState.Unpublished)
-            whenever(bookRepository.findOrNull(book.id)).thenReturn(book)
+            whenever(bookRepository.find(book.id)).thenReturn(book)
 
             assertThat {
                 service.delete(username, book.id)
@@ -143,7 +143,7 @@ class BookServiceImplTest {
 
         @Test
         fun `Given book not existing When delete it Then throw not found`() {
-            whenever(bookRepository.findOrNull(book.id)).thenReturn(null)
+            whenever(bookRepository.find(book.id)).thenReturn(null)
 
             assertThat {
                 service.delete(username, book.id)
