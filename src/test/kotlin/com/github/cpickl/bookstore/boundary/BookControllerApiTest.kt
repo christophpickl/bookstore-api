@@ -327,7 +327,7 @@ fun Assert<ResponseEntity<String>>.isError(
 private fun Book.toSimpleJson() = """{
     "id": "$id",
     "title": "$title",
-    "detailLink": { "method": "GET", "path": "/books/$id", "templated": "false" }
+    "detailLink": { "method": "GET", "path": "/books/$id", "templated": false }
 }"""
 
 private fun Book.toDetailXml() = """<book>
@@ -347,9 +347,9 @@ private fun Book.toDetailJson() = """{
     "description": "$description",
     "price": ${price.toJson()},
     "author": "$authorName",
-    "coverLink": { "method": "GET", "path": "/books/$id/cover", "templated": "false" },
-    "updateLink": { "method": "PUT", "path": "/books/$id", "templated": "false" },
-    "deleteLink": { "method": "DELETE", "path": "/books/$id", "templated": "false" }
+    "coverLink": { "method": "GET", "path": "/books/$id/cover", "templated": false },
+    "updateLink": { "method": "PUT", "path": "/books/$id", "templated": false },
+    "deleteLink": { "method": "DELETE", "path": "/books/$id", "templated": false }
 }"""
 
 private fun Book.toSimpleXml() = """<book>
