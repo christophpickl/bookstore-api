@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
     description = "Simply provides some further links."
 )
 @RestController
-@RequestMapping("/", produces = [MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE])
+@RequestMapping("/api", produces = [MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE])
 class HomeController {
     @GetMapping("")
     fun getHome() = HomeDto()
@@ -25,7 +25,7 @@ class HomeController {
 @Suppress("unused")
 @JacksonXmlRootElement(localName = "home")
 class HomeDto {
-    val selfLink = LinkDto.get("/")
-    val loginLink = LinkDto(Method.POST, "/login")
-    val booksLink = LinkDto.get("/books{?search}", templated = true)
+    val selfLink = LinkDto.get("/api")
+    val loginLink = LinkDto(Method.POST, "/api/login")
+    val booksLink = LinkDto.get("/api/books{?search}", templated = true)
 }

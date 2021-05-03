@@ -43,6 +43,7 @@ _Now_:
 * split UT from IT => measure coverage
 * document JWT in openAPI spec
 * pagination
+* custom sorting
 * dockerize (+compose for DBMS; introduce prod-ready DBMS)
 * hardening (improve exception handling, input (bean) validation)
 * replace password type from String to CharArray for security reasons

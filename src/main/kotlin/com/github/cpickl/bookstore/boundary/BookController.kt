@@ -30,7 +30,7 @@ import java.util.UUID
 )
 @RestController
 @RequestMapping(
-    "/books",
+    "/api/books",
     produces = [APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE],
 )
 class BookController(

@@ -64,7 +64,7 @@ class BookControllerApiTest(
         fun `Given book When get all books with any accept Then return that book in JSON by default`() {
             whenever(bookService.findAll()).thenReturn(listOf(book))
 
-            val response = restTemplate.requestGet("/books", HttpHeaders().apply {
+            val response = restTemplate.requestGet("/api/books", HttpHeaders().apply {
                 accept = listOf(ALL)
             })
 
@@ -76,7 +76,7 @@ class BookControllerApiTest(
         fun `Given book When get all books as JSON Then return JSON`() {
             whenever(bookService.findAll()).thenReturn(listOf(book))
 
-            val response = restTemplate.requestGet("/books", HttpHeaders().apply {
+            val response = restTemplate.requestGet("/api/books", HttpHeaders().apply {
                 accept = listOf(APPLICATION_JSON)
             })
 
@@ -91,7 +91,7 @@ class BookControllerApiTest(
         fun `Given book When get all books as XML Then return XML`() {
             whenever(bookService.findAll()).thenReturn(listOf(book))
 
-            val response = restTemplate.requestGet("/books", HttpHeaders().apply {
+            val response = restTemplate.requestGet("/api/books", HttpHeaders().apply {
                 accept = listOf(APPLICATION_XML)
             })
 
@@ -104,7 +104,7 @@ class BookControllerApiTest(
         fun `When find all with search term Then search object passed`() {
             val search = Search.On("testSearch")
             whenever(bookService.findAll(search)).thenReturn(anyBooks)
-            val response = restTemplate.requestGet("/books?search=${search.term}")
+            val response = restTemplate.requestGet("/api/books?search=${search.term}")
 
             assertThat(response).isOk()
             verify(bookService).findAll(search)
@@ -113,7 +113,7 @@ class BookControllerApiTest(
         @Test
         fun `When find all without search term Then no search object passed`() {
             whenever(bookService.findAll(Search.Off)).thenReturn(anyBooks)
-            val response = restTemplate.requestGet("/books")
+            val response = restTemplate.requestGet("/api/books")
 
             assertThat(response).isOk()
             verify(bookService).findAll(Search.Off)
@@ -125,7 +125,7 @@ class BookControllerApiTest(
 
         @Test
         fun `When get book by malformed ID Then fail`() {
-            val response = restTemplate.requestGet("/books/malformed")
+            val response = restTemplate.requestGet("/api/books/malformed")
 
             assertThat(response).isError(
                 messageContains = "malformed",
@@ -138,7 +138,7 @@ class BookControllerApiTest(
         fun `When get non existing book Then not found`() {
             whenever(bookService.find(invalidBookId)).thenThrow(BookNotFoundException(invalidBookId))
 
-            val response = restTemplate.requestGet("/books/$invalidBookId")
+            val response = restTemplate.requestGet("/api/books/$invalidBookId")
 
             assertThat(response).isError(
                 messageContains = +invalidBookId,
@@ -151,7 +151,7 @@ class BookControllerApiTest(
         fun `Given book When get it Then return`() {
             whenever(bookService.find(book.id)).thenReturn(book)
 
-            val response = restTemplate.requestGet("/books/${book.id}")
+            val response = restTemplate.requestGet("/api/books/${book.id}")
 
             assertThat(response).isOk()
             assertThat(response.read<BookDto>()).isEqualTo(
@@ -169,7 +169,7 @@ class BookControllerApiTest(
         fun `Given book When get book as JSON Then return JSON`() {
             whenever(bookService.find(bookId)).thenReturn(book)
 
-            val response = restTemplate.requestGet("/books/$bookId", HttpHeaders().apply {
+            val response = restTemplate.requestGet("/api/books/$bookId", HttpHeaders().apply {
                 accept = listOf(APPLICATION_JSON)
             })
 
@@ -182,7 +182,7 @@ class BookControllerApiTest(
         fun `Given book When get book as XML Then return XML`() {
             whenever(bookService.find(bookId)).thenReturn(book)
 
-            val response = restTemplate.requestGet("/books/$bookId", HttpHeaders().apply {
+            val response = restTemplate.requestGet("/api/books/$bookId", HttpHeaders().apply {
                 accept = listOf(APPLICATION_XML)
             })
 
@@ -198,7 +198,7 @@ class BookControllerApiTest(
 
         @Test
         fun `When create book without token Then status forbidden`() {
-            val response = restTemplate.requestPost("/books", anyBody, HttpHeaders.EMPTY)
+            val response = restTemplate.requestPost("/api/books", anyBody, HttpHeaders.EMPTY)
 
             assertThat(response).isForbidden()
         }
@@ -219,7 +219,7 @@ class BookControllerApiTest(
             )
                 .thenReturn(book)
 
-            val response = restTemplate.requestPost("/books", requestBody, HttpHeaders().withJwt(jwt))
+            val response = restTemplate.requestPost("/api/books", requestBody, HttpHeaders().withJwt(jwt))
 
             assertThat(response).isOk()
             assertThat(response.read<BookDto>()).isEqualTo(
@@ -238,7 +238,7 @@ class BookControllerApiTest(
     inner class UpdateBookTest {
         @Test
         fun `When update without token Then fail`() {
-            val response = restTemplate.requestPut("/books/${book.id}")
+            val response = restTemplate.requestPut("/api/books/${book.id}")
 
             assertThat(response).isForbidden()
         }
@@ -250,7 +250,7 @@ class BookControllerApiTest(
             whenever(bookService.update(update.toBookUpdateRequest(loginDto.username, book.id)))
                 .thenThrow(BookNotFoundException(book.id))
 
-            val response = restTemplate.requestPut("/books/${book.id}", body = update, HttpHeaders().withJwt(jwt))
+            val response = restTemplate.requestPut("/api/books/${book.id}", body = update, HttpHeaders().withJwt(jwt))
 
             assertThat(response).isError(
                 messageContains = +book.id,
@@ -265,7 +265,7 @@ class BookControllerApiTest(
             val update = BookUpdateDto.any()
             whenever(bookService.update(update.toBookUpdateRequest(loginDto.username, book.id))).thenReturn(book)
 
-            val response = restTemplate.requestPut("/books/${book.id}", body = update, HttpHeaders().withJwt(jwt))
+            val response = restTemplate.requestPut("/api/books/${book.id}", body = update, HttpHeaders().withJwt(jwt))
 
             assertThat(response.read<BookDto>()).isEqualTo(book.toBookDto())
         }
@@ -275,7 +275,7 @@ class BookControllerApiTest(
     inner class DeleteBookTest {
         @Test
         fun `Given not logged in When delete Then fail`() {
-            val response = restTemplate.requestDelete("/books/$bookId")
+            val response = restTemplate.requestDelete("/api/books/$bookId")
 
             assertThat(response).isForbidden()
         }
@@ -285,7 +285,7 @@ class BookControllerApiTest(
             val jwt = restTemplate.login(loginDto)
             whenever(bookService.delete(loginDto.username, bookId)).thenThrow(BookNotFoundException(bookId))
 
-            val response = restTemplate.requestDelete("/books/$bookId", headers = HttpHeaders().withJwt(jwt))
+            val response = restTemplate.requestDelete("/api/books/$bookId", headers = HttpHeaders().withJwt(jwt))
 
             assertThat(response).isError(
                 messageContains = +bookId,
@@ -300,7 +300,7 @@ class BookControllerApiTest(
             val jwt = restTemplate.login(loginDto)
             whenever(bookService.delete(loginDto.username, bookId)).thenReturn(book)
 
-            val response = restTemplate.requestDelete("/books/$bookId", headers = HttpHeaders().withJwt(jwt))
+            val response = restTemplate.requestDelete("/api/books/$bookId", headers = HttpHeaders().withJwt(jwt))
 
             assertThat(response).isOk()
             assertThat(response.read<BookDto>()).isEqualTo(book.toBookDto())
@@ -327,7 +327,7 @@ fun Assert<ResponseEntity<String>>.isError(
 private fun Book.toSimpleJson() = """{
     "id": "$id",
     "title": "$title",
-    "detailLink": { "method": "GET", "path": "/books/$id", "templated": false }
+    "detailLink": { "method": "GET", "path": "/api/books/$id", "templated": false }
 }"""
 
 private fun Book.toDetailXml() = """<book>
@@ -336,9 +336,9 @@ private fun Book.toDetailXml() = """<book>
     <description><![CDATA[$description]]></description>
     <price>${price.toXml()}</price>
     <author>$authorName</author>
-    <coverLink><method>GET</method><path>/books/$id/cover</path><templated>false</templated></coverLink>
-    <updateLink><method>PUT</method><path>/books/$id</path><templated>false</templated></updateLink>
-    <deleteLink><method>DELETE</method><path>/books/$id</path><templated>false</templated></deleteLink>
+    <coverLink><method>GET</method><path>/api/books/$id/cover</path><templated>false</templated></coverLink>
+    <updateLink><method>PUT</method><path>/api/books/$id</path><templated>false</templated></updateLink>
+    <deleteLink><method>DELETE</method><path>/api/books/$id</path><templated>false</templated></deleteLink>
 </book>"""
 
 private fun Book.toDetailJson() = """{
@@ -347,15 +347,15 @@ private fun Book.toDetailJson() = """{
     "description": "$description",
     "price": ${price.toJson()},
     "author": "$authorName",
-    "coverLink": { "method": "GET", "path": "/books/$id/cover", "templated": false },
-    "updateLink": { "method": "PUT", "path": "/books/$id", "templated": false },
-    "deleteLink": { "method": "DELETE", "path": "/books/$id", "templated": false }
+    "coverLink": { "method": "GET", "path": "/api/books/$id/cover", "templated": false },
+    "updateLink": { "method": "PUT", "path": "/api/books/$id", "templated": false },
+    "deleteLink": { "method": "DELETE", "path": "/api/books/$id", "templated": false }
 }"""
 
 private fun Book.toSimpleXml() = """<book>
     <id>$id</id>
     <title>$title</title>
-    <detailLink><method>GET</method><path>/books/$id</path><templated>false</templated></detailLink>
+    <detailLink><method>GET</method><path>/api/books/$id</path><templated>false</templated></detailLink>
 </book>"""
 
 private fun Money.toJson() =

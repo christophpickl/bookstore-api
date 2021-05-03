@@ -14,7 +14,7 @@
 				{
 					"name": "books",
 					"request": {
-						"url": "{{baseUrl}}/books",
+						"url": "{{baseUrl}}/api/books",
 						"method": "GET",
 						"header": [],
 						"body": {},
@@ -25,7 +25,7 @@
 				{
 					"name": "books XML",
 					"request": {
-						"url": "{{baseUrl}}/books",
+						"url": "{{baseUrl}}/api/books",
 						"method": "GET",
 						"header": [
 							{
@@ -42,7 +42,7 @@
 				{
 					"name": "book detail",
 					"request": {
-						"url": "{{baseUrl}}/books/{{bookId}}",
+						"url": "{{baseUrl}}/api/books/{{bookId}}",
 						"method": "GET",
 						"header": [
 							{
@@ -65,7 +65,7 @@
 				{
 					"name": "create book",
 					"request": {
-						"url": "{{baseUrl}}/books",
+						"url": "{{baseUrl}}/api/books",
 						"method": "POST",
 						"header": [
 							{
@@ -90,7 +90,7 @@
 				{
 					"name": "update book",
 					"request": {
-						"url": "{{baseUrl}}/books/{{bookId}}",
+						"url": "{{baseUrl}}/api/books/{{bookId}}",
 						"method": "PUT",
 						"header": [
 							{
@@ -115,7 +115,7 @@
 				{
 					"name": "update book XML",
 					"request": {
-						"url": "{{baseUrl}}/books/{{bookId}}",
+						"url": "{{baseUrl}}/api/books/{{bookId}}",
 						"method": "PUT",
 						"header": [
 							{
@@ -140,7 +140,7 @@
 				{
 					"name": "delete book",
 					"request": {
-						"url": "{{baseUrl}}/books/{{bookId}}",
+						"url": "{{baseUrl}}/api/books/{{bookId}}",
 						"method": "DELETE",
 						"header": [
 							{
@@ -163,7 +163,7 @@
 				{
 					"name": "get cover",
 					"request": {
-						"url": "{{baseUrl}}/books/{{bookId}}/cover",
+						"url": "{{baseUrl}}/api/books/{{bookId}}/cover",
 						"method": "GET",
 						"header": [],
 						"body": {},
@@ -174,7 +174,7 @@
 				{
 					"name": "update cover",
 					"request": {
-						"url": "{{baseUrl}}/books/{{bookId}}/cover",
+						"url": "{{baseUrl}}/api/books/{{bookId}}/cover",
 						"method": "PUT",
 						"header": [
 							{
@@ -188,9 +188,9 @@
 							"formdata": [
 								{
 									"key": "cover-file",
+									"value": "",
 									"description": "",
-									"type": "file",
-									"src": "AH_loyalty_card.png"
+									"type": "file"
 								}
 							]
 						},
@@ -201,7 +201,7 @@
 				{
 					"name": "delete cover",
 					"request": {
-						"url": "{{baseUrl}}/books/{{bookId}}/cover",
+						"url": "{{baseUrl}}/api/books/{{bookId}}/cover",
 						"method": "DELETE",
 						"header": [
 							{
@@ -220,7 +220,7 @@
 		{
 			"name": "home",
 			"request": {
-				"url": "{{baseUrl}}/",
+				"url": "{{baseUrl}}/api",
 				"method": "GET",
 				"header": [
 					{

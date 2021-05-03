@@ -14,7 +14,7 @@ class HomeControllerApiTest(
 ) {
     @Test
     fun `When get home Then return 200 OK`() {
-        val response = restTemplate.requestGet("/")
+        val response = restTemplate.requestGet("/api")
 
         assertThat(response).isOk()
     }

@@ -60,7 +60,7 @@ class CoverControllerApiTest(
         fun `When get unknown cover Then not found`() {
             whenever(coverService.find(unknownBookId)).thenThrow(BookNotFoundException(unknownBookId))
 
-            val response = restTemplate.requestGet("/books/$unknownBookId/cover")
+            val response = restTemplate.requestGet("/api/books/$unknownBookId/cover")
 
             assertThat(response).isError(
                 messageContains = +unknownBookId,
@@ -73,7 +73,7 @@ class CoverControllerApiTest(
         fun `Given book When get cover Then return image`() {
             whenever(coverService.find(book.id)).thenReturn(cover)
 
-            val response = restTemplate.requestAny<ByteArray>(GET, "/books/${book.id}/cover")
+            val response = restTemplate.requestAny<ByteArray>(GET, "/api/books/${book.id}/cover")
 
             assertThat(response).isOk()
             assertThat(response.headers[CONTENT_TYPE]).isNotNull().containsExactly(IMAGE_PNG_VALUE)
@@ -91,7 +91,7 @@ class CoverControllerApiTest(
         @Test
         fun `When update cover without token Then return forbidden`() {
             val response = restTemplate.exchange<Any>(
-                "/books/${book.id}/cover",
+                "/api/books/${book.id}/cover",
                 PUT,
                 uploadEntity(anyResource, jwt = null)
             )
@@ -106,7 +106,7 @@ class CoverControllerApiTest(
             val jwt = restTemplate.login(loginDto)
 
             val response =
-                restTemplate.exchange<String>("/books/${book.id}/cover", PUT, uploadEntity(updateResource, jwt))
+                restTemplate.exchange<String>("/api/books/${book.id}/cover", PUT, uploadEntity(updateResource, jwt))
 
             assertThat(response).isError(
                 messageContains = +book.id,
@@ -121,7 +121,7 @@ class CoverControllerApiTest(
             val jwt = restTemplate.login(loginDto)
 
             val response =
-                restTemplate.exchange<Any>("/books/${book.id}/cover", PUT, uploadEntity(updateResource, jwt))
+                restTemplate.exchange<Any>("/api/books/${book.id}/cover", PUT, uploadEntity(updateResource, jwt))
 
             assertThat(response).isStatus(NO_CONTENT)
         }
@@ -162,7 +162,7 @@ class CoverControllerApiTest(
         }
 
         private fun TestRestTemplate.requestDeleteCover(id: Id, jwt: Jwt?) =
-            requestAny<String>(DELETE, "/books/$id/cover", headers = HttpHeaders().apply {
+            requestAny<String>(DELETE, "/api/books/$id/cover", headers = HttpHeaders().apply {
                 jwt?.let { withJwt(it) }
             })
     }

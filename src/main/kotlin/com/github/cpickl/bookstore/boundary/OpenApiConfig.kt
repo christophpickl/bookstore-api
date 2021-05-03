@@ -42,5 +42,4 @@ class OpenApiConfig {
                 Server().url("http://prod.me").description("PROD server")
             )
         )
-
 }

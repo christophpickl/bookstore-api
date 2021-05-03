@@ -34,14 +34,14 @@ import javax.servlet.http.HttpServletResponse
 object SecurityConstants {
     // FUTURE annotate controller methods instead
     val PERMIT_ALL_PATHS = listOf(
-        HttpMethod.GET to "/",
+        HttpMethod.GET to "/api",
         HttpMethod.POST to "/login",
-        HttpMethod.GET to "/books",
-        HttpMethod.GET to "/books/*",
-        HttpMethod.GET to "/books/*/cover",
+        HttpMethod.GET to "/api/books",
+        HttpMethod.GET to "/api/books/*",
+        HttpMethod.GET to "/api/books/*/cover",
     ).plus(OpenApiConfig.securityPermitPaths)
 
-    const val EXPIRATION_TIME = 864000000 // 10 days
+    const val EXPIRATION_TIME = 864_000_000 // 10 days
     const val SECRET = "my_top_secret" // FUTURE inject during build
 
     val admin = LoginDto("admin", "admin") // FUTURE inject during build
@@ -76,7 +76,9 @@ class SecurityConfiguration(
 ) : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
-        http.cors().and().csrf().disable().authorizeRequests()
+        http.cors().and()
+            .csrf().disable()
+            .authorizeRequests()
             .let {
                 SecurityConstants.PERMIT_ALL_PATHS.fold(it) { acc, path ->
                     acc.antMatchers(path.first, path.second).permitAll()
@@ -88,6 +90,7 @@ class SecurityConfiguration(
             // this disables session creation on Spring Security
             .addFilter(JWTAuthorizationFilter(authenticationManager()))
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+
     }
 
     override fun configure(auth: AuthenticationManagerBuilder) {

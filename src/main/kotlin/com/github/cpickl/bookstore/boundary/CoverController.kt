@@ -25,7 +25,7 @@ import java.util.UUID
     description = "CRUD operations for covers (partially secured)."
 )
 @RestController
-@RequestMapping("/books/{id}/cover")
+@RequestMapping("/api/books/{id}/cover")
 class CoverController(
     private val service: CoverService,
 ) {

@@ -42,11 +42,11 @@ data class BookSimpleDto(
 ) {
     @Schema(
         description = "Path to get the full book details.",
-        example = "/books/00000000-1111-2222-3333-444444444444",
+        example = "/api/books/00000000-1111-2222-3333-444444444444",
         required = true,
     )
     @Suppress("unused")
-    val detailLink: LinkDto = LinkDto.get("/books/$id")
+    val detailLink: LinkDto = LinkDto.get("/api/books/$id")
 }
 
 @Schema(
@@ -96,21 +96,21 @@ data class BookDto(
         required = true,
     )
     @Suppress("unused")
-    val coverLink: LinkDto = LinkDto(Method.GET, path = "/books/$id/cover")
+    val coverLink: LinkDto = LinkDto(Method.GET, path = "/api/books/$id/cover")
 
     @Schema(
         description = "Link to update this book.",
         required = true,
     )
     @Suppress("unused")
-    val updateLink: LinkDto = LinkDto(Method.PUT, path = "/books/$id")
+    val updateLink: LinkDto = LinkDto(Method.PUT, path = "/api/books/$id")
 
     @Schema(
         description = "Link to delete/unpublish this book.",
         required = true,
     )
     @Suppress("unused")
-    val deleteLink: LinkDto = LinkDto(Method.DELETE, path = "/books/$id")
+    val deleteLink: LinkDto = LinkDto(Method.DELETE, path = "/api/books/$id")
 }
 
 @Schema(
@@ -242,7 +242,7 @@ data class LinkDto(
 
     @get:Schema(
         description = "Relative path to the target site; may contain templates.",
-        example = "/foo{?query}",
+        example = "/api/resource{?query}",
         required = true,
     )
     val path: String,

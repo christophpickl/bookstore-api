@@ -44,8 +44,8 @@ server:
     include-exception: true
 logging:
   level:
-#    org.hibernate: DEBUG
-#    org.hibernate.sql: DEBUG
+    org.hibernate: INFO
+    org.hibernate.sql: INFO
 
 ---
 spring:

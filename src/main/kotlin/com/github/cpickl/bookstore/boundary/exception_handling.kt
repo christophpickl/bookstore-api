@@ -3,15 +3,11 @@ package com.github.cpickl.bookstore.boundary
 import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.InternalException
 import io.swagger.v3.oas.annotations.media.Schema
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
-import org.springframework.web.context.request.WebRequest
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import javax.xml.bind.annotation.XmlRootElement
 
 @Schema(
@@ -40,6 +36,7 @@ data class ErrorDto(
         example = "Oooops, something went wrong!",
     )
     val message: String,
+    // TODO enhance ErrorDto
     // 2021-04-20T19:29:48.256+00:00
 //    val timestamp: String,
 //    val exception: String?,
@@ -88,17 +85,4 @@ enum class ErrorCode {
     UNKNOWN,
     BOOK_NOT_FOUND,
     INVALID_INPUT,
-}
-
-@ControllerAdvice
-class Foo : ResponseEntityExceptionHandler() {
-    override fun handleMethodArgumentNotValid(
-        ex: MethodArgumentNotValidException,
-        headers: HttpHeaders,
-        status: HttpStatus,
-        request: WebRequest
-    ): ResponseEntity<Any> {
-        println("foo: $ex")
-        return super.handleMethodArgumentNotValid(ex, headers, status, request)
-    }
 }

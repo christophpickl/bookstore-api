@@ -65,7 +65,7 @@ class SystemApiTest(
             val update = BookUpdateDto.any()
             putBookDto(jwt, created.id, update)
 
-            val recentBook = restTemplate.requestGet("/books/${created.id}").read<BookDto>()
+            val recentBook = restTemplate.requestGet("/api/books/${created.id}").read<BookDto>()
             assertThat(recentBook.title).isEqualTo(update.title) // only check for title for simplicity sake
         }
 
@@ -127,31 +127,31 @@ class SystemApiTest(
     }
 
     private fun getBook(id: String) =
-        restTemplate.requestGet("/books/$id")
+        restTemplate.requestGet("/api/books/$id")
 
     private fun getBookDto(id: String) =
         getBook(id).read<BookDto>()
 
     private fun getBookCover(id: String) =
-        restTemplate.requestAny<ByteArray>(GET, "/books/$id/cover")
+        restTemplate.requestAny<ByteArray>(GET, "/api/books/$id/cover")
 
     private fun getBooksDto(search: String? = null) =
-        restTemplate.requestGet("/books${search.buildQuery()}").read<BooksDto>()
+        restTemplate.requestGet("/api/books${search.buildQuery()}").read<BooksDto>()
 
     private fun postBookDto(jwt: Jwt, dto: BookCreateDto) =
-        restTemplate.requestPost("/books", dto, headers = HttpHeaders().withJwt(jwt)).read<BookDto>()
+        restTemplate.requestPost("/api/books", dto, headers = HttpHeaders().withJwt(jwt)).read<BookDto>()
 
     private fun putBookDto(jwt: Jwt, id: String, dto: BookUpdateDto) =
-        restTemplate.requestPut("/books/$id", body = dto, headers = HttpHeaders().withJwt(jwt)).read<BookDto>()
+        restTemplate.requestPut("/api/books/$id", body = dto, headers = HttpHeaders().withJwt(jwt)).read<BookDto>()
 
     private fun deleteBook(jwt: Jwt, id: String) =
-        restTemplate.requestDelete("/books/$id", headers = HttpHeaders().withJwt(jwt))
+        restTemplate.requestDelete("/api/books/$id", headers = HttpHeaders().withJwt(jwt))
 
     private fun updateCover(id: String, requestEntity: HttpEntity<*>) =
-        restTemplate.exchange<Any>("/books/$id/cover", HttpMethod.PUT, requestEntity)
+        restTemplate.exchange<Any>("/api/books/$id/cover", HttpMethod.PUT, requestEntity)
 
     private fun deleteCover(jwt: Jwt, id: String) =
-        restTemplate.requestDelete("/books/$id/cover", headers = HttpHeaders().withJwt(jwt))
+        restTemplate.requestDelete("/api/books/$id/cover", headers = HttpHeaders().withJwt(jwt))
 
     private fun String?.buildQuery() = if (this == null) "" else {
         "?search=${this}"
