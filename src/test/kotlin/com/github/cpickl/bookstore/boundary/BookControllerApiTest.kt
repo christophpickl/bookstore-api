@@ -327,7 +327,7 @@ fun Assert<ResponseEntity<String>>.isError(
 private fun Book.toSimpleJson() = """{
     "id": "$id",
     "title": "$title",
-    "detailLink": { "method": "GET", "path": "/books/$id" }
+    "detailLink": { "method": "GET", "path": "/books/$id", "templated": "false" }
 }"""
 
 private fun Book.toDetailXml() = """<book>
@@ -336,9 +336,9 @@ private fun Book.toDetailXml() = """<book>
     <description><![CDATA[$description]]></description>
     <price>${price.toXml()}</price>
     <author>$authorName</author>
-    <coverLink><method>GET</method><path>/books/$id/cover</path></coverLink>
-    <updateLink><method>PUT</method><path>/books/$id</path></updateLink>
-    <deleteLink><method>DELETE</method><path>/books/$id</path></deleteLink>
+    <coverLink><method>GET</method><path>/books/$id/cover</path><templated>false</templated></coverLink>
+    <updateLink><method>PUT</method><path>/books/$id</path><templated>false</templated></updateLink>
+    <deleteLink><method>DELETE</method><path>/books/$id</path><templated>false</templated></deleteLink>
 </book>"""
 
 private fun Book.toDetailJson() = """{
@@ -347,15 +347,15 @@ private fun Book.toDetailJson() = """{
     "description": "$description",
     "price": ${price.toJson()},
     "author": "$authorName",
-    "coverLink": { "method": "GET", "path": "/books/$id/cover" },
-    "updateLink": { "method": "PUT", "path": "/books/$id" },
-    "deleteLink": { "method": "DELETE", "path": "/books/$id" }
+    "coverLink": { "method": "GET", "path": "/books/$id/cover", "templated": "false" },
+    "updateLink": { "method": "PUT", "path": "/books/$id", "templated": "false" },
+    "deleteLink": { "method": "DELETE", "path": "/books/$id", "templated": "false" }
 }"""
 
 private fun Book.toSimpleXml() = """<book>
     <id>$id</id>
     <title>$title</title>
-    <detailLink><method>GET</method><path>/books/$id</path></detailLink>
+    <detailLink><method>GET</method><path>/books/$id</path><templated>false</templated></detailLink>
 </book>"""
 
 private fun Money.toJson() =

@@ -246,10 +246,16 @@ data class LinkDto(
         required = true,
     )
     val path: String,
-    // TODO val templated: Boolean,
 
-) {
+    @get:Schema(
+        description = "Indicating whether the URL supports some customization.",
+        example = "true",
+        required = true,
+    )
+    val templated: Boolean = false,
+
+    ) {
     companion object {
-        fun get(path: String) = LinkDto(Method.GET, path)
+        fun get(path: String, templated: Boolean = false) = LinkDto(Method.GET, path, templated)
     }
 }

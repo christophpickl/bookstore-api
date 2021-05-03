@@ -27,5 +27,5 @@ class HomeController {
 class HomeDto {
     val selfLink = LinkDto.get("/")
     val loginLink = LinkDto(Method.POST, "/login")
-    val booksLink = LinkDto.get("/books")
+    val booksLink = LinkDto.get("/books{?search}", templated = true)
 }

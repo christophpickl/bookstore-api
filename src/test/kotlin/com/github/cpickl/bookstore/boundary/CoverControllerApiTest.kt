@@ -35,7 +35,6 @@ import org.springframework.http.HttpMethod.PUT
 import org.springframework.http.HttpStatus.NO_CONTENT
 import org.springframework.http.MediaType.IMAGE_PNG_VALUE
 
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CoverControllerApiTest(
     @Autowired private val restTemplate: TestRestTemplate,
