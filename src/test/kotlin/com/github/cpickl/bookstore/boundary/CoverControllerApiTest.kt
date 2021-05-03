@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
-import com.github.cpickl.bookstore.UserTestPreparer
+import com.github.cpickl.bookstore.TestUserPreparer
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.CoverImage
@@ -39,7 +39,7 @@ import org.springframework.http.MediaType.IMAGE_PNG_VALUE
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CoverControllerApiTest(
     @Autowired private val restTemplate: TestRestTemplate,
-    @Autowired private val userPreparer: UserTestPreparer,
+    @Autowired private val userPreparer: TestUserPreparer,
 ) {
 
     private val loginDto = userPreparer.userLogin
@@ -94,7 +94,7 @@ class CoverControllerApiTest(
             val response = restTemplate.exchange<Any>(
                 "/books/${book.id}/cover",
                 PUT,
-                buildUploadEntity(anyResource, jwt = null)
+                uploadEntity(anyResource, jwt = null)
             )
 
             assertThat(response).isForbidden()
@@ -107,7 +107,7 @@ class CoverControllerApiTest(
             val jwt = restTemplate.login(loginDto)
 
             val response =
-                restTemplate.exchange<String>("/books/${book.id}/cover", PUT, buildUploadEntity(updateResource, jwt))
+                restTemplate.exchange<String>("/books/${book.id}/cover", PUT, uploadEntity(updateResource, jwt))
 
             assertThat(response).isError(
                 messageContains = +book.id,
@@ -122,7 +122,7 @@ class CoverControllerApiTest(
             val jwt = restTemplate.login(loginDto)
 
             val response =
-                restTemplate.exchange<Any>("/books/${book.id}/cover", PUT, buildUploadEntity(updateResource, jwt))
+                restTemplate.exchange<Any>("/books/${book.id}/cover", PUT, uploadEntity(updateResource, jwt))
 
             assertThat(response).isStatus(NO_CONTENT)
         }

@@ -8,3 +8,13 @@ fun UserJpa.Companion.any() = UserJpa(
     username = "username",
     passwordHash = "passwordHash",
 )
+
+fun BookJpa.Companion.any() = BookJpa(
+    id = UUID.randomUUID().toString(),
+    title = "title",
+    description = "description",
+    author = UserJpa.any(),
+    currencyCode = "EUR",
+    price = 42,
+    state = BookStateJpa.UNPUBLISHED,
+)

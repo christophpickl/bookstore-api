@@ -8,15 +8,15 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class JpaUserRepository(
-    private val jpaRepo: JpaUserCrudRepository,
+    private val repo: JpaUserCrudRepository,
 ) : UserRepository {
 
     override fun find(username: String) =
-        jpaRepo.findByUsername(username)?.toUser()
+        repo.findByUsername(username)?.toUser()
 
     override fun create(user: User) {
         println("save: $user")
-        jpaRepo.save(user.toUserJpa())
+        repo.save(user.toUserJpa())
     }
 
     private fun User.toUserJpa() = UserJpa(

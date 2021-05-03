@@ -28,7 +28,7 @@ fun TestRestTemplate.login(dto: LoginDto): Jwt {
     return Jwt(response.headers.readAuthorization())
 }
 
-fun buildUploadEntity(
+fun uploadEntity(
     bytesResource: ByteArrayResource,
     jwt: Jwt? = null
 ): HttpEntity<LinkedMultiValueMap<String, Any>> = HttpEntity(

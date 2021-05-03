@@ -2,66 +2,93 @@ package com.github.cpickl.bookstore.adapter.jpa
 
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.Id
 import javax.persistence.Lob
+import javax.persistence.ManyToOne
 import javax.persistence.Table
 
-@Entity
+val allEntities = listOf(
+    BookJpa.ENTITY_NAME,
+    UserJpa.ENTITY_NAME,
+    CoverJpa.ENTITY_NAME,
+)
+
+@Entity(name = UserJpa.ENTITY_NAME)
 @Table(name = UserJpa.TABLE_NAME)
 data class UserJpa(
     @Id
     @Column(name = "id", unique = true)
     val id: String,
+
     @Column(name = "author_pseudonym")
     val authorPseudonym: String,
+
     @Column(name = "username", unique = true)
     val username: String,
+
     @Column(name = "password_hash")
     val passwordHash: String,
 ) {
     companion object {
         const val TABLE_NAME = "user"
+        const val ENTITY_NAME = "User"
     }
 }
 
-@Entity
+@Entity(name = BookJpa.ENTITY_NAME)
 @Table(name = BookJpa.TABLE_NAME)
 data class BookJpa(
     @Id
     @Column(name = "id", unique = true)
     val id: String,
+
     @Column(name = "title")
     val title: String,
-    @Column(name = "description")
+
     @Lob
+    @Column(name = "description")
     val description: String,
-    // @ManyToOne
-//    var author: User,
-//    var price: Money,
-//    @Enumerated(value = EnumType.STRING)
-//    var state: BookStateJpa,
+
+    @ManyToOne
+    val author: UserJpa,
+
+    @Column(name = "currency_code")
+    val currencyCode: String,
+
+    @Column(name = "price")
+    val price: Int,
+
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "state")
+    var state: BookStateJpa,
 ) {
     companion object {
         const val TABLE_NAME = "book"
+        const val ENTITY_NAME = "Book"
     }
 }
 
-//enum class BookStateJpa {
-//}
+enum class BookStateJpa {
+    UNPUBLISHED,
+    PUBLISHED;
+}
 
-
-@Entity
+@Entity(name = CoverJpa.ENTITY_NAME)
 @Table(name = CoverJpa.TABLE_NAME)
 data class CoverJpa(
     @Id
     @Column(name = "book_id", unique = true)
     val bookId: String,
 
-    @Column(name = "bytes")
     @Lob
+    @Column(name = "bytes")
     val bytes: ByteArray,
 ) {
+
     companion object {
+        const val ENTITY_NAME = "Cover"
         const val TABLE_NAME = "cover"
     }
 

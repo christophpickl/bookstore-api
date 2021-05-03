@@ -5,7 +5,6 @@ import assertk.assertions.containsExactly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isTrue
-import com.github.cpickl.bookstore.adapter.InMemoryBookRepository
 import com.github.cpickl.bookstore.boundary.BookCreateDto
 import com.github.cpickl.bookstore.boundary.BookDto
 import com.github.cpickl.bookstore.boundary.BookUpdateDto
@@ -13,11 +12,10 @@ import com.github.cpickl.bookstore.boundary.BooksDto
 import com.github.cpickl.bookstore.boundary.Jwt
 import com.github.cpickl.bookstore.boundary.NamedByteArrayResource
 import com.github.cpickl.bookstore.boundary.any
-import com.github.cpickl.bookstore.boundary.buildUploadEntity
 import com.github.cpickl.bookstore.boundary.login
 import com.github.cpickl.bookstore.boundary.toBookSimpleDto
+import com.github.cpickl.bookstore.boundary.uploadEntity
 import com.github.cpickl.bookstore.domain.CoverImage
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -33,22 +31,17 @@ import org.springframework.http.HttpStatus.NO_CONTENT
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SystemApiTest(
-    @Autowired val restTemplate: TestRestTemplate,
-    @Autowired private val userPreparer: UserTestPreparer,
-    @Autowired private val bookRepository: InMemoryBookRepository,
+    @Autowired private val restTemplate: TestRestTemplate,
+    @Autowired private val userPreparer: TestUserPreparer,
+    @Autowired private val repoCleaner: TestRepositoryCleaner,
 ) {
 
     private val loginDto = userPreparer.userLogin
 
-    @BeforeAll
-    fun `init user`() {
-        userPreparer.saveTestUser()
-    }
-
     @BeforeEach
     fun `reset data`() {
-        bookRepository.clear()
-        // FIXME reset database; dirties context?! entity manager?! coverRepository.clear()
+        repoCleaner.deleteAllEntities()
+        userPreparer.saveTestUser()
     }
 
     @Nested
@@ -109,7 +102,7 @@ class SystemApiTest(
 
             val updated = updateCover(
                 bookId,
-                buildUploadEntity(NamedByteArrayResource("ignored.png", coverBytes), jwt)
+                uploadEntity(NamedByteArrayResource("ignored.png", coverBytes), jwt)
             )
             assertThat(updated).isStatus(NO_CONTENT)
 
@@ -122,7 +115,7 @@ class SystemApiTest(
         fun `Given logged-in and book and cover When delete cover Then get returns default image`() {
             val jwt = restTemplate.login(loginDto)
             val bookId = postBookDto(jwt, BookCreateDto.any()).id
-            updateCover(bookId, buildUploadEntity(NamedByteArrayResource("ignored.png", coverBytes), jwt))
+            updateCover(bookId, uploadEntity(NamedByteArrayResource("ignored.png", coverBytes), jwt))
 
             val deleted = deleteCover(jwt, bookId)
             assertThat(deleted).isStatus(NO_CONTENT)

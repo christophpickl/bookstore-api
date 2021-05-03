@@ -5,7 +5,7 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.github.cpickl.bookstore.UserTestPreparer
+import com.github.cpickl.bookstore.TestUserPreparer
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookCreateRequest
 import com.github.cpickl.bookstore.domain.BookNotFoundException
@@ -41,7 +41,7 @@ import org.springframework.http.ResponseEntity
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class BookControllerApiTest(
     @Autowired private val restTemplate: TestRestTemplate,
-    @Autowired private val userPreparer: UserTestPreparer,
+    @Autowired private val userPreparer: TestUserPreparer,
 ) {
 
     @MockBean

@@ -25,7 +25,6 @@ class JpaCoverRepositoryTest {
 
     @Autowired
     private lateinit var em: TestEntityManager
-
     @Autowired
     private lateinit var crudRepo: JpaCoverCrudRepository
     private lateinit var repo: JpaCoverRepository

@@ -32,19 +32,22 @@ or make use of the provided [Postman collection](https://github.com/christophpic
 
 _Now_:
 
+* Book has no User but an Author field (no hashedPwd/username)
+* admin scope CRUD users
+* test SQL schema/"raw-values" (table name, column name, enum mapping values)
 * spring rest controller: https://spring.io/guides/gs/accessing-data-rest/
 * improve ErrorDto, add:  path, method, (optional) stacktrace
 * test invalid currencyCode
 * replace "whitelabel error page"
 * DB migration (https://thorben-janssen.com/database-migration-with-spring-boot/)
-* split UT from IT => take coverage
+* split UT from IT => measure coverage
 * document JWT in openAPI spec
 * pagination
 * dockerize (+compose for DBMS; introduce prod-ready DBMS)
 * hardening (improve exception handling, input (bean) validation)
 * replace password type from String to CharArray for security reasons
 * mini-frontend (kotlin HTML-DSL)
-* testcontainer
+* testcontainer: https://programmerfriend.com/spring-boot-integration-testing-done-right/
 
 _Later_:
 

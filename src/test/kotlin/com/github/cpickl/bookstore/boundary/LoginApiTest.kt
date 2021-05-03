@@ -5,7 +5,7 @@ import assertk.assertions.isNotEmpty
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import com.auth0.jwt.JWT
-import com.github.cpickl.bookstore.UserTestPreparer
+import com.github.cpickl.bookstore.TestUserPreparer
 import com.github.cpickl.bookstore.isForbidden
 import com.github.cpickl.bookstore.isOk
 import com.github.cpickl.bookstore.jackson
@@ -24,7 +24,7 @@ import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class LoginApiTest(
     @Autowired private val restTemplate: TestRestTemplate,
-    @Autowired private val userPreparer: UserTestPreparer,
+    @Autowired private val userPreparer: TestUserPreparer,
 ) {
 
     @BeforeAll
