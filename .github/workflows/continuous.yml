@@ -1,0 +1,22 @@
+name: continuous-build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  # run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  buildAndTest:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: start message
+        run: echo Start to build ...
+
+      - name: build
+        run: ./gradlew verify
