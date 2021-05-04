@@ -3,6 +3,7 @@ package com.github.cpickl.bookstore.boundary
 import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.InternalException
 import io.swagger.v3.oas.annotations.media.Schema
+import mu.KotlinLogging.logger
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -45,6 +46,9 @@ data class ErrorDto(
 
 @ControllerAdvice
 class ExceptionHandlers {
+
+    private val log = logger {}
+
     @ExceptionHandler(BookNotFoundException::class)
     fun handleBookNotFoundException(exception: BookNotFoundException) = ResponseEntity
         .status(HttpStatus.NOT_FOUND)
@@ -68,15 +72,18 @@ class ExceptionHandlers {
         )
 
     @ExceptionHandler(Exception::class, InternalException::class)
-    fun handleException(exception: Exception) = ResponseEntity
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(
-            ErrorDto(
-                status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                code = ErrorCode.UNKNOWN,
-                message = exception.displayMessage,
+    fun handleException(exception: Exception): ResponseEntity<ErrorDto> {
+        log.error(exception) { "Unhandled exception was thrown, going to return 500!" }
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(
+                ErrorDto(
+                    status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    code = ErrorCode.UNKNOWN,
+                    message = exception.displayMessage,
+                )
             )
-        )
+    }
 
     private val Exception.displayMessage get() = "${this::class.simpleName}: $message"
 }

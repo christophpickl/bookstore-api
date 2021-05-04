@@ -45,7 +45,7 @@ fun uploadEntity(
     })
 
 
-class Jwt(private val value: String) {
+data class Jwt(private val value: String) {
     override fun toString() = value
 }
 
