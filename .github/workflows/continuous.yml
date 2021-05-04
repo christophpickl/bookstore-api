@@ -14,9 +14,16 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
       - name: start message
         run: echo Start to build ...
-
-      - name: build
-        run: ./gradlew verify
+      - uses: eskatos/gradle-command-action@v1
+        # env:
+        #   CI: true
+        with:
+          arguments: check
+          wrapper-cache-enabled: true
+          dependencies-cache-enabled: true
+          configuration-cache-enabled: true
