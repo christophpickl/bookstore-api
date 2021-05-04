@@ -63,12 +63,6 @@ tasks.withType<KotlinCompile>().configureEach {
     }
 }
 
-kotlin {
-    sourceSets.all {
-        languageSettings.enableLanguageFeature("InlineClasses")
-    }
-}
-
 tasks.withType<Test> {
     useJUnitPlatform()
 }

@@ -3,7 +3,7 @@ package com.github.cpickl.bookstore.domain
 import org.springframework.stereotype.Service
 import java.util.UUID
 
-inline class Id(
+class Id(
     val uuid: UUID
 ) {
     constructor(uuid: String) : this(UUID.fromString(uuid))
