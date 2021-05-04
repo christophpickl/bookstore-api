@@ -23,6 +23,9 @@ class JpaUserRepository(
         repo.save(user.toUserJpa())
     }
 
+    override fun isEmpty() =
+        repo.count() == 0L
+
     private fun User.toUserJpa() = UserJpa(
         id = +id,
         authorPseudonym = authorPseudonym,

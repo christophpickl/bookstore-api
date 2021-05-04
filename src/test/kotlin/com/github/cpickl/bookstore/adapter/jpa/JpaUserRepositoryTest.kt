@@ -3,8 +3,10 @@ package com.github.cpickl.bookstore.adapter.jpa
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFailure
+import assertk.assertions.isFalse
 import assertk.assertions.isNull
 import assertk.assertions.isSuccess
+import assertk.assertions.isTrue
 import com.github.cpickl.bookstore.domain.Id
 import com.github.cpickl.bookstore.domain.UUID1
 import com.github.cpickl.bookstore.domain.UUID2
@@ -134,6 +136,22 @@ class JpaUserRepositoryTest {
                 repo.create(User.any().copy(id = Id.some2, username = username))
                 em.flush()
             }.isFailure()
+        }
+    }
+
+    @Nested
+    inner class IsEmptyTest {
+
+        @Test
+        fun `When is empty Then return true`() {
+            assertThat(repo.isEmpty()).isTrue()
+        }
+
+        @Test
+        fun `Given a user When is empty Then return false`() {
+            save(UserJpa.any())
+
+            assertThat(repo.isEmpty()).isFalse()
         }
     }
 

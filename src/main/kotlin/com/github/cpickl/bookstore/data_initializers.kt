@@ -15,6 +15,30 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
 
 @Component
+class InitialDataInitializer(
+    private val userRepository: UserRepository,
+    private val passwordEncoder: BCryptPasswordEncoder,
+) : ApplicationListener<ApplicationReadyEvent> {
+
+    private val log = logger {}
+
+    override fun onApplicationEvent(event: ApplicationReadyEvent) {
+        if (userRepository.isEmpty()) {
+            saveAdminUser()
+        }
+    }
+
+    private fun saveAdminUser() {
+        log.info { "Saving admin user." }
+        val login = SecurityConstants.admin
+        val authorPseudonym = SecurityConstants.adminAuthorName
+        val passwordHash = passwordEncoder.encode(login.password)
+        val user = User(RandomIdGenerator.generate(), authorPseudonym, login.username, passwordHash)
+        userRepository.create(user)
+    }
+}
+
+@Component
 class DummyDataInitializer(
     private val userRepository: UserRepository,
     private val passwordEncoder: BCryptPasswordEncoder,
@@ -25,27 +49,18 @@ class DummyDataInitializer(
     private val log = logger {}
 
     override fun onApplicationEvent(event: ApplicationReadyEvent) {
-        if (!environment.activeProfiles.contains("dummyData")) {
-            return
+        if (environment.activeProfiles.contains("dummyData")) {
+            log.info { "Setting up dummy data." }
+            saveDummyUserAndBook()
         }
-        log.info { "Setting up dummy data." }
-        val user = saveDummyUser()
-        saveDummyBook(user.username)
     }
 
-    private fun saveDummyUser(): User {
-        val login = SecurityConstants.admin
-        val authorPseudonym = SecurityConstants.adminAuthorName
-        val passwordHash = passwordEncoder.encode(login.password)
-        val user = User(RandomIdGenerator.generate(), authorPseudonym, login.username, passwordHash)
+    private fun saveDummyUserAndBook() {
+        val user = User(RandomIdGenerator.generate(), "John Doe", "johnny", passwordEncoder.encode("secret"))
         userRepository.create(user)
-        return user
-    }
-
-    private fun saveDummyBook(username: String) {
         bookService.create(
             BookCreateRequest(
-                username = username,
+                username = user.username,
                 title = "Homo Sapiens",
                 description = "A brief history of humankind",
                 price = Money.euro(@Suppress("MagicNumber") 42),

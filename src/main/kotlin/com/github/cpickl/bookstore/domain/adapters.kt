@@ -11,6 +11,7 @@ interface UserRepository {
     fun findById(id: Id): User?
     fun findByUsername(username: String): User?
     fun create(user: User)
+    fun isEmpty(): Boolean
 }
 
 interface CoverRepository {

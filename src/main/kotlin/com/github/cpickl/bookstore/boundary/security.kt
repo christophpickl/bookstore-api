@@ -44,7 +44,7 @@ object SecurityConstants {
     const val EXPIRATION_TIME = 864_000_000 // 10 days
     const val SECRET = "my_top_secret" // FUTURE inject during build
 
-    val admin = LoginDto("admin", "admin") // FUTURE inject during build
+    val admin = LoginDto("admin", "admin")
     const val adminAuthorName = "admin author"
 }
 
