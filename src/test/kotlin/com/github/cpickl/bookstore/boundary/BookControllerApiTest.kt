@@ -222,15 +222,7 @@ class BookControllerApiTest(
             val response = restTemplate.requestPost("/api/books", requestBody, HttpHeaders().withJwt(jwt))
 
             assertThat(response).isOk()
-            assertThat(response.read<BookDto>()).isEqualTo(
-                BookDto(
-                    id = book.id.toString(),
-                    title = book.title,
-                    description = book.description,
-                    price = book.price.toMoneyDto(),
-                    author = userPreparer.user.authorPseudonym,
-                )
-            )
+            assertThat(response.read<BookDto>()).isEqualTo(book.toBookDto())
         }
     }
 

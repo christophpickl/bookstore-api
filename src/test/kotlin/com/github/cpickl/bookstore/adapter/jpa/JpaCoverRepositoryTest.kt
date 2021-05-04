@@ -44,7 +44,7 @@ class JpaCoverRepositoryTest {
     inner class FindTest {
         @Test
         fun `When find unknown Then return null`() {
-            val found = repo.find(Id.any())
+            val found = repo.findById(Id.any())
 
             assertThat(found).isNull()
         }
@@ -53,7 +53,7 @@ class JpaCoverRepositoryTest {
         fun `Given cover When find it Then return it`() {
             save(CoverJpa(+id, image.bytes))
 
-            val found = repo.find(id)
+            val found = repo.findById(id)
 
             assertThat(found).isEqualTo(image)
         }
@@ -62,7 +62,7 @@ class JpaCoverRepositoryTest {
         fun `Given cover When find by different ID Then return null`() {
             save(CoverJpa(+Id.some1, anyBytes))
 
-            val found = repo.find(Id.some2)
+            val found = repo.findById(Id.some2)
 
             assertThat(found).isNull()
         }

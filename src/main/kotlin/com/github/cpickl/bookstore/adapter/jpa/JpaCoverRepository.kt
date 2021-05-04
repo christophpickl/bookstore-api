@@ -12,7 +12,7 @@ class JpaCoverRepository(
     private val repo: JpaCoverCrudRepository,
 ) : CoverRepository {
 
-    override fun find(bookId: Id): CoverImage.CustomImage? =
+    override fun findById(bookId: Id): CoverImage.CustomImage? =
         repo.findById(bookId.toString()).unwrap {
             CoverImage.CustomImage(bytes = it.bytes)
         }
@@ -22,7 +22,7 @@ class JpaCoverRepository(
     }
 
     override fun delete(bookId: Id): CoverImage.CustomImage? {
-        val cover = find(bookId) ?: return null
+        val cover = findById(bookId) ?: return null
         repo.deleteById(bookId.toString())
         return CoverImage.CustomImage(cover.bytes)
     }

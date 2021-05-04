@@ -6,22 +6,34 @@ data class User(
     val username: String, // FUTURE could be custom data type
     val passwordHash: String,
 ) {
-    companion object;
+    companion object
+
+    fun toAuthor() = Author(
+        userId = id,
+        pseudonym = authorPseudonym,
+    )
 
     override fun toString() = "User[username='$username',id=$id,authorPseudonym='$authorPseudonym']"
+}
+
+data class Author(
+    val userId: Id,
+    val pseudonym: String,
+) {
+    companion object
 }
 
 data class Book(
     val id: Id,
     val title: String,
     val description: String,
-    val author: User,
+    val author: Author,
     val price: Money,
     val state: BookState,
 ) {
     companion object
 
-    val authorName = author.authorPseudonym
+    val authorName = author.pseudonym
 }
 
 enum class BookState {

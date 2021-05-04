@@ -37,22 +37,22 @@ class BookServiceImpl(
         bookRepository.findAll(search)
 
     override fun find(id: Id) =
-        bookRepository.find(id)
+        bookRepository.findById(id)
             ?: throw BookNotFoundException(id)
 
     override fun create(request: BookCreateRequest): Book {
         log.info { "create: $request" }
-        val user = userRepository.find(request.username)
+        val user = userRepository.findByUsername(request.username)
             ?: throw InternalException("System invariance violated! User not found: '${request.username}'")
 
-        return newBook(request, user).also {
+        return newBook(request, user.toAuthor()).also {
             bookRepository.create(it)
         }
     }
 
     override fun update(request: BookUpdateRequest): Book {
         log.info { "update: $request" }
-        val found = bookRepository.find(request.id) ?: throw BookNotFoundException(request.id)
+        val found = bookRepository.findById(request.id) ?: throw BookNotFoundException(request.id)
         // if(found.author.username != request.username) // FUTURE hardening necessary?!
 
         return found.updateBy(request).also {
@@ -62,7 +62,7 @@ class BookServiceImpl(
 
     override fun delete(username: String, id: Id): Book {
         log.info { "delete: $id" }
-        val book = bookRepository.find(id) ?: throw BookNotFoundException(id)
+        val book = bookRepository.findById(id) ?: throw BookNotFoundException(id)
         require(book.state != BookState.Unpublished)
         // if(book.author.username != username) // FUTURE hardening necessary?!
 
@@ -71,11 +71,11 @@ class BookServiceImpl(
         }
     }
 
-    private fun newBook(request: BookCreateRequest, user: User) = Book(
+    private fun newBook(request: BookCreateRequest, author: Author) = Book(
         id = idGenerator.generate(),
         title = request.title,
         description = request.description,
-        author = user,
+        author = author,
         price = request.price,
         state = BookState.Published,
     )

@@ -32,7 +32,7 @@ or make use of the provided [Postman collection](https://github.com/christophpic
 
 _Now_:
 
-* Book has no User but an Author field (no hashedPwd/username)
+* GitHub CI pipeline
 * admin scope CRUD users
 * test SQL schema/"raw-values" (table name, column name, enum mapping values)
 * spring rest controller: https://spring.io/guides/gs/accessing-data-rest/
@@ -54,7 +54,7 @@ _Later_:
 
 * BDD
 * kotlin MPP (javascript, android)
-* CI/CD pipeline (github/gitlab/travis?)
+* extend CI/CD pipeline (github/gitlab/travis?)
   * automated release (kotlin scripts)
   * cloud deployment (heroku?)
 * HATEOS API (higher ReST maturity level via hypermedia)

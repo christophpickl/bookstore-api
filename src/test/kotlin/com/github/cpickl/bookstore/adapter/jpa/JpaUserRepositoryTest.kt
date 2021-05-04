@@ -6,6 +6,8 @@ import assertk.assertions.isFailure
 import assertk.assertions.isNull
 import assertk.assertions.isSuccess
 import com.github.cpickl.bookstore.domain.Id
+import com.github.cpickl.bookstore.domain.UUID1
+import com.github.cpickl.bookstore.domain.UUID2
 import com.github.cpickl.bookstore.domain.User
 import com.github.cpickl.bookstore.domain.any
 import com.github.cpickl.bookstore.domain.some1
@@ -32,6 +34,10 @@ class JpaUserRepositoryTest {
 
     private val userJpa = UserJpa.any()
     private val username = "testUsername"
+    private val id = Id.any()
+    private val id1 = Id(UUID1)
+    private val id2 = Id(UUID2)
+    private val anyId = id
     private val anyUsername = "anyUsername"
     private val username1 = "username1"
     private val username2 = "username2"
@@ -44,19 +50,19 @@ class JpaUserRepositoryTest {
     }
 
     @Nested
-    inner class FindTest {
+    inner class FindByIdTest {
         @Test
         fun `When find non existing user Then return null`() {
-            val found = repo.find(anyUsername)
+            val found = repo.findById(anyId)
 
             assertThat(found).isNull()
         }
 
         @Test
         fun `Given user When find by different name Then return null`() {
-            save(UserJpa.any().copy(username = username1))
+            save(UserJpa.any().copy(id = +id1))
 
-            val found = repo.find(username2)
+            val found = repo.findById(id2)
 
             assertThat(found).isNull()
         }
@@ -65,7 +71,35 @@ class JpaUserRepositoryTest {
         fun `Given user When find by that name Then return it`() {
             save(userJpa)
 
-            val found = repo.find(userJpa.username)
+            val found = repo.findById(Id(userJpa.id))
+
+            assertThat(found).isEqualTo(userJpa.toUser())
+        }
+    }
+
+    @Nested
+    inner class FindByUsernameTest {
+        @Test
+        fun `When find non existing user Then return null`() {
+            val found = repo.findByUsername(anyUsername)
+
+            assertThat(found).isNull()
+        }
+
+        @Test
+        fun `Given user When find by different name Then return null`() {
+            save(UserJpa.any().copy(username = username1))
+
+            val found = repo.findByUsername(username2)
+
+            assertThat(found).isNull()
+        }
+
+        @Test
+        fun `Given user When find by that name Then return it`() {
+            save(userJpa)
+
+            val found = repo.findByUsername(userJpa.username)
 
             assertThat(found).isEqualTo(userJpa.toUser())
         }
@@ -89,7 +123,7 @@ class JpaUserRepositoryTest {
                 repo.create(updatedUser.toUser())
             }.isSuccess()
 
-            assertThat(repo.find(userJpa.username)).isEqualTo(updatedUser.toUser())
+            assertThat(repo.findByUsername(userJpa.username)).isEqualTo(updatedUser.toUser())
         }
 
         @Test

@@ -6,6 +6,8 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFailure
 import assertk.assertions.isNull
+import assertk.assertions.isSuccess
+import com.github.cpickl.bookstore.domain.Author
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookState
 import com.github.cpickl.bookstore.domain.Currency
@@ -14,7 +16,6 @@ import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Search
 import com.github.cpickl.bookstore.domain.UUID1
 import com.github.cpickl.bookstore.domain.UUID2
-import com.github.cpickl.bookstore.domain.User
 import com.github.cpickl.bookstore.domain.any
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -33,12 +34,15 @@ class JpaBookRepositoryTest {
     private lateinit var em: TestEntityManager
 
     @Autowired
-    private lateinit var crudRepo: JpaBookCrudRepository
+    private lateinit var bookCrudRepo: JpaBookCrudRepository
+
+    @Autowired
+    private lateinit var userCrudRepo: JpaUserCrudRepository
     private lateinit var repo: JpaBookRepository
 
     @BeforeEach
     fun `init repo`() {
-        repo = JpaBookRepository(crudRepo)
+        repo = JpaBookRepository(bookCrudRepo, userCrudRepo)
     }
 
     @Nested
@@ -142,7 +146,6 @@ class JpaBookRepositoryTest {
 
             assertThat(found).isEmpty()
         }
-
     }
 
     @Nested
@@ -150,7 +153,7 @@ class JpaBookRepositoryTest {
 
         @Test
         fun `When find single Then return null`() {
-            val found = repo.find(Id.any())
+            val found = repo.findById(Id.any())
 
             assertThat(found).isNull()
         }
@@ -159,7 +162,7 @@ class JpaBookRepositoryTest {
         fun `Given created book When find single Then finds`() {
             val book = persistPublished()
 
-            val found = repo.find(Id(book.id))
+            val found = repo.findById(Id(book.id))
 
             assertThat(found).isEqualTo(book.toBook())
         }
@@ -168,15 +171,15 @@ class JpaBookRepositoryTest {
         fun `Given unpublished book When find single Then return null`() {
             val book = persist(BookJpa.any().copy(state = BookStateJpa.UNPUBLISHED))
 
-            val found = repo.find(Id(book.id))
+            val found = repo.findById(Id(book.id))
 
             assertThat(found).isNull()
         }
-
     }
 
     @Nested
     inner class CreateTest {
+
         @Test
         fun `Given book When create with same ID Then fail`() {
             val book = persistPublished()
@@ -185,14 +188,30 @@ class JpaBookRepositoryTest {
                 repo.create(Book.any().copy(id = Id(book.id)))
             }.isFailure()
         }
+
+        @Test
+        fun `When create Then persisted`() {
+            val userJpa = persistUser()
+            val bookJpa = BookJpa.any().copy(author = userJpa)
+
+            assertThat {
+                repo.create(bookJpa.toBook())
+            }.isSuccess()
+
+            assertThat(find(Id(bookJpa.id))).isEqualTo(bookJpa)
+        }
     }
 
     @Nested
     inner class UpdateTest {
+
         @Test
         fun `When update non existing Then fail`() {
+            val userJpa = persistUser()
+            val bookJpa = BookJpa.any().copy(author = userJpa)
+
             assertThat {
-                repo.update(Book.any())
+                repo.update(bookJpa.toBook())
             }.isFailure()
         }
 
@@ -242,7 +261,7 @@ private fun BookJpa.toBook() = Book(
     id = Id(id),
     title = title,
     description = description,
-    author = author.toUser(),
+    author = author.toAuthor(),
     price = Money(
         currency = Currency.of(currencyCode),
         value = price,
@@ -250,14 +269,12 @@ private fun BookJpa.toBook() = Book(
     state = state.toBookState(),
 )
 
+private fun UserJpa.toAuthor() = Author(
+    userId = Id(id),
+    pseudonym = authorPseudonym,
+)
+
 private fun BookStateJpa.toBookState() = when (this) {
     BookStateJpa.UNPUBLISHED -> BookState.Unpublished
     BookStateJpa.PUBLISHED -> BookState.Published
 }
-
-private fun UserJpa.toUser() = User(
-    id = Id(id),
-    authorPseudonym = authorPseudonym,
-    username = username,
-    passwordHash = passwordHash,
-)

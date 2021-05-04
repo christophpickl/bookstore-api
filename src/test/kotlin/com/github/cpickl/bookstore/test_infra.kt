@@ -39,6 +39,7 @@ class TestUserPreparer(
     val user = User.any().copy(
         username = userLogin.username,
         passwordHash = passwordEncoder.encode(userLogin.password),
+        authorPseudonym = "test user pseudonym",
     )
 
     fun saveTestUser() {

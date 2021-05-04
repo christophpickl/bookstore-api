@@ -1,13 +1,16 @@
 package com.github.cpickl.bookstore.adapter.jpa
 
+import com.github.cpickl.bookstore.domain.Author
 import com.github.cpickl.bookstore.domain.Book
+import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.BookRepository
 import com.github.cpickl.bookstore.domain.BookState
 import com.github.cpickl.bookstore.domain.Currency
 import com.github.cpickl.bookstore.domain.Id
 import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Search
-import com.github.cpickl.bookstore.domain.User
+import com.github.cpickl.bookstore.domain.UserNotFoundException
+import com.github.cpickl.bookstore.getOrThrow
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
@@ -15,59 +18,42 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class JpaBookRepository(
-    private val repo: JpaBookCrudRepository
+    private val bookRepo: JpaBookCrudRepository,
+    private val userRepo: JpaUserCrudRepository,
 ) : BookRepository {
 
     override fun findAll(search: Search): List<Book> =
         when (search) {
-            is Search.Off -> repo.findAllPublished()
-            is Search.On -> repo.searchAllPublished(search.term)
+            is Search.Off -> bookRepo.findAllPublished()
+            is Search.On -> bookRepo.searchAllPublished(search.term)
         }.map { it.toBook() }
 
-
-    override fun find(id: Id): Book? =
-        repo.findPublished(+id)?.toBook()
+    override fun findById(id: Id): Book? =
+        bookRepo.findPublished(+id)?.toBook()
 
     override fun create(book: Book) {
-        repo.save(book.toBookJpa())
+        val user = findUser(book.author.userId)
+        bookRepo.save(book.toBookJpa(user))
     }
 
     override fun update(book: Book) {
-        repo.save(book.toBookJpa())
+        if (bookRepo.findById(+book.id).isEmpty) {
+            throw BookNotFoundException(book.id)
+        }
+        val user = findUser(book.author.userId)
+        bookRepo.save(book.toBookJpa(user))
     }
 
-    /*
-    override fun findAll(search: Search) = when (search) {
-        is Search.Off -> books
-        is Search.On -> books.filter { it.title.toLowerCase().contains(search.term) }
-    }
-        .filter { it.state == BookState.Published }
-        .sortedBy { it.title } // FUTURE custom sort order
-
-    override fun find(id: Id) =
-        books.firstOrNull { it.id == id && it.state == BookState.Published }
-
-    override fun create(book: Book) {
-        log.debug { "create: $book" }
-        require(find(book.id) == null) { "duplicate ID: ${book.id}" }
-        books += book
-    }
-
-    override fun update(book: Book) {
-        log.debug { "update: $book" }
-        val found = find(book.id) ?: throw IllegalArgumentException("Book not found: ${book.id}")
-
-        require(books.remove(found))
-        books += book
-    }
-     */
+    private fun findUser(id: Id) =
+        userRepo.findById(+id).getOrThrow { UserNotFoundException(id) }
 }
 
 interface JpaBookCrudRepository : CrudRepository<BookJpa, String> {
 
     @Query(
         """FROM ${BookJpa.ENTITY_NAME} b 
-        WHERE b.state = 'PUBLISHED' AND id=:id"""
+        WHERE b.state = 'PUBLISHED' 
+          AND id=:id"""
     )
     fun findPublished(@Param("id") id: String): BookJpa?
 
@@ -80,7 +66,8 @@ interface JpaBookCrudRepository : CrudRepository<BookJpa, String> {
 
     @Query(
         """FROM ${BookJpa.ENTITY_NAME} b
-        WHERE b.state = 'PUBLISHED' AND LOWER(b.title) LIKE CONCAT('%',LOWER(:title),'%')
+        WHERE b.state = 'PUBLISHED' 
+          AND LOWER(b.title) LIKE CONCAT('%',LOWER(:title),'%')
         ORDER BY b.title ASC"""
     )
     fun searchAllPublished(@Param("title") title: String): List<BookJpa>
@@ -90,7 +77,7 @@ private fun BookJpa.toBook() = Book(
     id = Id(id),
     title = title,
     description = description,
-    author = author.toUser(),
+    author = author.toAuthor(),
     price = Money(
         currency = Currency.of(currencyCode),
         value = price,
@@ -98,11 +85,16 @@ private fun BookJpa.toBook() = Book(
     state = state.toBookState(),
 )
 
-private fun Book.toBookJpa() = BookJpa(
+private fun UserJpa.toAuthor() = Author(
+    userId = Id(id),
+    pseudonym = authorPseudonym,
+)
+
+private fun Book.toBookJpa(user: UserJpa) = BookJpa(
     id = +id,
     title = title,
     description = description,
-    author = author.toUserJpa(),
+    author = user,
     currencyCode = price.currency.code,
     price = price.value,
     state = state.toBookStateJpa(),
@@ -117,17 +109,3 @@ private fun BookState.toBookStateJpa() = when (this) {
     BookState.Unpublished -> BookStateJpa.UNPUBLISHED
     BookState.Published -> BookStateJpa.PUBLISHED
 }
-
-private fun UserJpa.toUser() = User(
-    id = Id(id),
-    authorPseudonym = authorPseudonym,
-    username = username,
-    passwordHash = passwordHash,
-)
-
-private fun User.toUserJpa() = UserJpa(
-    id = +id,
-    authorPseudonym = authorPseudonym,
-    username = username,
-    passwordHash = passwordHash,
-)

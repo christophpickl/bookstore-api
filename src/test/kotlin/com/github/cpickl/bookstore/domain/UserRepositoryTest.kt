@@ -27,7 +27,7 @@ abstract class UserRepositoryTest {
 
     @Test
     fun `When find non existing user Then return null`() {
-        assertThat(testee.find("invalid")).isNull()
+        assertThat(testee.findByUsername("invalid")).isNull()
     }
 
     @Test
@@ -35,7 +35,7 @@ abstract class UserRepositoryTest {
         val user = User.any().copy(username = username)
         testee.create(user)
 
-        val actual = testee.find(username)
+        val actual = testee.findByUsername(username)
 
         assertThat(actual).isEqualTo(user)
     }
@@ -45,7 +45,7 @@ abstract class UserRepositoryTest {
         val user = User.any().copy(username = username1)
         testee.create(user)
 
-        val actual = testee.find(username2)
+        val actual = testee.findByUsername(username2)
 
         assertThat(actual).isNull()
     }
@@ -60,7 +60,7 @@ abstract class UserRepositoryTest {
             testee.create(updatedUser)
         }.isSuccess()
 
-        assertThat(testee.find(user.username)).isEqualTo(updatedUser)
+        assertThat(testee.findByUsername(user.username)).isEqualTo(updatedUser)
     }
 
     @Test

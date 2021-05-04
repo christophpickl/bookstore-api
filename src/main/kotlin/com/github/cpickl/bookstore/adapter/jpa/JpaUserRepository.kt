@@ -3,6 +3,7 @@ package com.github.cpickl.bookstore.adapter.jpa
 import com.github.cpickl.bookstore.domain.Id
 import com.github.cpickl.bookstore.domain.User
 import com.github.cpickl.bookstore.domain.UserRepository
+import com.github.cpickl.bookstore.unwrap
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
@@ -11,11 +12,14 @@ class JpaUserRepository(
     private val repo: JpaUserCrudRepository,
 ) : UserRepository {
 
-    override fun find(username: String) =
+    override fun findById(id: Id): User? {
+        return repo.findById(+id).unwrap { it.toUser() }
+    }
+
+    override fun findByUsername(username: String) =
         repo.findByUsername(username)?.toUser()
 
     override fun create(user: User) {
-        println("save: $user")
         repo.save(user.toUserJpa())
     }
 

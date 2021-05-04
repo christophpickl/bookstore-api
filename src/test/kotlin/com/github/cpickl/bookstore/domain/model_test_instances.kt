@@ -26,7 +26,7 @@ fun Book.Companion.any() = Book(
     id = RandomIdGenerator.generate(),
     title = "any title",
     description = "any description",
-    author = User.any(),
+    author = Author.any(),
     price = Money.any(),
     state = BookState.any()
 )
@@ -38,4 +38,9 @@ fun BookCreateRequest.Companion.any() = BookCreateRequest(
     title = "title",
     description = "description",
     price = Money.euroCent(500),
+)
+
+fun Author.Companion.any() = Author(
+    userId = Id.any(),
+    pseudonym = "pseudonym",
 )
