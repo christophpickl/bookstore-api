@@ -3,7 +3,7 @@ package com.github.cpickl.bookstore.domain
 data class User(
     val id: Id,
     val authorPseudonym: String,
-    val username: String, // FUTURE could be custom data type
+    val username: String,
     val passwordHash: String,
 ) {
     companion object

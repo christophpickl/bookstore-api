@@ -10,6 +10,7 @@ import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.CoverImage
 import com.github.cpickl.bookstore.domain.CoverService
 import com.github.cpickl.bookstore.domain.CoverUpdateRequest
+import com.github.cpickl.bookstore.domain.ErrorCode
 import com.github.cpickl.bookstore.domain.Id
 import com.github.cpickl.bookstore.domain.any
 import com.github.cpickl.bookstore.isForbidden
@@ -63,7 +64,6 @@ class CoverControllerApiTest(
             val response = restTemplate.requestGet("/api/books/$unknownBookId/cover")
 
             assertThat(response).isError(
-                messageContains = +unknownBookId,
                 status = 404,
                 code = ErrorCode.BOOK_NOT_FOUND,
             )
@@ -90,7 +90,7 @@ class CoverControllerApiTest(
 
         @Test
         fun `When update cover without token Then return forbidden`() {
-            val response = restTemplate.exchange<Any>(
+            val response = restTemplate.exchange<String>(
                 "/api/books/${book.id}/cover",
                 PUT,
                 uploadEntity(anyResource, jwt = null)
@@ -109,7 +109,6 @@ class CoverControllerApiTest(
                 restTemplate.exchange<String>("/api/books/${book.id}/cover", PUT, uploadEntity(updateResource, jwt))
 
             assertThat(response).isError(
-                messageContains = +book.id,
                 status = 404,
                 code = ErrorCode.BOOK_NOT_FOUND,
             )
@@ -145,7 +144,6 @@ class CoverControllerApiTest(
             val response = restTemplate.requestDeleteCover(book.id, jwt)
 
             assertThat(response).isError(
-                messageContains = +book.id,
                 status = 404,
                 code = ErrorCode.BOOK_NOT_FOUND,
             )

@@ -1,5 +1,6 @@
 package com.github.cpickl.bookstore.adapter.jpa
 
+import com.github.cpickl.bookstore.common.getOrThrow
 import com.github.cpickl.bookstore.domain.Author
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookNotFoundException
@@ -10,7 +11,6 @@ import com.github.cpickl.bookstore.domain.Id
 import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Search
 import com.github.cpickl.bookstore.domain.UserNotFoundException
-import com.github.cpickl.bookstore.getOrThrow
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param

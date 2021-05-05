@@ -17,6 +17,8 @@ spring:
       max-file-size: 2MB
       max-request-size: 2MB
       enabled: true
+bookstore:
+  printExceptions: false
 
 ---
 spring:
@@ -52,3 +54,10 @@ spring:
   config:
     activate:
       on-profile: dummyData
+---
+spring:
+  config:
+    activate:
+      on-profile: verboseErrorHandling
+bookstore:
+  printExceptions: true

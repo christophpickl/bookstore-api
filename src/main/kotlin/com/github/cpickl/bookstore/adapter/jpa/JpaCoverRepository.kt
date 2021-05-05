@@ -1,9 +1,9 @@
 package com.github.cpickl.bookstore.adapter.jpa
 
+import com.github.cpickl.bookstore.common.unwrap
 import com.github.cpickl.bookstore.domain.CoverImage
 import com.github.cpickl.bookstore.domain.CoverRepository
 import com.github.cpickl.bookstore.domain.Id
-import com.github.cpickl.bookstore.unwrap
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 

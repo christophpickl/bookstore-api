@@ -32,7 +32,8 @@ or make use of the provided [Postman collection](https://github.com/christophpic
 
 _Now_:
 
-* GitHub CI pipeline
+* unit test for Id (equals, hashCode, ...)
+* gradle todo plugin: https://github.com/HoldYourWaffle/gradle-todo-plugin-fixed
 * admin scope CRUD users
 * test SQL schema/"raw-values" (table name, column name, enum mapping values)
 * spring rest controller: https://spring.io/guides/gs/accessing-data-rest/

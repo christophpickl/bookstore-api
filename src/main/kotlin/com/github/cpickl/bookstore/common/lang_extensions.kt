@@ -1,4 +1,4 @@
-package com.github.cpickl.bookstore
+package com.github.cpickl.bookstore.common
 
 import java.util.Optional
 

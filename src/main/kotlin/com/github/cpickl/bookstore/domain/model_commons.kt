@@ -18,7 +18,6 @@ data class Id(
 
 operator fun UUID.unaryPlus() = Id(this)
 
-// FUTURE could inject other in tests
 interface IdGenerator {
     fun generate(): Id
 }
@@ -57,13 +56,12 @@ data class Money(
 sealed class Search {
     object Off : Search()
 
-    // FUTURE support multiple terms (and wildcards)
     class On(term: String) : Search() {
         init {
             require(term.trim().isNotEmpty())
         }
 
-        val term = term.toLowerCase() // FUTURE with kotlin 1.5 use lowercase()
+        val term = term.toLowerCase()
 
         override fun equals(other: Any?): Boolean {
             if (other !is On) return false

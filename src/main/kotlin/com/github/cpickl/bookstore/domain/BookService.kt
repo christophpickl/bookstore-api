@@ -53,7 +53,7 @@ class BookServiceImpl(
     override fun update(request: BookUpdateRequest): Book {
         log.info { "update: $request" }
         val found = bookRepository.findById(request.id) ?: throw BookNotFoundException(request.id)
-        // if(found.author.username != request.username) // FUTURE hardening necessary?!
+        // if(found.author.username != request.username) // TODO hardening necessary
 
         return found.updateBy(request).also {
             bookRepository.update(it)
@@ -64,7 +64,7 @@ class BookServiceImpl(
         log.info { "delete: $id" }
         val book = bookRepository.findById(id) ?: throw BookNotFoundException(id)
         require(book.state != BookState.Unpublished)
-        // if(book.author.username != username) // FUTURE hardening necessary?!
+        // if(book.author.username != username) // TODO hardening necessary
 
         return book.copy(state = BookState.Unpublished).also {
             bookRepository.update(it)

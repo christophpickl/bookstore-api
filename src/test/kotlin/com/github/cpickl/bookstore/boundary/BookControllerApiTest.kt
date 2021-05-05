@@ -10,6 +10,7 @@ import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookCreateRequest
 import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.BookService
+import com.github.cpickl.bookstore.domain.ErrorCode
 import com.github.cpickl.bookstore.domain.Id
 import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Search
@@ -49,6 +50,7 @@ class BookControllerApiTest(
 
     private val book = Book.any()
     private val bookId = book.id
+    private val malformedBookId = "malformedBookId"
     private val invalidBookId = Id.any()
     private val loginDto = userPreparer.userLogin
     private val anyBooks = emptyList<Book>()
@@ -125,10 +127,10 @@ class BookControllerApiTest(
 
         @Test
         fun `When get book by malformed ID Then fail`() {
-            val response = restTemplate.requestGet("/api/books/malformed")
+            val response = restTemplate.requestGet("/api/books/$malformedBookId")
 
             assertThat(response).isError(
-                messageContains = "malformed",
+                messageContains = "Bad request",
                 status = 400,
                 code = ErrorCode.INVALID_INPUT,
             )
@@ -141,7 +143,6 @@ class BookControllerApiTest(
             val response = restTemplate.requestGet("/api/books/$invalidBookId")
 
             assertThat(response).isError(
-                messageContains = +invalidBookId,
                 status = 404,
                 code = ErrorCode.BOOK_NOT_FOUND,
             )
@@ -245,7 +246,6 @@ class BookControllerApiTest(
             val response = restTemplate.requestPut("/api/books/${book.id}", body = update, HttpHeaders().withJwt(jwt))
 
             assertThat(response).isError(
-                messageContains = +book.id,
                 status = 404,
                 code = ErrorCode.BOOK_NOT_FOUND,
             )
@@ -280,7 +280,6 @@ class BookControllerApiTest(
             val response = restTemplate.requestDelete("/api/books/$bookId", headers = HttpHeaders().withJwt(jwt))
 
             assertThat(response).isError(
-                messageContains = +bookId,
                 status = 404,
                 code = ErrorCode.BOOK_NOT_FOUND,
             )
