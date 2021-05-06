@@ -3,6 +3,7 @@ package com.github.cpickl.bookstore
 import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isNotNull
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.cpickl.bookstore.boundary.Jwt
@@ -41,7 +42,7 @@ fun Assert<ResponseEntity<*>>.isStatus(code: HttpStatus) {
 
 fun TestRestTemplate.requestGet(
     path: String,
-    headers: HttpHeaders = HttpHeaders.EMPTY,
+    headers: HttpHeaders = HttpHeaders.EMPTY, // TODO introduce own headers type instead
 ): ResponseEntity<String> =
     requestAny(HttpMethod.GET, path, headers = headers)
 
@@ -81,6 +82,7 @@ inline fun <reified T> ResponseEntity<String>.read(status: HttpStatus? = HttpSta
     if (status != null) {
         assertThat(this).isStatus(status)
     }
+    assertThat(body).isNotNull()
     return jackson.readValue(body!!)
 }
 

@@ -1,5 +1,6 @@
 package com.github.cpickl.bookstore.boundary
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.cpickl.bookstore.common.Clock
 import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.BookstoreException
@@ -9,11 +10,17 @@ import com.github.cpickl.bookstore.domain.UserNotFoundException
 import io.swagger.v3.oas.annotations.media.Schema
 import mu.KotlinLogging.logger
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.authentication.InsufficientAuthenticationException
 import org.springframework.security.core.AuthenticationException
 import org.springframework.stereotype.Service
+import org.springframework.web.HttpMediaTypeNotAcceptableException
+import org.springframework.web.HttpMediaTypeNotSupportedException
+import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.ServletWebRequest
@@ -143,7 +150,11 @@ class ErrorDtoFactory(
             HttpStatus.INTERNAL_SERVER_ERROR -> "Internal error"
             HttpStatus.FORBIDDEN -> "Access denied"
             HttpStatus.NOT_FOUND -> "Not found"
-            HttpStatus.BAD_REQUEST -> "Bad request"
+            HttpStatus.BAD_REQUEST,
+            HttpStatus.NOT_ACCEPTABLE,
+            HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+            HttpStatus.METHOD_NOT_ALLOWED,
+            -> "Bad request"
             else -> "N/A"
         }
     }
@@ -159,7 +170,8 @@ private fun Exception.toExceptionDto(): ExceptionDto {
 
 @ControllerAdvice
 class ExceptionHandlers(
-    private val errorFactory: ErrorDtoFactory
+    private val errorFactory: ErrorDtoFactory,
+    private val jackson: ObjectMapper,
 ) {
 
     private val log = logger {}
@@ -174,13 +186,47 @@ class ExceptionHandlers(
 
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
     fun handleJsonMappingException(exception: MethodArgumentTypeMismatchException, request: WebRequest) =
-        buildResponseEntity(exception, request, HttpStatus.BAD_REQUEST, ErrorCode.INVALID_INPUT)
+        buildResponseEntity(exception, request, HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST)
 
-    @ExceptionHandler(AuthenticationException::class, InsufficientAuthenticationException::class)
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleHttpMessageNotReadableException(exception: HttpMessageNotReadableException, request: WebRequest) =
+        buildResponseEntity(exception, request, HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST)
+
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException::class)
+    fun handleHttpMediaTypeNotAcceptableException(
+        exception: HttpMediaTypeNotAcceptableException, request: WebRequest
+    ): ResponseEntity<String> {
+        val errorDto = errorFactory.build(exception, request, HttpStatus.NOT_ACCEPTABLE, ErrorCode.BAD_REQUEST)
+        // as there is no proper accept header in the request, we just have to assume JSON is ok for the error response
+        return ResponseEntity
+            .status(HttpStatus.NOT_ACCEPTABLE)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            // FUTURE could indicate which mediatypes are actually accepted for this endpoint
+            .body(jackson.writeValueAsString(errorDto))
+
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException::class)
+    fun handleHttpMediaTypeNotSupportedException(exception: HttpMediaTypeNotSupportedException, request: WebRequest) =
+        buildResponseEntity(exception, request, HttpStatus.UNSUPPORTED_MEDIA_TYPE, ErrorCode.BAD_REQUEST)
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
+    fun handleHttpRequestMethodNotSupportedException(
+        exception: HttpRequestMethodNotSupportedException, request: WebRequest
+    ) =
+        buildResponseEntity(exception, request, HttpStatus.METHOD_NOT_ALLOWED, ErrorCode.BAD_REQUEST)
+
+    @ExceptionHandler(
+        AuthenticationException::class,
+        InsufficientAuthenticationException::class,
+    )
     fun handleAuthenticationException(exception: AuthenticationException, request: WebRequest) =
         buildResponseEntity(exception, request, HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN)
 
-    @ExceptionHandler(Exception::class, InternalException::class)
+    @ExceptionHandler(
+        Exception::class,
+        InternalException::class,
+    )
     fun handleException(exception: Exception, request: WebRequest): ResponseEntity<ErrorDto> {
         log.error(exception) { "Unhandled exception was thrown, going to return 500!" }
         return buildResponseEntity(exception, request, HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.UNKNOWN)

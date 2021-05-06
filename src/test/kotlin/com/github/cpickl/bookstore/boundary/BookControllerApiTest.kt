@@ -132,7 +132,7 @@ class BookControllerApiTest(
             assertThat(response).isError(
                 messageContains = "Bad request",
                 status = 400,
-                code = ErrorCode.INVALID_INPUT,
+                code = ErrorCode.BAD_REQUEST,
             )
         }
 

@@ -10,7 +10,7 @@ class UserNotFoundException(val id: Id) : BookstoreException("User not found by 
 
 enum class ErrorCode {
     UNKNOWN,
-    INVALID_INPUT,
+    BAD_REQUEST,
     FORBIDDEN,
     BOOK_NOT_FOUND,
     USER_NOT_FOUND,

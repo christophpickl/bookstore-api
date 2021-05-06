@@ -14,8 +14,11 @@ import com.github.cpickl.bookstore.domain.InternalException
 import com.github.cpickl.bookstore.domain.UserNotFoundException
 import com.github.cpickl.bookstore.domain.any
 import com.github.cpickl.bookstore.read
+import com.github.cpickl.bookstore.requestDelete
+import com.github.cpickl.bookstore.requestGet
 import com.github.cpickl.bookstore.requestPost
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,20 +29,26 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
+import org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
+import org.springframework.http.HttpStatus.NOT_ACCEPTABLE
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDateTime
+import java.util.UUID
 import kotlin.reflect.KClass
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(TestConfig::class)
+@Import(ExceptionHandlingTestConfig::class)
 class ExceptionHandlingApiTest(
     @Autowired private val restTemplate: TestRestTemplate,
 ) {
@@ -50,6 +59,9 @@ class ExceptionHandlingApiTest(
     private val dateTimeString = "2021-05-05T11:17:31.518423"
     private val dateTime = LocalDateTime.parse(dateTimeString)
     private val anyId = Id.any()
+    private val unacceptableMediaType = MediaType.APPLICATION_CBOR_VALUE
+    private val unsupportedContentType = MediaType.IMAGE_PNG_VALUE
+    private val invalidUuid = "invalidUuid"
 
     @BeforeEach
     fun `mock clock`() {
@@ -66,7 +78,7 @@ class ExceptionHandlingApiTest(
     }
 
     @Test
-    fun `When Exception thrown Then proper ErrorDto returned`() {
+    fun `When Exception thrown Then return error`() {
         val error = restTemplate.requestException(
             ExceptionDefinitionDto(Exception::class, message), INTERNAL_SERVER_ERROR
         )
@@ -79,7 +91,7 @@ class ExceptionHandlingApiTest(
     }
 
     @Test
-    fun `When InternalException thrown Then proper ErrorDto returned`() {
+    fun `When InternalException thrown Then return error`() {
         val error = restTemplate.requestException(
             ExceptionDefinitionDto(InternalException::class, message), INTERNAL_SERVER_ERROR
         )
@@ -92,7 +104,7 @@ class ExceptionHandlingApiTest(
     }
 
     @Test
-    fun `When BookNotFoundException thrown Then proper ErrorDto returned`() {
+    fun `When BookNotFoundException thrown Then return error`() {
         val error = restTemplate.requestException(
             ExceptionDefinitionDto(BookNotFoundException::class, anyId), NOT_FOUND
         )
@@ -105,7 +117,7 @@ class ExceptionHandlingApiTest(
     }
 
     @Test
-    fun `When UserNotFoundException thrown Then proper ErrorDto returned`() {
+    fun `When UserNotFoundException thrown Then return error`() {
         val error = restTemplate.requestException(
             ExceptionDefinitionDto(UserNotFoundException::class, anyId), NOT_FOUND
         )
@@ -118,8 +130,10 @@ class ExceptionHandlingApiTest(
     }
 
     @Test
-    fun `When request secured endpoint without token Then proper ErrorDto returned`() {
-        val response = restTemplate.requestPost("/api/books", null, HttpHeaders.EMPTY)
+    @Disabled
+    fun `When request secured endpoint without token Then return error`() {
+        // TODO request secured test endpoint instead
+        val response = restTemplate.requestGet("/test/secured")
 
         assertThat(response.read<ErrorDto>(FORBIDDEN)).isMatching(
             status = 403,
@@ -129,7 +143,78 @@ class ExceptionHandlingApiTest(
         )
     }
 
-    // TODO test bad request payload (body + query)
+    @Test
+    fun `When get unacceptable mediatype Then default to JSON and return error`() {
+        val response = restTemplate.requestGet("/test/success", HttpHeaders().apply {
+            set(HttpHeaders.ACCEPT, unacceptableMediaType)
+        })
+
+        assertThat(response.headers.contentType).isEqualTo(MediaType.APPLICATION_JSON)
+        assertThat(response.read<ErrorDto>(NOT_ACCEPTABLE)).isMatching(
+            status = 406,
+            code = ErrorCode.BAD_REQUEST,
+            message = "Bad request",
+            method = "GET",
+            path = "/test/success",
+        )
+    }
+
+    @Test
+    fun `When post with unsupported contenttype Then return error`() {
+        val response = restTemplate.requestPost("/test/success", "any body", HttpHeaders().apply {
+            set(HttpHeaders.CONTENT_TYPE, unsupportedContentType)
+        })
+
+        assertThat(response.read<ErrorDto>(HttpStatus.UNSUPPORTED_MEDIA_TYPE)).isMatching(
+            status = 415,
+            code = ErrorCode.BAD_REQUEST,
+            message = "Bad request",
+            method = "POST",
+            path = "/test/success",
+        )
+    }
+
+    @Test
+    fun `When post with invalid body Then return error`() {
+        val response = restTemplate.requestPost("/test/success", "invalid json", HttpHeaders().apply {
+            set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        })
+
+        assertThat(response.read<ErrorDto>(BAD_REQUEST)).isMatching(
+            status = 400,
+            code = ErrorCode.BAD_REQUEST,
+            message = "Bad request",
+            method = "POST",
+            path = "/test/success",
+        )
+    }
+
+    @Test
+    fun `When request with unsupported method Then return error`() {
+        val response = restTemplate.requestDelete("/test/success")
+
+        assertThat(response.read<ErrorDto>(METHOD_NOT_ALLOWED)).isMatching(
+            status = 405,
+            code = ErrorCode.BAD_REQUEST,
+            message = "Bad request",
+            method = "DELETE",
+            path = "/test/success",
+        )
+    }
+
+    @Test
+    fun `When pass invalid query param Then return error`() {
+        val response = restTemplate.requestGet("/test/success/$invalidUuid")
+
+        assertThat(response.read<ErrorDto>(BAD_REQUEST)).isMatching(
+            status = 400,
+            code = ErrorCode.BAD_REQUEST,
+            message = "Bad request",
+            method = "GET",
+            path = "/test/success/$invalidUuid",
+        )
+    }
 
     private fun Assert<ErrorDto>.isMatching(
         status: Int,
@@ -155,7 +240,7 @@ class ExceptionHandlingApiTest(
 }
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(TestConfig::class)
+@Import(ExceptionHandlingTestConfig::class)
 @ActiveProfiles("verboseErrorHandling")
 class VerboseExceptionHandlingApiTest(
     @Autowired private val restTemplate: TestRestTemplate,
@@ -191,7 +276,7 @@ private fun TestRestTemplate.requestException(definition: ExceptionDefinitionDto
     requestPost("/test/throw", definition).read<ErrorDto>(expected)
 
 @TestConfiguration
-class TestConfig {
+class ExceptionHandlingTestConfig {
 
     @RestController
     @RequestMapping(
@@ -199,6 +284,18 @@ class TestConfig {
         produces = [MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE],
     )
     class TestController {
+
+        @GetMapping("/success")
+        fun getSuccess() = SuccessDto()
+
+        @GetMapping("/success/{id}")
+        fun getSuccessWithId(@PathVariable id: UUID) = SuccessDto(id.toString())
+
+        @PostMapping(
+            "/success",
+            consumes = [MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE],
+        )
+        fun postSuccess(@RequestBody dto: SuccessDto) = SuccessDto("Hello ${dto.message}!")
 
         @PostMapping("/throw")
         fun throwException(@RequestBody definition: ExceptionDefinitionDto) {
@@ -219,6 +316,10 @@ class TestConfig {
         }
     }
 }
+
+data class SuccessDto(
+    val message: String = "success"
+)
 
 data class ExceptionDefinitionDto(
     val fullQualifiedName: String,
