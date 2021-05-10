@@ -1,25 +1,30 @@
 package com.github.cpickl.bookstore.adapter.jpa
 
+import com.github.cpickl.bookstore.domain.Roles
+import java.util.EnumSet
+import javax.persistence.CascadeType
+import javax.persistence.CollectionTable
 import javax.persistence.Column
+import javax.persistence.ElementCollection
 import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
+import javax.persistence.FetchType
+import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType
 import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.JoinTable
 import javax.persistence.Lob
+import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
 import javax.persistence.Table
-
-val allEntities = listOf(
-    BookJpa.ENTITY_NAME,
-    UserJpa.ENTITY_NAME,
-    CoverJpa.ENTITY_NAME,
-)
 
 @Entity(name = UserJpa.ENTITY_NAME)
 @Table(name = UserJpa.TABLE_NAME)
 data class UserJpa(
     @Id
-    @Column(name = "id", unique = true)
+    @Column(name = "id", unique = true, nullable = false)
     val id: String,
 
     @Column(name = "author_pseudonym")
@@ -30,18 +35,28 @@ data class UserJpa(
 
     @Column(name = "password_hash")
     val passwordHash: String,
+
+    @Column(name = "roles", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "user_roles", joinColumns = [JoinColumn(name = "user_id")])
+    @ElementCollection(targetClass = RoleJpa::class, fetch = FetchType.EAGER)
+    val roles: Set<RoleJpa>,
 ) {
     companion object {
-        const val TABLE_NAME = "user"
         const val ENTITY_NAME = "User"
+        const val TABLE_NAME = "user"
     }
+}
+
+enum class RoleJpa(val roleName: String) {
+    USER(Roles.user), ADMIN(Roles.admin)
 }
 
 @Entity(name = BookJpa.ENTITY_NAME)
 @Table(name = BookJpa.TABLE_NAME)
 data class BookJpa(
     @Id
-    @Column(name = "id", unique = true)
+    @Column(name = "id", unique = true, nullable = false)
     val id: String,
 
     @Column(name = "title")
@@ -51,7 +66,7 @@ data class BookJpa(
     @Column(name = "description")
     val description: String,
 
-    @ManyToOne
+    @ManyToOne(cascade = [CascadeType.REMOVE])
     val author: UserJpa,
 
     @Column(name = "currency_code")
@@ -65,8 +80,8 @@ data class BookJpa(
     var state: BookStateJpa,
 ) {
     companion object {
-        const val TABLE_NAME = "book"
         const val ENTITY_NAME = "Book"
+        const val TABLE_NAME = "book"
     }
 }
 
@@ -78,8 +93,9 @@ enum class BookStateJpa {
 @Entity(name = CoverJpa.ENTITY_NAME)
 @Table(name = CoverJpa.TABLE_NAME)
 data class CoverJpa(
+    // TODO setup foreign key reference to Book
     @Id
-    @Column(name = "book_id", unique = true)
+    @Column(name = "book_id", unique = true, nullable = false)
     val bookId: String,
 
     @Lob

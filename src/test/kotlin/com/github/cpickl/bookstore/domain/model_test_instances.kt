@@ -1,5 +1,6 @@
 package com.github.cpickl.bookstore.domain
 
+import com.github.cpickl.bookstore.common.enumSetOf
 import java.util.UUID
 
 const val UUID1 = "00000000-0000-0000-0000-000000000001"
@@ -19,7 +20,8 @@ fun User.Companion.any() = User(
     id = RandomIdGenerator.generate(),
     authorPseudonym = "any author",
     username = "anyUsername",
-    passwordHash = "passwordHash"
+    passwordHash = "passwordHash",
+    roles = enumSetOf(Role.User),
 )
 
 fun Book.Companion.any() = Book(
@@ -28,7 +30,7 @@ fun Book.Companion.any() = Book(
     description = "any description",
     author = Author.any(),
     price = Money.any(),
-    state = BookState.any()
+    state = BookState.any(),
 )
 
 fun BookState.Companion.any() = BookState.Unpublished

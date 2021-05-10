@@ -1,10 +1,12 @@
 package com.github.cpickl.bookstore
 
 import com.github.cpickl.bookstore.boundary.SecurityConstants
+import com.github.cpickl.bookstore.common.enumSetOf
 import com.github.cpickl.bookstore.domain.BookCreateRequest
 import com.github.cpickl.bookstore.domain.BookService
 import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.RandomIdGenerator
+import com.github.cpickl.bookstore.domain.Role
 import com.github.cpickl.bookstore.domain.User
 import com.github.cpickl.bookstore.domain.UserRepository
 import mu.KotlinLogging.logger
@@ -16,25 +18,33 @@ import org.springframework.stereotype.Component
 
 @Component
 class InitialDataInitializer(
-    private val userRepository: UserRepository,
+    private val userRepo: UserRepository,
     private val passwordEncoder: BCryptPasswordEncoder,
+    private val dummyDataInitializer: DummyDataInitializer,
 ) : ApplicationListener<ApplicationReadyEvent> {
 
     private val log = logger {}
 
     override fun onApplicationEvent(event: ApplicationReadyEvent) {
-        if (userRepository.isEmpty()) {
+        if (userRepo.isEmpty()) {
             saveAdminUser()
         }
+        dummyDataInitializer.initialize()
     }
 
     private fun saveAdminUser() {
-        log.info { "Saving admin user." }
+        log.info { "Saving default admin user." }
         val login = SecurityConstants.admin
         val authorPseudonym = SecurityConstants.adminAuthorName
         val passwordHash = passwordEncoder.encode(login.password)
-        val user = User(RandomIdGenerator.generate(), authorPseudonym, login.username, passwordHash)
-        userRepository.create(user)
+        val user = User(
+            id = RandomIdGenerator.generate(),
+            authorPseudonym = authorPseudonym,
+            username = login.username,
+            passwordHash = passwordHash,
+            roles = enumSetOf(Role.User, Role.Admin)
+        )
+        userRepo.create(user)
     }
 }
 
@@ -44,11 +54,11 @@ class DummyDataInitializer(
     private val passwordEncoder: BCryptPasswordEncoder,
     private val bookService: BookService,
     private val environment: AbstractEnvironment,
-) : ApplicationListener<ApplicationReadyEvent> {
+) {
 
     private val log = logger {}
 
-    override fun onApplicationEvent(event: ApplicationReadyEvent) {
+    fun initialize() {
         if (environment.activeProfiles.contains("dummyData")) {
             log.info { "Setting up dummy data." }
             saveDummyUserAndBook()
@@ -56,7 +66,13 @@ class DummyDataInitializer(
     }
 
     private fun saveDummyUserAndBook() {
-        val user = User(RandomIdGenerator.generate(), "John Doe", "johnny", passwordEncoder.encode("secret"))
+        val user = User(
+            id = RandomIdGenerator.generate(),
+            authorPseudonym = "John Doe",
+            username = "johnny",
+            passwordHash = passwordEncoder.encode("secret"),
+            roles = enumSetOf(Role.User),
+        )
         userRepository.create(user)
         bookService.create(
             BookCreateRequest(

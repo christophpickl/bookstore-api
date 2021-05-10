@@ -13,16 +13,6 @@ import org.springframework.http.HttpMethod
 @Configuration
 class OpenApiConfig {
 
-    companion object {
-        val securityPermitPaths = listOf(
-            HttpMethod.GET to "/v3/api-docs",
-            HttpMethod.GET to "/v3/api-docs/*",
-            HttpMethod.GET to "/v3/api-docs.yaml",
-            HttpMethod.GET to "/swagger-ui/*",
-            HttpMethod.GET to "/swagger-ui.html",
-        )
-    }
-
     @Bean
     fun customOpenAPI(): OpenAPI = OpenAPI().components(Components())
         .info(

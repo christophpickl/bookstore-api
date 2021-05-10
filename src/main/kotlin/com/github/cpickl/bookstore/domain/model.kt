@@ -1,10 +1,35 @@
 package com.github.cpickl.bookstore.domain
 
+import java.util.EnumSet
+
+object Roles {
+    const val user = "ROLE_USER"
+    const val admin = "ROLE_ADMIN"
+}
+
+enum class Role(
+    val roleName: String,
+) {
+    User(Roles.user),
+    Admin(Roles.admin),
+    ;
+
+    companion object {
+        private val rolesByName by lazy {
+            values().associateBy { it.roleName }
+        }
+
+        fun byName(name: String): Role =
+            rolesByName[name] ?: throw IllegalArgumentException("Invalid role: '$name'")
+    }
+}
+
 data class User(
     val id: Id,
     val authorPseudonym: String,
     val username: String,
     val passwordHash: String,
+    val roles: EnumSet<Role>,
 ) {
     companion object
 
@@ -13,7 +38,7 @@ data class User(
         pseudonym = authorPseudonym,
     )
 
-    override fun toString() = "User[username='$username',id=$id,authorPseudonym='$authorPseudonym']"
+    override fun toString() = "User[username='$username',id=$id,authorPseudonym='$authorPseudonym',roles=$roles]"
 }
 
 data class Author(

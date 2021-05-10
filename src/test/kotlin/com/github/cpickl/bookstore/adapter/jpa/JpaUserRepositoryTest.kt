@@ -8,6 +8,7 @@ import assertk.assertions.isNull
 import assertk.assertions.isSuccess
 import assertk.assertions.isTrue
 import com.github.cpickl.bookstore.domain.Id
+import com.github.cpickl.bookstore.domain.Role
 import com.github.cpickl.bookstore.domain.UUID1
 import com.github.cpickl.bookstore.domain.UUID2
 import com.github.cpickl.bookstore.domain.User
@@ -31,7 +32,8 @@ class JpaUserRepositoryTest {
     private lateinit var em: TestEntityManager
 
     @Autowired
-    private lateinit var crudRepo: JpaUserCrudRepository
+    private lateinit var userCrudRepo: JpaUserCrudRepository
+
     private lateinit var repo: JpaUserRepository
 
     private val userJpa = UserJpa.any()
@@ -48,7 +50,7 @@ class JpaUserRepositoryTest {
 
     @BeforeEach
     fun `init repo`() {
-        repo = JpaUserRepository(crudRepo)
+        repo = JpaUserRepository(userCrudRepo)
     }
 
     @Nested
@@ -159,10 +161,3 @@ class JpaUserRepositoryTest {
         em.persistAndFlush(user)
     }
 }
-
-private fun UserJpa.toUser() = User(
-    id = Id(id),
-    authorPseudonym = authorPseudonym,
-    username = username,
-    passwordHash = passwordHash,
-)

@@ -10,12 +10,14 @@ import com.github.cpickl.bookstore.domain.UserRepository
 import mu.KotlinLogging.logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
+import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
@@ -23,6 +25,7 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
@@ -39,16 +42,6 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 object SecurityConstants {
-    // TODO annotate controller methods instead
-    val PERMIT_ALL_PATHS = listOf(
-        HttpMethod.POST to "/test/**", // FIXME delete me again
-        HttpMethod.GET to "/api",
-        HttpMethod.POST to "/login",
-        HttpMethod.GET to "/api/books",
-        HttpMethod.GET to "/api/books/*",
-        HttpMethod.GET to "/api/books/*/cover",
-    ).plus(OpenApiConfig.securityPermitPaths)
-
     const val EXPIRATION_TIME = 864_000_000 // 10 days
     const val SECRET = "my_top_secret" // TODO inject during build
 
@@ -77,32 +70,29 @@ class AuthenticationUserDetailService(
     }
 }
 
+@Configuration
+@EnableGlobalMethodSecurity(
+    jsr250Enabled = true,
+    securedEnabled = true,
+    prePostEnabled = true,
+)
+class ConfigureSpringSecurityAnnotations : GlobalMethodSecurityConfiguration()
+
 @EnableWebSecurity
 class SecurityConfiguration(
     private val passwordEncoder: BCryptPasswordEncoder,
-    private val authenticationUserDetailService: AuthenticationUserDetailService
+    private val authenticationUserDetailService: AuthenticationUserDetailService,
 ) : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
         // @formatter:off
-        http.cors().and()
-            .csrf().disable()
-            .authorizeRequests()
-            .let {
-                SecurityConstants.PERMIT_ALL_PATHS.fold(it) { acc, path ->
-                    acc.antMatchers(path.first, path.second).permitAll()
-                }
-            }
-            .anyRequest().authenticated()
-
-            .and()
-                .exceptionHandling()
+        http.cors().and().csrf().disable()
+            .exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPoint())
 //                .accessDeniedHandler(accessDeniedHandler())
             .and()
-                .addFilter(JWTAuthenticationFilter(authenticationManager()))
-                // this disables session creation on Spring Security
-                .addFilter(JWTAuthorizationFilter(authenticationManager()))
+                .addFilter(JWTAuthenticationFilter(authenticationManager(), userRepo))
+                .addFilter(JWTAuthorizationFilter(authenticationManager(), userRepo))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         // @formatter:on
     }
@@ -119,6 +109,9 @@ class SecurityConfiguration(
 
     @Autowired
     private lateinit var jackson: ObjectMapper
+
+    @Autowired
+    private lateinit var userRepo: UserRepository
 
     @Bean
     fun authenticationEntryPoint(): AuthenticationEntryPoint =
@@ -151,21 +144,25 @@ class CustomAuthenticationEntryPoint(
 //    }
 //}
 
+private fun UserRepository.findAuthoritiesFor(username: String): Collection<GrantedAuthority> =
+    findByUsername(username)?.roles?.map { SimpleGrantedAuthority(it.roleName) } ?: emptyList()
+
 class JWTAuthenticationFilter(
-    private val authenticationManagerx: AuthenticationManager
+    private val authManager: AuthenticationManager,
+    private val userRepo: UserRepository,
 ) : UsernamePasswordAuthenticationFilter() {
 
     private val log = logger {}
     private val jackson = jacksonObjectMapper()
 
     override fun attemptAuthentication(request: HttpServletRequest, response: HttpServletResponse): Authentication {
-        val user = jackson.readValue<LoginDto>(request.inputStream)
-        val emptyAuthorities = ArrayList<GrantedAuthority>()
-        return authenticationManagerx.authenticate(
+        val login = jackson.readValue<LoginDto>(request.inputStream)
+        val authorities = userRepo.findAuthoritiesFor(login.username)
+        return authManager.authenticate(
             UsernamePasswordAuthenticationToken(
-                user.username,
-                user.password,
-                emptyAuthorities
+                login.username,
+                login.password,
+                authorities,
             )
         )
     }
@@ -188,7 +185,8 @@ class JWTAuthenticationFilter(
 }
 
 class JWTAuthorizationFilter(
-    authenticationManager: AuthenticationManager
+    authenticationManager: AuthenticationManager,
+    private val userRepo: UserRepository,
 ) : BasicAuthenticationFilter(authenticationManager) {
 
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
@@ -208,6 +206,7 @@ class JWTAuthorizationFilter(
             .build()
             .verify(token.replace("Bearer ", ""))
             .subject
-        return user?.let { UsernamePasswordAuthenticationToken(it, null, emptyList()) }
+        val authorities = userRepo.findAuthoritiesFor(user)
+        return UsernamePasswordAuthenticationToken(user, null, authorities)
     }
 }

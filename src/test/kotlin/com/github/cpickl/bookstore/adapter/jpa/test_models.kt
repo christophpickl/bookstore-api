@@ -1,5 +1,6 @@
 package com.github.cpickl.bookstore.adapter.jpa
 
+import com.github.cpickl.bookstore.common.enumSetOf
 import java.util.UUID
 
 fun UserJpa.Companion.any() = UserJpa(
@@ -7,6 +8,7 @@ fun UserJpa.Companion.any() = UserJpa(
     authorPseudonym = "authorPseudonym",
     username = "username",
     passwordHash = "passwordHash",
+    roles = enumSetOf(RoleJpa.USER),
 )
 
 fun BookJpa.Companion.any() = BookJpa(

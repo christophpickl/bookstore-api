@@ -1,6 +1,7 @@
 package com.github.cpickl.bookstore.boundary
 
 import com.github.cpickl.bookstore.domain.BookService
+import com.github.cpickl.bookstore.domain.Roles
 import com.github.cpickl.bookstore.domain.Search
 import com.github.cpickl.bookstore.domain.unaryPlus
 import io.swagger.v3.oas.annotations.Operation
@@ -23,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
+import javax.annotation.security.PermitAll
+import javax.annotation.security.RolesAllowed
 
 @Tag(
     name = "Book API",
@@ -46,6 +49,7 @@ class BookController(
         ApiResponse(responseCode = "200", description = "Some books might be found."),
     ])
     @GetMapping("")
+    @PermitAll
     fun findAllBooks(
         @RequestParam(name = "search", required = false)
         @Parameter(description="Single search term to filter books.")
@@ -73,6 +77,7 @@ class BookController(
         ]
     )
     @GetMapping("/{id}")
+    @PermitAll
     fun findSingleBook(
         @PathVariable id: UUID
     ): BookDto =
@@ -94,6 +99,7 @@ class BookController(
     @PostMapping("",
         consumes = [APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE]
     )
+    @RolesAllowed(Roles.user)
     fun createBook(
         @RequestBody book: BookCreateDto,
         auth: Authentication
@@ -123,6 +129,7 @@ class BookController(
         "/{id}",
         consumes = [APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE]
     )
+    @RolesAllowed(Roles.user)
     fun updateBook(
         @PathVariable id: UUID,
         @RequestBody update: BookUpdateDto,
@@ -150,6 +157,7 @@ class BookController(
         ]
     )
     @DeleteMapping("/{id}")
+    @RolesAllowed(Roles.user)
     fun deleteBook(
         @PathVariable id: UUID,
         auth: Authentication,

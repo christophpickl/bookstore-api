@@ -1,5 +1,6 @@
 package com.github.cpickl.bookstore.common
 
+import java.util.EnumSet
 import java.util.Optional
 
 fun <T> Optional<T>.getOrThrow(exceptionProvider: () -> Exception): T =
@@ -14,3 +15,7 @@ fun <IN, OUT> Optional<IN>.unwrap(transform: (IN) -> OUT): OUT? =
     } else {
         transform(get())
     }
+
+fun <E : Enum<E>> Collection<E>.toEnumSet(): EnumSet<E> = EnumSet.copyOf(this)
+
+fun <E: Enum<E>> enumSetOf(vararg es: E): EnumSet<E> = es.toSet().toEnumSet()

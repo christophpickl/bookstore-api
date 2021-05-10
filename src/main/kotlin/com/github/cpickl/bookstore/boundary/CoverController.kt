@@ -2,6 +2,7 @@ package com.github.cpickl.bookstore.boundary
 
 import com.github.cpickl.bookstore.domain.CoverService
 import com.github.cpickl.bookstore.domain.CoverUpdateRequest
+import com.github.cpickl.bookstore.domain.Roles
 import com.github.cpickl.bookstore.domain.unaryPlus
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
+import javax.annotation.security.PermitAll
+import javax.annotation.security.RolesAllowed
 
 @Tag(
     name = "Cover API",
@@ -42,6 +45,7 @@ class CoverController(
         ]
     )
     @GetMapping("", produces = [MediaType.IMAGE_PNG_VALUE])
+    @PermitAll
     fun findBookCover(
         @PathVariable id: UUID
     ): ByteArray = service.find(+id).bytes
@@ -61,6 +65,7 @@ class CoverController(
         "",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
+    @RolesAllowed(Roles.user)
     fun updateBookCover(
         @PathVariable id: UUID,
         @RequestParam("cover-file") file: MultipartFile,
@@ -85,6 +90,7 @@ class CoverController(
         ]
     )
     @DeleteMapping("")
+    @RolesAllowed(Roles.user)
     fun deleteBookCover(
         @PathVariable id: UUID,
     ): ResponseEntity<Any> {

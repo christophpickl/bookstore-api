@@ -8,6 +8,7 @@ import com.auth0.jwt.JWT
 import com.github.cpickl.bookstore.TestUserPreparer
 import com.github.cpickl.bookstore.isForbidden
 import com.github.cpickl.bookstore.isOk
+import com.github.cpickl.bookstore.isStatus
 import com.github.cpickl.bookstore.jackson
 import com.github.cpickl.bookstore.readAuthorization
 import com.github.cpickl.bookstore.requestPost
@@ -19,6 +20,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpHeaders.AUTHORIZATION
 import org.springframework.http.HttpHeaders.CONTENT_TYPE
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -33,7 +35,7 @@ class LoginApiTest(
     }
 
     @Test
-    fun `When login as default admin Then success`() {
+    fun `When login as given user Then return ok and jwt`() {
         val response = login(userPreparer.userLogin)
 
         assertThat(response).isOk()
@@ -42,10 +44,18 @@ class LoginApiTest(
     }
 
     @Test
-    fun `When login invalid Then fail`() {
-        val response = login(userPreparer.userLogin.copy(password = "forbidden"))
+    fun `When login with invalid password Then return unauthorized`() {
+        val response = login(userPreparer.userLogin.copy(password = "invalidPassword"))
 
-        assertThat(response).isForbidden()
+        assertThat(response).isStatus(HttpStatus.UNAUTHORIZED)
+        assertThat(response.headers[AUTHORIZATION]).isNull()
+    }
+
+    @Test
+    fun `When login as invalid user Then return unauthorized`() {
+        val response = login(LoginDto("invalid", "invalid"))
+
+        assertThat(response).isStatus(HttpStatus.UNAUTHORIZED)
         assertThat(response.headers[AUTHORIZATION]).isNull()
     }
 

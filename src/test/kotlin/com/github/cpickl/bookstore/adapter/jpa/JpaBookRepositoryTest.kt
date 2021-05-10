@@ -256,25 +256,3 @@ class JpaBookRepositoryTest {
     private fun persistUser(username: String = "username"): UserJpa =
         em.persistAndFlush(UserJpa.any().copy(username = username))
 }
-
-private fun BookJpa.toBook() = Book(
-    id = Id(id),
-    title = title,
-    description = description,
-    author = author.toAuthor(),
-    price = Money(
-        currency = Currency.of(currencyCode),
-        value = price,
-    ),
-    state = state.toBookState(),
-)
-
-private fun UserJpa.toAuthor() = Author(
-    userId = Id(id),
-    pseudonym = authorPseudonym,
-)
-
-private fun BookStateJpa.toBookState() = when (this) {
-    BookStateJpa.UNPUBLISHED -> BookState.Unpublished
-    BookStateJpa.PUBLISHED -> BookState.Published
-}

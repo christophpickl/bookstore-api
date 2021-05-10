@@ -34,6 +34,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.http.MediaType.ALL
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.http.MediaType.APPLICATION_XML
@@ -195,11 +196,13 @@ class BookControllerApiTest(
 
     @Nested
     inner class CreateBookTest {
-        private val anyBody = null
 
         @Test
         fun `When create book without token Then status forbidden`() {
-            val response = restTemplate.requestPost("/api/books", anyBody, HttpHeaders.EMPTY)
+            val response = restTemplate.requestPost("/api/books", BookCreateDto.any(), HttpHeaders().apply {
+                set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            })
 
             assertThat(response).isForbidden()
         }
@@ -231,7 +234,11 @@ class BookControllerApiTest(
     inner class UpdateBookTest {
         @Test
         fun `When update without token Then fail`() {
-            val response = restTemplate.requestPut("/api/books/${book.id}")
+            val response = restTemplate.requestPut("/api/books/${book.id}", BookUpdateDto.any(),
+                headers = HttpHeaders().apply {
+                    accept = listOf(APPLICATION_JSON)
+                    contentType = APPLICATION_JSON
+                })
 
             assertThat(response).isForbidden()
         }
@@ -314,45 +321,3 @@ fun Assert<ResponseEntity<String>>.isError(
         code?.let { assertThat(dto.code).isEqualTo(it) }
     }
 }
-
-private fun Book.toSimpleJson() = """{
-    "id": "$id",
-    "title": "$title",
-    "detailLink": { "method": "GET", "path": "/api/books/$id", "templated": false }
-}"""
-
-private fun Book.toDetailXml() = """<book>
-    <id>$id</id>
-    <title><![CDATA[$title]]></title>
-    <description><![CDATA[$description]]></description>
-    <price>${price.toXml()}</price>
-    <author>$authorName</author>
-    <coverLink><method>GET</method><path>/api/books/$id/cover</path><templated>false</templated></coverLink>
-    <updateLink><method>PUT</method><path>/api/books/$id</path><templated>false</templated></updateLink>
-    <deleteLink><method>DELETE</method><path>/api/books/$id</path><templated>false</templated></deleteLink>
-</book>"""
-
-private fun Book.toDetailJson() = """{
-    "id": "$id",
-    "title": "$title",
-    "description": "$description",
-    "price": ${price.toJson()},
-    "author": "$authorName",
-    "coverLink": { "method": "GET", "path": "/api/books/$id/cover", "templated": false },
-    "updateLink": { "method": "PUT", "path": "/api/books/$id", "templated": false },
-    "deleteLink": { "method": "DELETE", "path": "/api/books/$id", "templated": false }
-}"""
-
-private fun Book.toSimpleXml() = """<book>
-    <id>$id</id>
-    <title>$title</title>
-    <detailLink><method>GET</method><path>/api/books/$id</path><templated>false</templated></detailLink>
-</book>"""
-
-private fun Money.toJson() =
-    """{"currencyCode":"${currency.code}","value":$value,"precision":${currency.precision}}"""
-
-private fun Money.toXml() =
-    """<currencyCode>${currency.code}</currencyCode>
-    <value>$value</value>
-    <precision>${currency.precision}</precision>"""

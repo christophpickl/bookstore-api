@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authentication.InsufficientAuthenticationException
 import org.springframework.security.core.AuthenticationException
 import org.springframework.stereotype.Service
@@ -219,8 +220,9 @@ class ExceptionHandlers(
     @ExceptionHandler(
         AuthenticationException::class,
         InsufficientAuthenticationException::class,
+        AccessDeniedException::class,
     )
-    fun handleAuthenticationException(exception: AuthenticationException, request: WebRequest) =
+    fun handleAuthenticationException(exception: Exception, request: WebRequest) =
         buildResponseEntity(exception, request, HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN)
 
     @ExceptionHandler(

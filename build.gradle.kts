@@ -31,6 +31,7 @@ dependencies {
     implementation("com.auth0:java-jwt:3.15.0")
     implementation("org.springdoc:springdoc-openapi-ui:1.5.2")
     runtimeOnly("com.h2database:h2")
+    implementation("javax.annotation:jsr250-api:1.0")
 
     // jackson: dont upgrade to 2.12.3 as spring boot will have binary incompatibilities
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -43,6 +44,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude("junit", "junit")
     }
+    testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.1")
     // not working properly with kotlin ... testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.0")
@@ -53,6 +55,8 @@ dependencies {
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
     testImplementation("org.xmlunit:xmlunit-core:2.8.2")
     testImplementation("org.xmlunit:xmlunit-matchers:2.8.2")
+    // spring's TestRestTemplate uses default JDK http client, which is not able to read body from 401 responses
+    testRuntimeOnly("org.apache.httpcomponents:httpclient:4.5.13")
 }
 
 
