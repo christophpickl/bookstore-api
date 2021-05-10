@@ -7,12 +7,8 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isFailure
 import assertk.assertions.isNull
 import assertk.assertions.isSuccess
-import com.github.cpickl.bookstore.domain.Author
 import com.github.cpickl.bookstore.domain.Book
-import com.github.cpickl.bookstore.domain.BookState
-import com.github.cpickl.bookstore.domain.Currency
 import com.github.cpickl.bookstore.domain.Id
-import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Search
 import com.github.cpickl.bookstore.domain.UUID1
 import com.github.cpickl.bookstore.domain.UUID2
@@ -35,7 +31,6 @@ class JpaBookRepositoryTest {
 
     @Autowired
     private lateinit var bookCrudRepo: JpaBookCrudRepository
-
     @Autowired
     private lateinit var userCrudRepo: JpaUserCrudRepository
     private lateinit var repo: JpaBookRepository

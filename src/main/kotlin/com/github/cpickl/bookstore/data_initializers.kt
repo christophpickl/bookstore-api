@@ -1,6 +1,5 @@
 package com.github.cpickl.bookstore
 
-import com.github.cpickl.bookstore.boundary.SecurityConstants
 import com.github.cpickl.bookstore.common.enumSetOf
 import com.github.cpickl.bookstore.domain.BookCreateRequest
 import com.github.cpickl.bookstore.domain.BookService
@@ -10,6 +9,7 @@ import com.github.cpickl.bookstore.domain.Role
 import com.github.cpickl.bookstore.domain.User
 import com.github.cpickl.bookstore.domain.UserRepository
 import mu.KotlinLogging.logger
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.core.env.AbstractEnvironment
@@ -21,6 +21,7 @@ class InitialDataInitializer(
     private val userRepo: UserRepository,
     private val passwordEncoder: BCryptPasswordEncoder,
     private val dummyDataInitializer: DummyDataInitializer,
+    @Value("\${bookstore.adminDefaultPassword}") private val adminDefaultPassword: String,
 ) : ApplicationListener<ApplicationReadyEvent> {
 
     private val log = logger {}
@@ -34,15 +35,13 @@ class InitialDataInitializer(
 
     private fun saveAdminUser() {
         log.info { "Saving default admin user." }
-        val login = SecurityConstants.admin
-        val authorPseudonym = SecurityConstants.adminAuthorName
-        val passwordHash = passwordEncoder.encode(login.password)
+        val passwordHash = passwordEncoder.encode(adminDefaultPassword)
         val user = User(
             id = RandomIdGenerator.generate(),
-            authorPseudonym = authorPseudonym,
-            username = login.username,
+            username = "admin",
             passwordHash = passwordHash,
-            roles = enumSetOf(Role.User, Role.Admin)
+            authorPseudonym = "admin author",
+            roles = enumSetOf(Role.User, Role.Admin),
         )
         userRepo.create(user)
     }

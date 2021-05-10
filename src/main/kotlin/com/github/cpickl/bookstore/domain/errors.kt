@@ -1,6 +1,10 @@
 package com.github.cpickl.bookstore.domain
 
-open class BookstoreException(message: String, val domainMessage: String) : RuntimeException(message)
+open class BookstoreException(
+    message: String,
+    val domainMessage: String,
+    cause: Throwable? = null
+) : RuntimeException(message, cause)
 
 class InternalException(message: String) : BookstoreException(message, "Internal error")
 

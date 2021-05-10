@@ -1,22 +1,18 @@
 package com.github.cpickl.bookstore.boundary
 
-import org.hamcrest.Matchers
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
-import org.springframework.security.access.annotation.Secured
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,6 +24,7 @@ import javax.annotation.security.RolesAllowed
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @Import(SecurityTestConfig::class)
+@ActiveProfiles("test")
 class SecurityApiTest(
     @Autowired private val mockMvc: MockMvc,
 ) {
@@ -63,10 +60,6 @@ class SecurityApiTest(
             .andExpect(jsonPath("$.status", `is`(403)))
     }
 }
-
-
-// FIXME create user with different roles; request endpoints and check proper authentication
-// @Autowired private val restTemplate: TestRestTemplate,
 
 @TestConfiguration
 class SecurityTestConfig {

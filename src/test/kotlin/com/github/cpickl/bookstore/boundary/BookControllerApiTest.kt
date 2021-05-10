@@ -12,7 +12,6 @@ import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.BookService
 import com.github.cpickl.bookstore.domain.ErrorCode
 import com.github.cpickl.bookstore.domain.Id
-import com.github.cpickl.bookstore.domain.Money
 import com.github.cpickl.bookstore.domain.Search
 import com.github.cpickl.bookstore.domain.any
 import com.github.cpickl.bookstore.isForbidden
@@ -39,8 +38,10 @@ import org.springframework.http.MediaType.ALL
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.http.MediaType.APPLICATION_XML
 import org.springframework.http.ResponseEntity
+import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 class BookControllerApiTest(
     @Autowired private val restTemplate: TestRestTemplate,
     @Autowired private val userPreparer: TestUserPreparer,

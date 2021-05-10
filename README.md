@@ -2,33 +2,44 @@
 
 A sample ReST(-like) (Web-)API for a job assignment using Spring Boot and Kotlin.
 
-Simply run the class [`BookstoreApp`](https://github.com/christophpickl/bookstore-api/blob/master/src/main/kotlin/com/github/cpickl/bookstore/BookstoreApp.kt) 
-and open [http://localhost/swagger-ui.html](http://localhost/swagger-ui.html) in your browser, 
-or make use of the provided [Postman collection](https://github.com/christophpickl/bookstore-api/tree/master/src/doc).
+Simply run the
+class [`BookstoreApp`](https://github.com/christophpickl/bookstore-api/blob/master/src/main/kotlin/com/github/cpickl/bookstore/BookstoreApp.kt)
+and open [http://localhost/swagger-ui.html](http://localhost/swagger-ui.html) in your browser, or make use of the
+provided [Postman collection](https://github.com/christophpickl/bookstore-api/tree/master/src/doc).
 
-## Business Requirements
+## Features Overview
 
-* [x] content negotiation (JSON, XML)
-* [x] User model: author pseudonym field
-* [x] Book model: title, description, author (User reference), cover image, price
-* [X] JWT auth (user/pass based)
-* `/books` resource
-    * [x] GET list and detail (public, no auth required)
-    * [x] search books via query params
-    * [x] CRUD operations (for auth only)
-    * [x] DELETE unpublishes a book
+### Business
 
-## Technical
+* Management of users, books and covers
+* Multi-currency aware
+* Search books
+
+### Technical
+
+* JWT role-based authentication
+* Content negotiation (JSON, XML)
 
 ### Toolstack
 
 * Kotlin 1.4, JDK 11, Gradle 6
-* Spring Boot 2.4.5, Jackson
+* Spring Boot 2, Jackson
 * OpenAPI 3
 * JUnit 5, Mockito, Assertk, JSONAssert, XMLUnit
 * Detekt
 
-### Ideas
+## How to start
+
+* __Locally__:
+  * Run the `BookstoreApp` class
+  * Define the following VM arguments: `-Dspring.profiles.active=dev,dummyData`
+* __Production__:
+  * Docker ... TBD
+  * Set mandatory environment variables:
+    * `bookstore.hashSecret=xxx`
+    * `bookstore.adminDefaultPassword=xxx`
+
+## Further Ideas
 
 _Now_:
 
@@ -50,6 +61,9 @@ _Now_:
 * replace password type from String to CharArray for security reasons
 * mini-frontend (kotlin HTML-DSL)
 * testcontainer: https://programmerfriend.com/spring-boot-integration-testing-done-right/
+* make hibernate aware of custom ID type (no stringly typed anymore)
+* DB layer hardening: cascade deletes
+* security hardening: failed login (time delay? lock user?); token expired (tests)
 
 _Later_:
 

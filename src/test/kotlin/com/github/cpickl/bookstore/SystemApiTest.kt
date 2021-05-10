@@ -28,8 +28,10 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpStatus.NO_CONTENT
+import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 class SystemApiTest(
     @Autowired private val restTemplate: TestRestTemplate,
     @Autowired private val userPreparer: TestUserPreparer,

@@ -1,7 +1,6 @@
 package com.github.cpickl.bookstore.adapter.jpa
 
 import com.github.cpickl.bookstore.domain.Roles
-import java.util.EnumSet
 import javax.persistence.CascadeType
 import javax.persistence.CollectionTable
 import javax.persistence.Column
@@ -10,14 +9,12 @@ import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
 import javax.persistence.FetchType
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.JoinColumn
-import javax.persistence.JoinTable
 import javax.persistence.Lob
-import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
+import javax.persistence.MapsId
+import javax.persistence.OneToOne
 import javax.persistence.Table
 
 @Entity(name = UserJpa.ENTITY_NAME)
@@ -66,7 +63,7 @@ data class BookJpa(
     @Column(name = "description")
     val description: String,
 
-    @ManyToOne(cascade = [CascadeType.REMOVE])
+    @ManyToOne(cascade = [CascadeType.ALL])
     val author: UserJpa,
 
     @Column(name = "currency_code")
@@ -93,15 +90,22 @@ enum class BookStateJpa {
 @Entity(name = CoverJpa.ENTITY_NAME)
 @Table(name = CoverJpa.TABLE_NAME)
 data class CoverJpa(
-    // TODO setup foreign key reference to Book
     @Id
-    @Column(name = "book_id", unique = true, nullable = false)
+    @Column(name = "id", unique = true, nullable = false)
     val bookId: String,
+
+//    @OneToOne(cascade = [CascadeType.ALL], optional = false)
+//    @PrimaryKeyJoinColumn//(name = "book_id", referencedColumnName = "id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    val book: BookJpa,
 
     @Lob
     @Column(name = "bytes")
     val bytes: ByteArray,
 ) {
+
+    constructor(book: BookJpa, bytes: ByteArray) : this(book.id, book, bytes)
 
     companion object {
         const val ENTITY_NAME = "Cover"
@@ -111,12 +115,12 @@ data class CoverJpa(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is CoverJpa) return false
-        return bookId == other.bookId &&
+        return book == other.book &&
                 bytes.contentEquals(other.bytes)
     }
 
     override fun hashCode(): Int {
-        var result = bookId.hashCode()
+        var result = book.hashCode()
         result = 31 * result + bytes.contentHashCode()
         return result
     }

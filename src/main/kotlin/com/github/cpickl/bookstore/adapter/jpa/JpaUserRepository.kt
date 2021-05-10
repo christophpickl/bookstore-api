@@ -3,13 +3,11 @@ package com.github.cpickl.bookstore.adapter.jpa
 import com.github.cpickl.bookstore.common.toEnumSet
 import com.github.cpickl.bookstore.common.unwrap
 import com.github.cpickl.bookstore.domain.Id
-import com.github.cpickl.bookstore.domain.InternalException
 import com.github.cpickl.bookstore.domain.Role
 import com.github.cpickl.bookstore.domain.User
 import com.github.cpickl.bookstore.domain.UserRepository
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
-import java.util.EnumSet
 
 @Repository
 class JpaUserRepository(
@@ -36,7 +34,7 @@ private fun User.toUserJpa() = UserJpa(
     authorPseudonym = authorPseudonym,
     username = username,
     passwordHash = passwordHash,
-    roles = roles.map { it.toRoleJpa() }.toEnumSet()
+    roles = roles.map { it.toRoleJpa() }.toSet()
 )
 
 private fun UserJpa.toUser() = User(

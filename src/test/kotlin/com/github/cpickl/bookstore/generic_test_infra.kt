@@ -42,7 +42,7 @@ fun Assert<ResponseEntity<*>>.isStatus(code: HttpStatus) {
 
 fun TestRestTemplate.requestGet(
     path: String,
-    headers: HttpHeaders = HttpHeaders.EMPTY, // TODO introduce own headers type instead
+    headers: HttpHeaders = HttpHeaders.EMPTY,
 ): ResponseEntity<String> =
     requestAny(HttpMethod.GET, path, headers = headers)
 

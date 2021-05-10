@@ -48,7 +48,9 @@ logging:
   level:
     org.hibernate: INFO
     org.hibernate.sql: INFO
-
+bookstore:
+  hashSecret: devSecret
+  adminDefaultPassword: admin
 ---
 spring:
   config:
@@ -61,3 +63,11 @@ spring:
       on-profile: verboseErrorHandling
 bookstore:
   printExceptions: true
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+bookstore:
+  hashSecret: testSecret
+  adminDefaultPassword: admin

@@ -2,6 +2,8 @@ package com.github.cpickl.bookstore.adapter.jpa
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isFailure
+import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isSuccess
 import com.github.cpickl.bookstore.boundary.any
@@ -25,8 +27,12 @@ class JpaCoverRepositoryTest {
 
     @Autowired
     private lateinit var em: TestEntityManager
+
     @Autowired
-    private lateinit var crudRepo: JpaCoverCrudRepository
+    private lateinit var coverCrudRepo: JpaCoverCrudRepository
+
+    @Autowired
+    private lateinit var bookCrudRepo: JpaBookCrudRepository
     private lateinit var repo: JpaCoverRepository
 
     private val id = Id.any()
@@ -37,7 +43,7 @@ class JpaCoverRepositoryTest {
 
     @BeforeEach
     fun `init repo`() {
-        repo = JpaCoverRepository(crudRepo)
+        repo = JpaCoverRepository(coverCrudRepo, bookCrudRepo)
     }
 
     @Nested
@@ -50,8 +56,9 @@ class JpaCoverRepositoryTest {
         }
 
         @Test
-        fun `Given cover When find it Then return it`() {
-            save(CoverJpa(+id, image.bytes))
+        fun `Given book and cover When find it Then return it`() {
+            val book = saveBookAndUser(bookId = id)
+            save(CoverJpa(book, image.bytes))
 
             val found = repo.findById(id)
 
@@ -59,8 +66,9 @@ class JpaCoverRepositoryTest {
         }
 
         @Test
-        fun `Given cover When find by different ID Then return null`() {
-            save(CoverJpa(+Id.some1, anyBytes))
+        fun `Given book and cover When find by different ID Then return null`() {
+            val book = saveBookAndUser(bookId = Id.some1)
+            save(CoverJpa(book, anyBytes))
 
             val found = repo.findById(Id.some2)
 
@@ -71,27 +79,38 @@ class JpaCoverRepositoryTest {
     @Nested
     inner class InsertUpdateTest {
         @Test
-        fun `When insertOrUpdate cover Then persisted`() {
-            repo.insertOrUpdate(id, image)
-
-            assertThat(find(id)).isEqualTo(CoverJpa(+id, image.bytes))
+        fun `When insertOrUpdate without book Then fail`() {
+            assertThat {
+                repo.insertOrUpdate(Id.any(), CoverImage.CustomImage.any())
+            }.isFailure()
         }
 
         @Test
-        fun `Given cover When insertOrUpdate it Then return updated`() {
-            save(CoverJpa(+id, image1.bytes))
+        fun `Given book When insertOrUpdate cover Then persisted`() {
+            val book = saveBookAndUser(bookId = id)
+
+            repo.insertOrUpdate(id, image)
+
+            assertThat(find(id)).isEqualTo(CoverJpa(book, image.bytes))
+        }
+
+        @Test
+        fun `Given book and cover When insertOrUpdate it Then return updated`() {
+            val book = saveBookAndUser(bookId = id)
+            save(CoverJpa(book, image1.bytes))
 
             repo.insertOrUpdate(id, image2)
 
-            assertThat(find(id)).isEqualTo(CoverJpa(+id, image2.bytes))
+            assertThat(find(id)).isEqualTo(CoverJpa(book, image2.bytes))
         }
     }
 
     @Nested
     inner class DeleteTest {
         @Test
-        fun `Given cover When delete again Then return null for find`() {
-            save(CoverJpa(+id, anyBytes))
+        fun `Given book and cover When delete cover Then cover is gone`() {
+            val book = saveBookAndUser(bookId = id)
+            save(CoverJpa(book, anyBytes))
 
             repo.delete(id)
 
@@ -99,9 +118,19 @@ class JpaCoverRepositoryTest {
         }
 
         @Test
+        fun `Given book and cover When delete cover Then book is still there`() {
+            val book = saveBookAndUser(bookId = id)
+            save(CoverJpa(book, anyBytes))
+
+            repo.delete(id)
+
+            assertThat(em.find(BookJpa::class.java, +id)).isNotNull()
+        }
+
+        @Test
         fun `When delete non existing Then do nothing`() {
             assertThat {
-                repo.delete(id)
+                repo.delete(Id.any())
             }.isSuccess()
         }
     }
@@ -112,5 +141,10 @@ class JpaCoverRepositoryTest {
 
     private fun save(cover: CoverJpa) {
         em.persistAndFlush(cover)
+    }
+
+    private fun saveBookAndUser(bookId: Id = Id.any()): BookJpa {
+        val user = em.persistAndFlush(UserJpa.any())
+        return em.persistAndFlush(BookJpa.any().copy(id = +bookId, author = user))
     }
 }

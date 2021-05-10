@@ -1,6 +1,5 @@
 package com.github.cpickl.bookstore.adapter.jpa
 
-import com.github.cpickl.bookstore.common.enumSetOf
 import java.util.UUID
 
 fun UserJpa.Companion.any() = UserJpa(
@@ -8,7 +7,8 @@ fun UserJpa.Companion.any() = UserJpa(
     authorPseudonym = "authorPseudonym",
     username = "username",
     passwordHash = "passwordHash",
-    roles = enumSetOf(RoleJpa.USER),
+    // must be mutable for hibernate :-/
+    roles = mutableSetOf(RoleJpa.USER),
 )
 
 fun BookJpa.Companion.any() = BookJpa(
@@ -19,4 +19,9 @@ fun BookJpa.Companion.any() = BookJpa(
     currencyCode = "EUR",
     price = 42,
     state = BookStateJpa.UNPUBLISHED,
+)
+
+fun CoverJpa.Companion.any() = CoverJpa(
+    book = BookJpa.any(),
+    bytes = byteArrayOf(1, 0, 1, 1),
 )

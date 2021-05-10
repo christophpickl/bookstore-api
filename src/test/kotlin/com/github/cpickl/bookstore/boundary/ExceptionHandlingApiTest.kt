@@ -6,11 +6,13 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
+import com.github.cpickl.bookstore.TestUserPreparer
 import com.github.cpickl.bookstore.common.Clock
 import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.ErrorCode
 import com.github.cpickl.bookstore.domain.Id
 import com.github.cpickl.bookstore.domain.InternalException
+import com.github.cpickl.bookstore.domain.Roles
 import com.github.cpickl.bookstore.domain.UserNotFoundException
 import com.github.cpickl.bookstore.domain.any
 import com.github.cpickl.bookstore.read
@@ -18,7 +20,6 @@ import com.github.cpickl.bookstore.requestDelete
 import com.github.cpickl.bookstore.requestGet
 import com.github.cpickl.bookstore.requestPost
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,12 +46,15 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDateTime
 import java.util.UUID
+import javax.annotation.security.RolesAllowed
 import kotlin.reflect.KClass
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(ExceptionHandlingTestConfig::class)
+@ActiveProfiles("test")
 class ExceptionHandlingApiTest(
     @Autowired private val restTemplate: TestRestTemplate,
+    @Autowired private val userPreparer: TestUserPreparer,
 ) {
 
     @MockBean
@@ -130,16 +134,47 @@ class ExceptionHandlingApiTest(
     }
 
     @Test
-    @Disabled
     fun `When request secured endpoint without token Then return error`() {
-        // TODO request secured test endpoint instead
-        val response = restTemplate.requestGet("/test/secured")
+        val response = restTemplate.requestGet("/test/user_secured")
 
         assertThat(response.read<ErrorDto>(FORBIDDEN)).isMatching(
             status = 403,
             code = ErrorCode.FORBIDDEN,
             message = "Access denied",
-            path = "/api/books"
+            method = "GET",
+            path = "/test/user_secured"
+        )
+    }
+
+    @Test
+    fun `When request secured endpoint with invalid token Then return error`() {
+        val response = restTemplate.requestGet("/test/user_secured", headers = HttpHeaders().apply {
+            set("Authorization", "Bearer ${Jwt.any()}")
+        })
+
+        assertThat(response.read<ErrorDto>(FORBIDDEN)).isMatching(
+            status = 403,
+            code = ErrorCode.FORBIDDEN,
+            message = "Authentication failed",
+            method = "GET",
+            path = "/test/user_secured"
+        )
+    }
+
+    @Test
+    fun `Given user When request admin secured endpoint Then return error`() {
+        userPreparer.saveTestUser()
+        val jwt = restTemplate.login(userPreparer.userLogin)
+        val response = restTemplate.requestGet("/test/admin_secured", headers = HttpHeaders().apply {
+            set(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+        })
+
+        assertThat(response.read<ErrorDto>(FORBIDDEN)).isMatching(
+            status = 403,
+            code = ErrorCode.FORBIDDEN,
+            message = "Access denied",
+            method = "GET",
+            path = "/test/admin_secured"
         )
     }
 
@@ -241,7 +276,7 @@ class ExceptionHandlingApiTest(
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(ExceptionHandlingTestConfig::class)
-@ActiveProfiles("verboseErrorHandling")
+@ActiveProfiles("verboseErrorHandling", "test")
 class VerboseExceptionHandlingApiTest(
     @Autowired private val restTemplate: TestRestTemplate,
 ) {
@@ -301,6 +336,14 @@ class ExceptionHandlingTestConfig {
         fun throwException(@RequestBody definition: ExceptionDefinitionDto) {
             throw definition.build()
         }
+
+        @GetMapping("/user_secured")
+        @RolesAllowed(Roles.user)
+        fun getUserSecured() = SuccessDto()
+
+        @GetMapping("/admin_secured")
+        @RolesAllowed(Roles.admin)
+        fun getAdminSecured() = SuccessDto()
 
         private fun ExceptionDefinitionDto.build(): Exception {
             @Suppress("UNCHECKED_CAST")

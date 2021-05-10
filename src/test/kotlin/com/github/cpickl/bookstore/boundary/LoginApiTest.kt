@@ -6,7 +6,6 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import com.auth0.jwt.JWT
 import com.github.cpickl.bookstore.TestUserPreparer
-import com.github.cpickl.bookstore.isForbidden
 import com.github.cpickl.bookstore.isOk
 import com.github.cpickl.bookstore.isStatus
 import com.github.cpickl.bookstore.jackson
@@ -22,8 +21,10 @@ import org.springframework.http.HttpHeaders.AUTHORIZATION
 import org.springframework.http.HttpHeaders.CONTENT_TYPE
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
+import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 class LoginApiTest(
     @Autowired private val restTemplate: TestRestTemplate,
     @Autowired private val userPreparer: TestUserPreparer,

@@ -2,17 +2,19 @@ package com.github.cpickl.bookstore.boundary
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.auth0.jwt.exceptions.SignatureVerificationException
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.github.cpickl.bookstore.domain.BookstoreException
 import com.github.cpickl.bookstore.domain.ErrorCode
 import com.github.cpickl.bookstore.domain.UserRepository
 import mu.KotlinLogging.logger
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
@@ -40,14 +42,6 @@ import java.util.Date
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-
-object SecurityConstants {
-    const val EXPIRATION_TIME = 864_000_000 // 10 days
-    const val SECRET = "my_top_secret" // TODO inject during build
-
-    val admin = LoginDto("admin", "admin")
-    const val adminAuthorName = "admin author"
-}
 
 data class LoginDto(
     val username: String,
@@ -82,36 +76,28 @@ class ConfigureSpringSecurityAnnotations : GlobalMethodSecurityConfiguration()
 class SecurityConfiguration(
     private val passwordEncoder: BCryptPasswordEncoder,
     private val authenticationUserDetailService: AuthenticationUserDetailService,
+    private val jackson: ObjectMapper,
+    private val userRepo: UserRepository,
+    private val errorFactory: ErrorDtoFactory,
+    @Value("\${bookstore.hashSecret}") private val hashSecret: String,
 ) : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
+        val hashSecretBytes = hashSecret.toByteArray()
         // @formatter:off
-        http.cors().and().csrf().disable()
-            .exceptionHandling()
-                .authenticationEntryPoint(authenticationEntryPoint())
-//                .accessDeniedHandler(accessDeniedHandler())
-            .and()
-                .addFilter(JWTAuthenticationFilter(authenticationManager(), userRepo))
-                .addFilter(JWTAuthorizationFilter(authenticationManager(), userRepo))
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        http
+        .cors().and()
+        .csrf().disable()
+        .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint()).and()
+        .addFilter(JWTAuthenticationFilter(authenticationManager(), userRepo, jackson, hashSecretBytes))
+        .addFilter(JWTAuthorizationFilter(authenticationManager(), userRepo, errorFactory, jackson, hashSecretBytes))
+        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         // @formatter:on
     }
 
     override fun configure(auth: AuthenticationManagerBuilder) {
         auth.userDetailsService<UserDetailsService>(authenticationUserDetailService).passwordEncoder(passwordEncoder)
     }
-
-//    @Bean
-//    fun accessDeniedHandler(): AccessDeniedHandler = CustomAccessDeniedHandler()
-
-    @Autowired
-    private lateinit var errorFactory: ErrorDtoFactory
-
-    @Autowired
-    private lateinit var jackson: ObjectMapper
-
-    @Autowired
-    private lateinit var userRepo: UserRepository
 
     @Bean
     fun authenticationEntryPoint(): AuthenticationEntryPoint =
@@ -133,27 +119,21 @@ class CustomAuthenticationEntryPoint(
     }
 }
 
-//class CustomAccessDeniedHandler : AccessDeniedHandler {
-//    override fun handle(
-//        request: HttpServletRequest?,
-//        response: HttpServletResponse?,
-//        accessDeniedException: AccessDeniedException
-//    ) {
-//        println("oh noes!!!")
-//        throw accessDeniedException
-//    }
-//}
-
 private fun UserRepository.findAuthoritiesFor(username: String): Collection<GrantedAuthority> =
     findByUsername(username)?.roles?.map { SimpleGrantedAuthority(it.roleName) } ?: emptyList()
 
 class JWTAuthenticationFilter(
     private val authManager: AuthenticationManager,
     private val userRepo: UserRepository,
+    private val jackson: ObjectMapper,
+    private val hashSecret: ByteArray,
 ) : UsernamePasswordAuthenticationFilter() {
 
+    companion object {
+        private const val TOKEN_EXPIRATION_TIME = 864_000_000 // 10 days
+    }
+
     private val log = logger {}
-    private val jackson = jacksonObjectMapper()
 
     override fun attemptAuthentication(request: HttpServletRequest, response: HttpServletResponse): Authentication {
         val login = jackson.readValue<LoginDto>(request.inputStream)
@@ -177,16 +157,18 @@ class JWTAuthenticationFilter(
         log.debug { "Successfully authenticated: ${user.username}" }
         val token = JWT.create()
             .withSubject(user.username)
-            .withExpiresAt(Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
-            .sign(Algorithm.HMAC512(SecurityConstants.SECRET.toByteArray()))
+            .withExpiresAt(Date(System.currentTimeMillis() + TOKEN_EXPIRATION_TIME))
+            .sign(Algorithm.HMAC512(hashSecret))
         response.addHeader(HttpHeaders.AUTHORIZATION, "Bearer $token")
     }
-
 }
 
 class JWTAuthorizationFilter(
     authenticationManager: AuthenticationManager,
     private val userRepo: UserRepository,
+    private val errorFactory: ErrorDtoFactory,
+    private val jackson: ObjectMapper,
+    private val hashSecret: ByteArray,
 ) : BasicAuthenticationFilter(authenticationManager) {
 
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
@@ -195,18 +177,32 @@ class JWTAuthorizationFilter(
             chain.doFilter(request, response)
             return
         }
-        val authentication = getAuthentication(request)
+        val authentication = try {
+            extractAuthentication(request)
+        } catch (e: BookstoreAuthException) {
+            response.status = HttpStatus.FORBIDDEN.value()
+            response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            val errorDto = errorFactory.build(e, request, HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN)
+            response.writer.write(jackson.writeValueAsString(errorDto))
+            return
+        }
         SecurityContextHolder.getContext().authentication = authentication
         chain.doFilter(request, response)
     }
 
-    private fun getAuthentication(request: HttpServletRequest): UsernamePasswordAuthenticationToken? {
-        val token = request.getHeader(HttpHeaders.AUTHORIZATION) ?: return null
-        val user = JWT.require(Algorithm.HMAC512(SecurityConstants.SECRET.toByteArray()))
-            .build()
-            .verify(token.replace("Bearer ", ""))
-            .subject
+    private fun extractAuthentication(request: HttpServletRequest): UsernamePasswordAuthenticationToken? {
+        val token = request.getHeader(HttpHeaders.AUTHORIZATION)?.replace("Bearer ", "") ?: return null
+        val jwt = try {
+            JWT.require(Algorithm.HMAC512(hashSecret)).build().verify(token)
+        } catch (e: SignatureVerificationException) {
+            throw BookstoreAuthException("Failed to verify token: [$token]", e)
+        }
+
+        val user = jwt.subject
         val authorities = userRepo.findAuthoritiesFor(user)
         return UsernamePasswordAuthenticationToken(user, null, authorities)
     }
 }
+
+class BookstoreAuthException(internalMessage: String, cause: Exception) :
+    BookstoreException(internalMessage, "Authentication failed", cause)

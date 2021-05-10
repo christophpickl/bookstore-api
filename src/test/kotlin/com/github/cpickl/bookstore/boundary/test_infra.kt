@@ -46,6 +46,13 @@ fun uploadEntity(
 
 
 data class Jwt(private val value: String) {
+    companion object {
+        fun any() = Jwt(
+            "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTYxOTQ2MTIyOX0." +
+                    "Idh9mm3W_TUfPnUPZh2S6fwnylXWQE33wzPewVct-dm4h61ZXRvHVffBxeIX_VxjF2Su9rHvn-qtmeFVwgmmOw"
+        )
+    }
+
     override fun toString() = value
 }
 
