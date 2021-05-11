@@ -16,6 +16,7 @@ java.sourceCompatibility = JavaVersion.VERSION_11
 repositories {
     mavenCentral()
     jcenter()
+    maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven")
 }
 
 dependencies {
@@ -32,6 +33,8 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-ui:1.5.2")
     runtimeOnly("com.h2database:h2")
     implementation("javax.annotation:jsr250-api:1.0")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.3")
 
     // jackson: dont upgrade to 2.12.3 as spring boot will have binary incompatibilities
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

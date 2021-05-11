@@ -2,8 +2,13 @@ package com.github.cpickl.bookstore.boundary
 
 import assertk.Assert
 import assertk.assertThat
+import assertk.assertions.contains
+import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import assertk.assertions.isNotNull
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.github.cpickl.bookstore.domain.ErrorCode
 import com.github.cpickl.bookstore.isOk
 import com.github.cpickl.bookstore.jackson
 import com.github.cpickl.bookstore.readAuthorization
@@ -76,9 +81,15 @@ fun Assert<ResponseEntity<String>>.bodyIsEqualXml(expectedXml: String) {
     }
 }
 
-fun Assert<ResponseEntity<*>>.contentTypeIs(type: MediaType) {
+fun Assert<ResponseEntity<*>>.contentTypeIs(expected: MediaType, exactMatch: Boolean = false) {
     given {
-        assertThat(it.headers[HttpHeaders.CONTENT_TYPE]).isEqualTo(listOf(type.toString()))
+        assertThat(it.headers[HttpHeaders.CONTENT_TYPE]).isNotNull().hasSize(1)
+        val given = MediaType.parseMediaType(it.headers[HttpHeaders.CONTENT_TYPE]!!.first())
+        if (exactMatch) {
+            assertThat(given).isEqualTo(expected)
+        } else {
+            assertThat("${given.type}/${given.subtype}").isEqualTo(expected.toString())
+        }
     }
 }
 
@@ -87,4 +98,19 @@ class NamedByteArrayResource(
     fileContent: ByteArray
 ) : ByteArrayResource(fileContent) {
     override fun getFilename() = fileName
+}
+
+fun Assert<ResponseEntity<String>>.isError(
+    messageContains: String? = null,
+    status: Int? = null,
+    code: ErrorCode? = null
+) {
+    given { response ->
+        status?.let { assertThat(response.statusCodeValue).isEqualTo(it) }
+        val dto = jackson.readValue<ErrorDto>(response.body!!)
+
+        messageContains?.let { assertThat(dto.message).contains(it) }
+        status?.let { assertThat(dto.status).isEqualTo(it) }
+        code?.let { assertThat(dto.code).isEqualTo(it) }
+    }
 }

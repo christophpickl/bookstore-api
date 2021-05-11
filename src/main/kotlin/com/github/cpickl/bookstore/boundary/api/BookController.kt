@@ -1,5 +1,14 @@
-package com.github.cpickl.bookstore.boundary
+package com.github.cpickl.bookstore.boundary.api
 
+import com.github.cpickl.bookstore.boundary.BookCreateDto
+import com.github.cpickl.bookstore.boundary.BookDto
+import com.github.cpickl.bookstore.boundary.BookUpdateDto
+import com.github.cpickl.bookstore.boundary.BooksDto
+import com.github.cpickl.bookstore.boundary.ErrorDto
+import com.github.cpickl.bookstore.boundary.toBookCreateRequest
+import com.github.cpickl.bookstore.boundary.toBookDto
+import com.github.cpickl.bookstore.boundary.toBookSimpleDto
+import com.github.cpickl.bookstore.boundary.toBookUpdateRequest
 import com.github.cpickl.bookstore.domain.BookService
 import com.github.cpickl.bookstore.domain.Roles
 import com.github.cpickl.bookstore.domain.Search

@@ -1,6 +1,8 @@
-package com.github.cpickl.bookstore.boundary
+package com.github.cpickl.bookstore.boundary.api
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
+import com.github.cpickl.bookstore.boundary.LinkDto
+import com.github.cpickl.bookstore.boundary.Method
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType

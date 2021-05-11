@@ -1,4 +1,4 @@
-package com.github.cpickl.bookstore.boundary
+package com.github.cpickl.bookstore.boundary.api
 
 import assertk.assertThat
 import com.github.cpickl.bookstore.isOk
@@ -11,7 +11,7 @@ import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-class HomeControllerApiTest(
+class HomeControllerWebTest(
     @Autowired private val restTemplate: TestRestTemplate,
 ) {
     @Test

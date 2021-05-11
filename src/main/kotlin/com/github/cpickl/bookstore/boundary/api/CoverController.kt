@@ -1,4 +1,4 @@
-package com.github.cpickl.bookstore.boundary
+package com.github.cpickl.bookstore.boundary.api
 
 import com.github.cpickl.bookstore.domain.CoverService
 import com.github.cpickl.bookstore.domain.CoverUpdateRequest

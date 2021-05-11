@@ -73,12 +73,34 @@ class DummyDataInitializer(
             roles = enumSetOf(Role.User),
         )
         userRepository.create(user)
+
+        saveBook(
+            user,
+            title = "Homo Sapiens",
+            description = "A brief history of humankind",
+            priceInEuroCents = 42_00,
+        )
+        saveBook(
+            user,
+            title = "Animal Farm",
+            description = "We are all equal, but some are more equal than others",
+            priceInEuroCents = 9_80,
+        )
+        saveBook(
+            user,
+            title = "Robin",
+            description = "A cheesy novel about Positive Feeling",
+            priceInEuroCents = 12_00,
+        )
+    }
+
+    private fun saveBook(user: User, title: String, description: String, priceInEuroCents: Int) {
         bookService.create(
             BookCreateRequest(
                 username = user.username,
-                title = "Homo Sapiens",
-                description = "A brief history of humankind",
-                price = Money.euro(@Suppress("MagicNumber") 42),
+                title = title,
+                description = description,
+                price = Money.euroCent(priceInEuroCents),
             )
         )
     }

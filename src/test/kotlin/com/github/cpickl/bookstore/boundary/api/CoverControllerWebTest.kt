@@ -1,10 +1,15 @@
-package com.github.cpickl.bookstore.boundary
+package com.github.cpickl.bookstore.boundary.api
 
 import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import com.github.cpickl.bookstore.TestUserPreparer
+import com.github.cpickl.bookstore.boundary.Jwt
+import com.github.cpickl.bookstore.boundary.NamedByteArrayResource
+import com.github.cpickl.bookstore.boundary.isError
+import com.github.cpickl.bookstore.boundary.login
+import com.github.cpickl.bookstore.boundary.uploadEntity
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.CoverImage
@@ -39,7 +44,7 @@ import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-class CoverControllerApiTest(
+class CoverControllerWebTest(
     @Autowired private val restTemplate: TestRestTemplate,
     @Autowired private val userPreparer: TestUserPreparer,
 ) {

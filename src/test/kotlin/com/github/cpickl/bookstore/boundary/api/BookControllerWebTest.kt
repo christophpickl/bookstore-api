@@ -1,11 +1,27 @@
-package com.github.cpickl.bookstore.boundary
+package com.github.cpickl.bookstore.boundary.api
 
-import assertk.Assert
 import assertk.assertThat
-import assertk.assertions.contains
 import assertk.assertions.isEqualTo
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.cpickl.bookstore.TestUserPreparer
+import com.github.cpickl.bookstore.boundary.BookCreateDto
+import com.github.cpickl.bookstore.boundary.BookDto
+import com.github.cpickl.bookstore.boundary.BookUpdateDto
+import com.github.cpickl.bookstore.boundary.BooksDto
+import com.github.cpickl.bookstore.boundary.any
+import com.github.cpickl.bookstore.boundary.bodyIsEqualJson
+import com.github.cpickl.bookstore.boundary.bodyIsEqualXml
+import com.github.cpickl.bookstore.boundary.contentTypeIs
+import com.github.cpickl.bookstore.boundary.isError
+import com.github.cpickl.bookstore.boundary.login
+import com.github.cpickl.bookstore.boundary.toBookDto
+import com.github.cpickl.bookstore.boundary.toBookSimpleDto
+import com.github.cpickl.bookstore.boundary.toBookUpdateRequest
+import com.github.cpickl.bookstore.boundary.toDetailJson
+import com.github.cpickl.bookstore.boundary.toDetailXml
+import com.github.cpickl.bookstore.boundary.toMoney
+import com.github.cpickl.bookstore.boundary.toMoneyDto
+import com.github.cpickl.bookstore.boundary.toSimpleJson
+import com.github.cpickl.bookstore.boundary.toSimpleXml
 import com.github.cpickl.bookstore.domain.Book
 import com.github.cpickl.bookstore.domain.BookCreateRequest
 import com.github.cpickl.bookstore.domain.BookNotFoundException
@@ -16,7 +32,6 @@ import com.github.cpickl.bookstore.domain.Search
 import com.github.cpickl.bookstore.domain.any
 import com.github.cpickl.bookstore.isForbidden
 import com.github.cpickl.bookstore.isOk
-import com.github.cpickl.bookstore.jackson
 import com.github.cpickl.bookstore.read
 import com.github.cpickl.bookstore.requestDelete
 import com.github.cpickl.bookstore.requestGet
@@ -37,12 +52,11 @@ import org.springframework.http.MediaType
 import org.springframework.http.MediaType.ALL
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.http.MediaType.APPLICATION_XML
-import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-class BookControllerApiTest(
+class BookControllerWebTest(
     @Autowired private val restTemplate: TestRestTemplate,
     @Autowired private val userPreparer: TestUserPreparer,
 ) {
@@ -305,20 +319,5 @@ class BookControllerApiTest(
             assertThat(response.read<BookDto>()).isEqualTo(book.toBookDto())
             verify(bookService).delete(loginDto.username, bookId)
         }
-    }
-}
-
-fun Assert<ResponseEntity<String>>.isError(
-    messageContains: String? = null,
-    status: Int? = null,
-    code: ErrorCode? = null
-) {
-    given { response ->
-        status?.let { assertThat(response.statusCodeValue).isEqualTo(it) }
-        val dto = jackson.readValue<ErrorDto>(response.body!!)
-
-        messageContains?.let { assertThat(dto.message).contains(it) }
-        status?.let { assertThat(dto.status).isEqualTo(it) }
-        code?.let { assertThat(dto.code).isEqualTo(it) }
     }
 }

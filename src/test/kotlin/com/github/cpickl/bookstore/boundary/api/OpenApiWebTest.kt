@@ -1,4 +1,4 @@
-package com.github.cpickl.bookstore.boundary
+package com.github.cpickl.bookstore.boundary.api
 
 import assertk.assertThat
 import com.github.cpickl.bookstore.isStatus
@@ -12,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-class OpenApiTest(
+class OpenApiWebTest(
     @Autowired private val restTemplate: TestRestTemplate,
 ) {
 
@@ -22,6 +22,7 @@ class OpenApiTest(
 
         assertThat(response).isStatus(HttpStatus.OK)
     }
+
     @Test
     fun `When get api yaml Then return ok`() {
         val response = restTemplate.requestGet("/v3/api-docs.yaml")

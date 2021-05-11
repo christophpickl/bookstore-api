@@ -59,11 +59,11 @@ _Now_:
 * dockerize (+compose for DBMS; introduce prod-ready DBMS)
 * hardening (improve exception handling, input (bean) validation)
 * replace password type from String to CharArray for security reasons
-* mini-frontend (kotlin HTML-DSL)
 * testcontainer: https://programmerfriend.com/spring-boot-integration-testing-done-right/
 * make hibernate aware of custom ID type (no stringly typed anymore)
 * DB layer hardening: cascade deletes
 * security hardening: failed login (time delay? lock user?); token expired (tests)
+* provide /favicon.ico
 
 _Later_:
 
