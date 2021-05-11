@@ -1,6 +1,7 @@
 package com.github.cpickl.bookstore.boundary
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.cpickl.bookstore.boundary.html.htmlDocument
 import com.github.cpickl.bookstore.common.Clock
 import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.BookstoreException
@@ -8,6 +9,7 @@ import com.github.cpickl.bookstore.domain.ErrorCode
 import com.github.cpickl.bookstore.domain.InternalException
 import com.github.cpickl.bookstore.domain.UserNotFoundException
 import io.swagger.v3.oas.annotations.media.Schema
+import kotlinx.html.h1
 import mu.KotlinLogging.logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
@@ -112,6 +114,66 @@ data class ExceptionDto(
     val stackTrace: List<String>,
 )
 
+data class ErrorContext(
+    val exception: Exception,
+    val request: HttpServletRequest,
+    val status: HttpStatus,
+    val code: ErrorCode,
+) {
+    constructor(
+        exception: Exception,
+        request: WebRequest,
+        status: HttpStatus,
+        code: ErrorCode,
+    ) : this(exception, (request as ServletWebRequest).request, status, code)
+
+    val requestPath: String = request.requestURI
+}
+
+data class ErrorResponse(
+    val content: String,
+    val contentType: MediaType,
+    val status: HttpStatus,
+) {
+    fun toResponseEntity(): ResponseEntity<String> = ResponseEntity
+        .status(status)
+        .header(HttpHeaders.CONTENT_TYPE, contentType.toString())
+        .body(content)
+}
+
+@Service
+class ErrorFactory(
+    private val htmlFactory: ErrorHtmlFactory,
+    private val dtoFactory: ErrorDtoFactory,
+    private val jackson: ObjectMapper,
+) {
+    fun build(context: ErrorContext): ErrorResponse =
+        if (context.requestPath.startsWith("/html")) {
+            ErrorResponse(
+                content = htmlFactory.build(context),
+                contentType = MediaType.TEXT_HTML,
+                status = context.status,
+            )
+        } else {
+            ErrorResponse(
+                content = jackson.writeValueAsString(dtoFactory.build(context)),
+                contentType = MediaType.APPLICATION_JSON,
+                status = context.status,
+            )
+        }
+}
+
+@Service
+class ErrorHtmlFactory {
+    fun build(context: ErrorContext): String {
+        return htmlDocument {
+            h1 {
+                +"Error (${context.exception.message})!"
+            }
+        }
+    }
+}
+
 @Service
 class ErrorDtoFactory(
     private val clock: Clock,
@@ -119,28 +181,16 @@ class ErrorDtoFactory(
 ) {
     private val log = logger {}
 
-    fun build(
-        exception: Exception,
-        request: WebRequest,
-        status: HttpStatus,
-        code: ErrorCode,
-    ) = build(exception, (request as ServletWebRequest).request, status, code)
-
-    fun build(
-        exception: Exception,
-        request: HttpServletRequest,
-        status: HttpStatus,
-        code: ErrorCode,
-    ): ErrorDto {
-        log.trace { "$request => caused: $exception" }
+    fun build(context: ErrorContext): ErrorDto {
+        log.trace { "${context.request} => caused: ${context.exception}" }
         return ErrorDto(
-            status = status.value(),
-            code = code,
-            message = buildMessage(exception, status),
+            status = context.status.value(),
+            code = context.code,
+            message = buildMessage(context.exception, context.status),
             timestamp = clock.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-            method = request.method,
-            path = request.requestURI,
-            exception = if (printExceptions) exception.toExceptionDto() else null,
+            method = context.request.method,
+            path = context.request.requestURI,
+            exception = if (printExceptions) context.exception.toExceptionDto() else null,
         )
     }
 
@@ -171,8 +221,7 @@ private fun Exception.toExceptionDto(): ExceptionDto {
 
 @ControllerAdvice
 class ExceptionHandlers(
-    private val errorFactory: ErrorDtoFactory,
-    private val jackson: ObjectMapper,
+    private val errorFactory: ErrorFactory,
 ) {
 
     private val log = logger {}
@@ -197,14 +246,16 @@ class ExceptionHandlers(
     fun handleHttpMediaTypeNotAcceptableException(
         exception: HttpMediaTypeNotAcceptableException, request: WebRequest
     ): ResponseEntity<String> {
-        val errorDto = errorFactory.build(exception, request, HttpStatus.NOT_ACCEPTABLE, ErrorCode.BAD_REQUEST)
-        // as there is no proper accept header in the request, we just have to assume JSON is ok for the error response
-        return ResponseEntity
-            .status(HttpStatus.NOT_ACCEPTABLE)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            // FUTURE could indicate which mediatypes are actually accepted for this endpoint
-            .body(jackson.writeValueAsString(errorDto))
-
+        val error = errorFactory.build(
+            ErrorContext(
+                exception = exception,
+                request = request,
+                status = HttpStatus.NOT_ACCEPTABLE,
+                code = ErrorCode.BAD_REQUEST,
+            )
+        )
+        // FUTURE could indicate which mediatypes are actually accepted for this endpoint
+        return error.toResponseEntity()
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException::class)
@@ -229,7 +280,7 @@ class ExceptionHandlers(
         Exception::class,
         InternalException::class,
     )
-    fun handleException(exception: Exception, request: WebRequest): ResponseEntity<ErrorDto> {
+    fun handleException(exception: Exception, request: WebRequest): ResponseEntity<String> {
         log.error(exception) { "Unhandled exception was thrown, going to return 500!" }
         return buildResponseEntity(exception, request, HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.UNKNOWN)
     }
@@ -239,15 +290,13 @@ class ExceptionHandlers(
         request: WebRequest,
         status: HttpStatus,
         code: ErrorCode,
-    ): ResponseEntity<ErrorDto> = ResponseEntity
-        .status(status)
-        .body(errorFactory.build(exception, request, status, code))
+    ): ResponseEntity<String> =
+        errorFactory.build(
+            ErrorContext(
+                exception = exception,
+                request = request,
+                status = status,
+                code = code,
+            )
+        ).toResponseEntity()
 }
-
-//@Configuration
-//class AdditionalHandler {
-//    @Bean
-//    fun authenticationFailureHandler(): AuthenticationFailureHandler {
-//        return AuthenticationFailureHandler { _, _, exception -> throw exception }
-//    }
-//}

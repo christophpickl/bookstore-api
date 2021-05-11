@@ -78,7 +78,7 @@ class SecurityConfiguration(
     private val authenticationUserDetailService: AuthenticationUserDetailService,
     private val jackson: ObjectMapper,
     private val userRepo: UserRepository,
-    private val errorFactory: ErrorDtoFactory,
+    private val errorFactory: ErrorFactory,
     @Value("\${bookstore.hashSecret}") private val hashSecret: String,
 ) : WebSecurityConfigurerAdapter() {
 
@@ -90,7 +90,7 @@ class SecurityConfiguration(
         .csrf().disable()
         .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint()).and()
         .addFilter(JWTAuthenticationFilter(authenticationManager(), userRepo, jackson, hashSecretBytes))
-        .addFilter(JWTAuthorizationFilter(authenticationManager(), userRepo, errorFactory, jackson, hashSecretBytes))
+        .addFilter(JWTAuthorizationFilter(authenticationManager(), userRepo, errorFactory, hashSecretBytes))
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         // @formatter:on
     }
@@ -101,21 +101,19 @@ class SecurityConfiguration(
 
     @Bean
     fun authenticationEntryPoint(): AuthenticationEntryPoint =
-        CustomAuthenticationEntryPoint(errorFactory, jackson)
+        CustomAuthenticationEntryPoint(errorFactory)
 }
 
 class CustomAuthenticationEntryPoint(
-    private val errorFactory: ErrorDtoFactory,
-    private val jackson: ObjectMapper,
+    private val errorFactory: ErrorFactory,
 ) : AuthenticationEntryPoint {
     override fun commence(
         request: HttpServletRequest,
         response: HttpServletResponse,
         authException: AuthenticationException,
     ) {
-        response.status = HttpStatus.FORBIDDEN.value()
-        val dto = errorFactory.build(authException, request, HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN)
-        response.writer.println(jackson.writeValueAsString(dto))
+        val error = errorFactory.build(ErrorContext(authException, request, HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN))
+        response.prepareBy(error)
     }
 }
 
@@ -166,8 +164,7 @@ class JWTAuthenticationFilter(
 class JWTAuthorizationFilter(
     authenticationManager: AuthenticationManager,
     private val userRepo: UserRepository,
-    private val errorFactory: ErrorDtoFactory,
-    private val jackson: ObjectMapper,
+    private val errorFactory: ErrorFactory,
     private val hashSecret: ByteArray,
 ) : BasicAuthenticationFilter(authenticationManager) {
 
@@ -180,10 +177,9 @@ class JWTAuthorizationFilter(
         val authentication = try {
             extractAuthentication(request)
         } catch (e: BookstoreAuthException) {
-            response.status = HttpStatus.FORBIDDEN.value()
             response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            val errorDto = errorFactory.build(e, request, HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN)
-            response.writer.write(jackson.writeValueAsString(errorDto))
+            val error = errorFactory.build(ErrorContext(e, request, HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN))
+            response.prepareBy(error)
             return
         }
         SecurityContextHolder.getContext().authentication = authentication
@@ -206,3 +202,9 @@ class JWTAuthorizationFilter(
 
 class BookstoreAuthException(internalMessage: String, cause: Exception) :
     BookstoreException(internalMessage, "Authentication failed", cause)
+
+private fun HttpServletResponse.prepareBy(error: ErrorResponse) {
+    status = error.status.value()
+    setHeader(HttpHeaders.ACCEPT, error.contentType.toString())
+    writer.write(error.content)
+}

@@ -5,8 +5,10 @@ import assertk.assertions.contains
 import assertk.assertions.isNotNull
 import com.github.cpickl.bookstore.boundary.contentTypeIs
 import com.github.cpickl.bookstore.domain.Book
+import com.github.cpickl.bookstore.domain.BookNotFoundException
 import com.github.cpickl.bookstore.domain.BookService
 import com.github.cpickl.bookstore.domain.any
+import com.github.cpickl.bookstore.isNotFound
 import com.github.cpickl.bookstore.isOk
 import com.github.cpickl.bookstore.requestGet
 import org.junit.jupiter.api.Nested
@@ -56,6 +58,16 @@ class BookHtmlControllerWebTest(
             assertThat(response.body).isNotNull().contains(book.title)
         }
 
-        // TODO test not found => render nice HTML
+        @Test
+        fun `Given book not found When get that book Then response with error html`() {
+            whenever(bookService.find(book.id)).thenThrow(BookNotFoundException(book.id))
+
+            val response = restTemplate.requestGet("/html/book/${book.id}")
+
+            assertThat(response).isNotFound()
+            assertThat(response).contentTypeIs(MediaType.TEXT_HTML)
+            assertThat(response.body).isNotNull().contains(book.id.toString())
+        }
+
     }
 }
