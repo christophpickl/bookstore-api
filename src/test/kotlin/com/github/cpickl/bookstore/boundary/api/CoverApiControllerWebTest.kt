@@ -44,7 +44,7 @@ import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-class CoverControllerWebTest(
+class CoverApiControllerWebTest(
     @Autowired private val restTemplate: TestRestTemplate,
     @Autowired private val userPreparer: TestUserPreparer,
 ) {

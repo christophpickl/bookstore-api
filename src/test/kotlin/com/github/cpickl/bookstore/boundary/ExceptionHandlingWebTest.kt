@@ -20,6 +20,7 @@ import com.github.cpickl.bookstore.requestDelete
 import com.github.cpickl.bookstore.requestGet
 import com.github.cpickl.bookstore.requestPost
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
@@ -305,6 +306,42 @@ class VerboseExceptionHandlingApiTest(
 
         assertThat(error.exception!!.message).isEqualTo("Book not found by ID: $id")
     }
+
+    @Test
+    @Disabled
+    fun `When get invalid Then custom error page`() {
+        val response = restTemplate.requestGet("/", headers = HttpHeaders().apply {
+            set(HttpHeaders.ACCEPT, MediaType.APPLICATION_CBOR_VALUE)
+        })
+        // TODO should not render default tomcat error page, but our own error controller's response
+        println(response)
+        println(response.statusCodeValue)
+        println(response.body)
+    }
+    /*
+
+@RestController
+class CustomErrorController : ErrorController {
+
+    companion object {
+        private const val PATH = "/error"
+    }
+
+    override fun getErrorPath() = PATH
+
+    @GetMapping(PATH)
+    fun getErrorPage(request: HttpServletRequest): String {
+        println("got request")
+        val status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE)
+        return if (status != null) {
+            val statusCode = status.toString().toInt()
+            "oops: $statusCode"
+        } else {
+            "haha"
+        }
+    }
+}
+     */
 }
 
 private fun TestRestTemplate.requestException(definition: ExceptionDefinitionDto, expected: HttpStatus) =

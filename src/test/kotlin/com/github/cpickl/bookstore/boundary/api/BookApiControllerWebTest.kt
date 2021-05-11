@@ -56,7 +56,7 @@ import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-class BookControllerWebTest(
+class BookApiControllerWebTest(
     @Autowired private val restTemplate: TestRestTemplate,
     @Autowired private val userPreparer: TestUserPreparer,
 ) {

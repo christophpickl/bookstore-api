@@ -50,7 +50,6 @@ _Now_:
 * spring rest controller: https://spring.io/guides/gs/accessing-data-rest/
 * improve ErrorDto, add:  path, method, (optional) stacktrace
 * test invalid currencyCode
-* replace "whitelabel error page"
 * DB migration (https://thorben-janssen.com/database-migration-with-spring-boot/)
 * split UT from IT => measure coverage
 * document JWT in openAPI spec

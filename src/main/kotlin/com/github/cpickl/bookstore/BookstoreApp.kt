@@ -3,7 +3,9 @@ package com.github.cpickl.bookstore
 import mu.KotlinLogging.logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.Banner
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -12,6 +14,11 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @SpringBootApplication
+@EnableAutoConfiguration(
+    exclude = [
+        ErrorMvcAutoConfiguration::class // disable whitelabel error page
+    ]
+)
 class BookstoreApp {
     companion object {
         private val log = logger {}

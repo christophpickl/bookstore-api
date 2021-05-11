@@ -17,7 +17,7 @@ import javax.annotation.security.PermitAll
 )
 @RestController
 @RequestMapping("/api", produces = [MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE])
-class HomeController {
+class HomeApiController {
 
     @GetMapping("")
     @PermitAll

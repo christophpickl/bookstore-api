@@ -11,7 +11,7 @@ import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-class HomeControllerWebTest(
+class HomeApiControllerWebTest(
     @Autowired private val restTemplate: TestRestTemplate,
 ) {
     @Test

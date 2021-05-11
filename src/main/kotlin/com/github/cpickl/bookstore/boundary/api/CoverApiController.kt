@@ -29,7 +29,7 @@ import javax.annotation.security.RolesAllowed
 )
 @RestController
 @RequestMapping("/api/books/{id}/cover")
-class CoverController(
+class CoverApiController(
     private val service: CoverService,
 ) {
 

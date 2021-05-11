@@ -32,6 +32,7 @@ class LoggingServiceImpl : LoggingService {
 
     private val log = logger {}
 
+    // TODO suppress logging of uploaded files
     override fun logRequest(httpServletRequest: HttpServletRequest, body: Any?) {
         log.info {
             "REQUEST: ${httpServletRequest.method} ${httpServletRequest.requestURI}" +
@@ -42,6 +43,7 @@ class LoggingServiceImpl : LoggingService {
         }
     }
 
+    // TODO suppress logging of HTML response bodies (anything too big, that is)
     override fun logResponse(
         httpServletRequest: HttpServletRequest, httpServletResponse: HttpServletResponse, body: Any?
     ) {

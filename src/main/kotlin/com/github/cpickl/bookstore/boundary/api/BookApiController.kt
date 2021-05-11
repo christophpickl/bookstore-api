@@ -45,7 +45,7 @@ import javax.annotation.security.RolesAllowed
     "/api/books",
     produces = [APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE],
 )
-class BookController(
+class BookApiController(
     private val service: BookService
 ) {
 
@@ -54,8 +54,9 @@ class BookController(
         summary = "list all books",
         description = "List or search books by given search term.",
     )
-    @ApiResponses(value = [
-        ApiResponse(responseCode = "200", description = "Some books might be found."),
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Some books might be found."),
     ])
     @GetMapping("")
     @PermitAll

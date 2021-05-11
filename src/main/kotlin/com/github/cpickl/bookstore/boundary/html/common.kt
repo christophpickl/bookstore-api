@@ -10,14 +10,13 @@ import kotlinx.html.link
 import kotlinx.html.p
 import kotlinx.html.stream.createHTML
 import kotlinx.html.title
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 
 fun htmlResponse(content: BODY.() -> Unit): ResponseEntity<String> = ResponseEntity
     .status(HttpStatus.OK)
-    .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE)
+    .contentType(MediaType.TEXT_HTML)
     .body(htmlDocument(content))
 
 fun htmlDocument(content: BODY.() -> Unit): String = createHTML().html {
