@@ -1,8 +1,10 @@
 package com.github.cpickl.bookstore
 
+import mu.KLogger
 import mu.KotlinLogging.logger
 import org.springframework.boot.web.servlet.DispatcherType
 import org.springframework.core.MethodParameter
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpInputMessage
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
@@ -28,33 +30,44 @@ interface LoggingService {
 }
 
 @Service
-class LoggingServiceImpl : LoggingService {
+class LoggingServiceImpl(
+    private val log: KLogger = logger {}
+) : LoggingService {
 
-    private val log = logger {}
-
-    // TODO suppress logging of uploaded files
     override fun logRequest(httpServletRequest: HttpServletRequest, body: Any?) {
         log.info {
+            val requestHeaders = httpServletRequest.headersMap
+            val preparedBody = prepareBody(body, requestHeaders)
             "REQUEST: ${httpServletRequest.method} ${httpServletRequest.requestURI}" +
-                    "\n\tHEADERS: ${httpServletRequest.headersMap}" +
-                    if (body != null) {
-                        "\n\tBODY: <<${body}>>"
+                    "\n\tHEADERS: $requestHeaders" +
+                    if (preparedBody != null) {
+                        "\n\tBODY: $preparedBody"
                     } else ""
         }
     }
 
-    // TODO suppress logging of HTML response bodies (anything too big, that is)
     override fun logResponse(
         httpServletRequest: HttpServletRequest, httpServletResponse: HttpServletResponse, body: Any?
     ) {
         log.info {
+            val responseHeaders = httpServletResponse.headersMap
+            val preparedBody = prepareBody(body, responseHeaders)
             "RESPONSE: ${httpServletRequest.method} ${httpServletRequest.requestURI} >> ${httpServletResponse.status}" +
-                    "\n\tHEADERS: ${httpServletResponse.headersMap}" +
-                    if (body != null) {
-                        "\n\tBODY: <<$body>>"
+                    "\n\tHEADERS: $responseHeaders" +
+                    if (preparedBody != null) {
+                        "\n\tBODY: $preparedBody"
                     } else ""
         }
     }
+
+    private fun prepareBody(body: Any?, headers: Map<String, String>): String? =
+        if (
+            body != null &&
+            headers.getOrDefault(HttpHeaders.CONTENT_TYPE, "")
+                .contains(MediaType.APPLICATION_JSON_VALUE, ignoreCase = true)
+        ) {
+            "<<$body>>"
+        } else null
 
     private val HttpServletRequest.headersMap
         get(): Map<String, String> =

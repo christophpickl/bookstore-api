@@ -7,6 +7,12 @@ import assertk.assertions.isNotNull
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.cpickl.bookstore.boundary.Jwt
+import mu.KLogger
+import org.mockito.ArgumentCaptor
+import org.mockito.kotlin.capture
+import org.mockito.kotlin.firstValue
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.client.exchange
 import org.springframework.http.HttpHeaders
@@ -89,3 +95,15 @@ inline fun <reified T> ResponseEntity<String>.read(status: HttpStatus? = HttpSta
 fun HttpHeaders.withJwt(jwt: Jwt) = apply {
     this[HttpHeaders.AUTHORIZATION] = "Bearer $jwt"
 }
+
+fun verifySingleInfoLog(klog: KLogger, function: (String) -> Unit) {
+    val captor = createCaptor<() -> Any?>()
+    verify(klog).info(capture(captor))
+    val logMessageProvider: () -> Any? = captor.firstValue
+    val logMessage = logMessageProvider()
+    function(logMessage?.toString() ?: "null")
+    verifyNoMoreInteractions(klog)
+}
+
+private inline fun <reified T : Any> createCaptor(): ArgumentCaptor<T> =
+    ArgumentCaptor.forClass(T::class.java)

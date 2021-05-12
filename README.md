@@ -62,7 +62,7 @@ _Now_:
 * make hibernate aware of custom ID type (no stringly typed anymore)
 * DB layer hardening: cascade deletes
 * security hardening: failed login (time delay? lock user?); token expired (tests)
-* provide /favicon.ico
+* when requesting nonexisting endpoint with invalid accept, tomact error is shown => show custom page
 
 _Later_:
 
