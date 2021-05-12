@@ -26,6 +26,7 @@ class BookstoreApp {
         @JvmStatic
         fun main(args: Array<String>) {
             log.info { "bookstore starting ..." }
+            log.info { ASCII_LOGO }
             @Suppress("SpreadOperator")
             runApplication<BookstoreApp>(*args) {
                 setBannerMode(Banner.Mode.OFF)
@@ -48,3 +49,10 @@ class WebConfig : WebMvcConfigurer {
         registry.addInterceptor(logInterceptor)
     }
 }
+
+private const val ASCII_LOGO = """
+.----.  .----.  .----. .-. .-. .----..---.  .----. .----. .----.
+| {}  }/  {}  \/  {}  \| |/ / { {__ {_   _}/  {}  \| {}  }| {_  
+| {}  }\      /\      /| |\ \ .-._} } | |  \      /| .-. \| {__ 
+`----'  `----'  `----' `-' `-'`----'  `-'   `----' `-' `-'`----'
+"""

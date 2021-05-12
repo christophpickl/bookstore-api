@@ -30,11 +30,15 @@ provided [Postman collection](https://github.com/christophpickl/bookstore-api/tr
 
 ## How to start
 
-* __Locally__:
+* __Local IDE__:
   * Run the `BookstoreApp` class
   * Define the following VM arguments: `-Dspring.profiles.active=dev,dummyData`
+* __Local Gradle__:
+  * Use the spring boot command: `./gradlew bootRun --args='--spring.profiles.active=dev'`
+* __Local Docker__:
+  * Build an image: `docker build -t bookstore-api/v1.0 .`
+  * Run in container with development profile: `docker run -e SPRING_PROFILES_ACTIVE=dev -p 80:80 -t bookstore-api/v1.0`
 * __Production__:
-  * Docker ... TBD
   * Set mandatory environment variables:
     * `bookstore.hashSecret=xxx`
     * `bookstore.adminDefaultPassword=xxx`
@@ -55,7 +59,7 @@ _Now_:
 * document JWT in openAPI spec
 * pagination
 * custom sorting
-* dockerize (+compose for DBMS; introduce prod-ready DBMS)
+* docker compose (+DBMS; prod-readiness)
 * hardening (improve exception handling, input (bean) validation)
 * replace password type from String to CharArray for security reasons
 * testcontainer: https://programmerfriend.com/spring-boot-integration-testing-done-right/
