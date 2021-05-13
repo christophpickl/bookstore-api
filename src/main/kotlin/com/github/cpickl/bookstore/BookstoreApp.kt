@@ -25,7 +25,6 @@ class BookstoreApp {
 
         @JvmStatic
         fun main(args: Array<String>) {
-            log.info { "bookstore starting ..." }
             log.info { ASCII_LOGO }
             @Suppress("SpreadOperator")
             runApplication<BookstoreApp>(*args) {

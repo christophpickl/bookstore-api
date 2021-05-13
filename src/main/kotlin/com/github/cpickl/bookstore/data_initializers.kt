@@ -58,8 +58,8 @@ class DummyDataInitializer(
     private val log = logger {}
 
     fun initialize() {
-        if (environment.activeProfiles.contains("dummyData")) {
-            log.info { "Setting up dummy data." }
+        if (environment.activeProfiles.contains("insertDummyData")) {
+            log.info { "Inserting dummy data." }
             saveDummyUserAndBook()
         }
     }

@@ -1,156 +1,199 @@
 {
-	"variables": [],
 	"info": {
+		"_postman_id": "74c5fb7e-cc5f-4da6-9669-762ec9039091",
 		"name": "bookstore-api",
-		"_postman_id": "4fc59351-f7e2-d252-b3c4-74e9aff106e5",
-		"description": "",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
 			"name": "book",
-			"description": "",
 			"item": [
 				{
 					"name": "books",
 					"request": {
-						"url": "{{baseUrl}}/api/books",
 						"method": "GET",
 						"header": [],
-						"body": {},
-						"description": ""
+						"url": {
+							"raw": "{{baseUrl}}/api/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "books XML",
 					"request": {
-						"url": "{{baseUrl}}/api/books",
 						"method": "GET",
 						"header": [
 							{
 								"key": "Accept",
-								"value": "application/xml",
-								"description": ""
+								"value": "application/xml"
 							}
 						],
-						"body": {},
-						"description": ""
+						"url": {
+							"raw": "{{baseUrl}}/api/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "book detail",
 					"request": {
-						"url": "{{baseUrl}}/api/books/{{bookId}}",
 						"method": "GET",
 						"header": [
 							{
 								"key": "Accept",
-								"value": "application/json",
-								"description": ""
+								"value": "application/json"
 							},
 							{
 								"key": "Accept",
 								"value": "application/xml",
-								"description": "",
 								"disabled": true
 							}
 						],
-						"body": {},
-						"description": ""
+						"url": {
+							"raw": "{{baseUrl}}/api/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{bookId}}"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "create book",
 					"request": {
-						"url": "{{baseUrl}}/api/books",
 						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
-								"value": "application/json",
-								"description": ""
+								"value": "application/json"
 							},
 							{
 								"key": "Authorization",
-								"value": "Bearer {{jwt}}",
-								"description": ""
+								"value": "Bearer {{jwt}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n\t\"title\": \"postman title A\",\n\t\"description\": \"postman description\",\n\t\"price\": {\n\t\t\"currencyCode\": \"EUR\",\n\t\t\"value\": 590\n\t}\n}"
 						},
-						"description": ""
+						"url": {
+							"raw": "{{baseUrl}}/api/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "update book",
 					"request": {
-						"url": "{{baseUrl}}/api/books/{{bookId}}",
 						"method": "PUT",
 						"header": [
 							{
 								"key": "Content-Type",
-								"value": "application/json",
-								"description": ""
+								"value": "application/json"
 							},
 							{
 								"key": "Authorization",
-								"value": "Bearer {{jwt}}",
-								"description": ""
+								"value": "Bearer {{jwt}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"title\": \"postman updated title\",\n    \"description\": \"postman updated description\",\n    \"price\": {\n\t\t\"currencyCode\": \"EUR\",\n\t\t\"value\": 990\n\t}\n}"
 						},
-						"description": ""
+						"url": {
+							"raw": "{{baseUrl}}/api/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{bookId}}"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "update book XML",
 					"request": {
-						"url": "{{baseUrl}}/api/books/{{bookId}}",
 						"method": "PUT",
 						"header": [
 							{
 								"key": "Content-Type",
-								"value": "application/xml",
-								"description": ""
+								"value": "application/xml"
 							},
 							{
 								"key": "Authorization",
-								"value": "Bearer {{jwt}}",
-								"description": ""
+								"value": "Bearer {{jwt}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
 							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<xx>\n\t<title>Homo Sapiens - A brief history of humankind</title>\n\t<description>A very good book indeed.</description>\n\t<price>\n\t\t<currencyCode>EUR</currencyCode>\n\t\t<value>3995</value>\n\t</price>\n</xx>"
 						},
-						"description": ""
+						"url": {
+							"raw": "{{baseUrl}}/api/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{bookId}}"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "delete book",
 					"request": {
-						"url": "{{baseUrl}}/api/books/{{bookId}}",
 						"method": "DELETE",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{jwt}}",
-								"description": ""
+								"value": "Bearer {{jwt}}"
 							}
 						],
-						"body": {},
-						"description": ""
+						"url": {
+							"raw": "{{baseUrl}}/api/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{bookId}}"
+							]
+						}
 					},
 					"response": []
 				}
@@ -158,29 +201,35 @@
 		},
 		{
 			"name": "cover",
-			"description": "",
 			"item": [
 				{
 					"name": "get cover",
 					"request": {
-						"url": "{{baseUrl}}/api/books/{{bookId}}/cover",
 						"method": "GET",
 						"header": [],
-						"body": {},
-						"description": ""
+						"url": {
+							"raw": "{{baseUrl}}/api/books/{{bookId}}/cover",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{bookId}}",
+								"cover"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "update cover",
 					"request": {
-						"url": "{{baseUrl}}/api/books/{{bookId}}/cover",
 						"method": "PUT",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{jwt}}",
-								"description": ""
+								"value": "Bearer {{jwt}}"
 							}
 						],
 						"body": {
@@ -189,29 +238,47 @@
 								{
 									"key": "cover-file",
 									"value": "",
-									"description": "",
 									"type": "file"
 								}
 							]
 						},
-						"description": ""
+						"url": {
+							"raw": "{{baseUrl}}/api/books/{{bookId}}/cover",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{bookId}}",
+								"cover"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "delete cover",
 					"request": {
-						"url": "{{baseUrl}}/api/books/{{bookId}}/cover",
 						"method": "DELETE",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{jwt}}",
-								"description": ""
+								"value": "Bearer {{jwt}}"
 							}
 						],
-						"body": {},
-						"description": ""
+						"url": {
+							"raw": "{{baseUrl}}/api/books/{{bookId}}/cover",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{bookId}}",
+								"cover"
+							]
+						}
 					},
 					"response": []
 				}
@@ -220,43 +287,53 @@
 		{
 			"name": "home",
 			"request": {
-				"url": "{{baseUrl}}/api",
 				"method": "GET",
 				"header": [
 					{
 						"key": "Accept",
-						"value": "application/json",
-						"description": ""
+						"value": "application/json"
 					},
 					{
 						"key": "Accept",
 						"value": "application/xml",
-						"description": "",
 						"disabled": true
 					}
 				],
-				"body": {},
-				"description": ""
+				"url": {
+					"raw": "{{baseUrl}}/api",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api"
+					]
+				}
 			},
 			"response": []
 		},
 		{
 			"name": "login",
 			"request": {
-				"url": "{{baseUrl}}/login",
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
+						"value": "application/json"
 					}
 				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n\t\"username\": \"admin\",\n\t\"password\": \"admin\"\n}"
 				},
-				"description": ""
+				"url": {
+					"raw": "{{baseUrl}}/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"login"
+					]
+				}
 			},
 			"response": []
 		}

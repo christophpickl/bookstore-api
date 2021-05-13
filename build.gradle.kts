@@ -32,6 +32,7 @@ dependencies {
     implementation("com.auth0:java-jwt:3.15.0")
     implementation("org.springdoc:springdoc-openapi-ui:1.5.2")
     runtimeOnly("com.h2database:h2")
+    runtimeOnly("org.postgresql:postgresql:42.2.20")
     implementation("javax.annotation:jsr250-api:1.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.3")

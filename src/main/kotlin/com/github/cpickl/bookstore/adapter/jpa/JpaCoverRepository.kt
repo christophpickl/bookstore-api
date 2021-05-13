@@ -7,6 +7,7 @@ import com.github.cpickl.bookstore.domain.CoverRepository
 import com.github.cpickl.bookstore.domain.Id
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
 @Repository
 class JpaCoverRepository(
@@ -14,17 +15,20 @@ class JpaCoverRepository(
     private val bookRepo: JpaBookCrudRepository,
 ) : CoverRepository {
 
+    @Transactional(readOnly = true)
     override fun findById(bookId: Id): CoverImage.CustomImage? =
         coverRepo.findById(bookId.toString()).unwrap {
             CoverImage.CustomImage(bytes = it.bytes)
         }
 
+    @Transactional
     override fun insertOrUpdate(bookId: Id, image: CoverImage.CustomImage) {
         val book = bookRepo.findById(+bookId).orElseThrow { BookNotFoundException(bookId) }
         val cover = CoverJpa(bookId.toString(), book, image.bytes)
         coverRepo.save(cover)
     }
 
+    @Transactional
     override fun delete(bookId: Id): CoverImage.CustomImage? {
         val cover = findById(bookId) ?: return null
         coverRepo.deleteById(bookId.toString())

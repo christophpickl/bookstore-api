@@ -32,12 +32,12 @@ provided [Postman collection](https://github.com/christophpickl/bookstore-api/tr
 
 * __Local IDE__:
   * Run the `BookstoreApp` class
-  * Define the following VM arguments: `-Dspring.profiles.active=dev,dummyData`
+  * Define the following VM arguments: `-Dspring.profiles.active=dev,insertDummyData`
 * __Local Gradle__:
   * Use the spring boot command: `./gradlew bootRun --args='--spring.profiles.active=dev'`
 * __Local Docker__:
-  * Build an image: `docker build -t bookstore-api/v1.0 .`
-  * Run in container with development profile: `docker run -e SPRING_PROFILES_ACTIVE=dev -p 80:80 -t bookstore-api/v1.0`
+  * Build an image: `docker build -t bookstore-api:1.0 .`
+  * Run in container with development profile: `docker run -e SPRING_PROFILES_ACTIVE=dev -p 80:80 -t bookstore-api:1.0`
 * __Production__:
   * Set mandatory environment variables:
     * `bookstore.hashSecret=xxx`
@@ -47,28 +47,32 @@ provided [Postman collection](https://github.com/christophpickl/bookstore-api/tr
 
 _Now_:
 
+* DB migration (https://thorben-janssen.com/database-migration-with-spring-boot/)
+* H2 should only be for DEV mode, not for PROD mode!
+* change log date format when in prod mode
 * unit test for Id (equals, hashCode, ...)
+* test invalid currencyCode
 * gradle todo plugin: https://github.com/HoldYourWaffle/gradle-todo-plugin-fixed
 * admin scope CRUD users
-* test SQL schema/"raw-values" (table name, column name, enum mapping values)
-* spring rest controller: https://spring.io/guides/gs/accessing-data-rest/
-* improve ErrorDto, add:  path, method, (optional) stacktrace
-* test invalid currencyCode
-* DB migration (https://thorben-janssen.com/database-migration-with-spring-boot/)
-* split UT from IT => measure coverage
-* document JWT in openAPI spec
+
+_Later_:
+
 * pagination
 * custom sorting
-* docker compose (+DBMS; prod-readiness)
-* hardening (improve exception handling, input (bean) validation)
+* test SQL schema/"raw-values" (table name, column name, enum mapping values)
+* split UT from IT => measure coverage
+* document JWT in openAPI spec
+* docker compose enabled integration tests (seperate project)
+  * `docker-compose -f ./docker-compose.integration-test.yml up`
+* hardening: improve exception handling, input (bean) validation
 * replace password type from String to CharArray for security reasons
 * testcontainer: https://programmerfriend.com/spring-boot-integration-testing-done-right/
 * make hibernate aware of custom ID type (no stringly typed anymore)
-* DB layer hardening: cascade deletes
+* DB layer hardening: cascade deletes (tests!)
 * security hardening: failed login (time delay? lock user?); token expired (tests)
 * when requesting nonexisting endpoint with invalid accept, tomact error is shown => show custom page
 
-_Later_:
+_Dream_:
 
 * BDD
 * kotlin MPP (javascript, android)

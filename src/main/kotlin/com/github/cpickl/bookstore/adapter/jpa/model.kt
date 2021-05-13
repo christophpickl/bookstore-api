@@ -1,6 +1,7 @@
 package com.github.cpickl.bookstore.adapter.jpa
 
 import com.github.cpickl.bookstore.domain.Roles
+import org.hibernate.annotations.Type
 import javax.persistence.CascadeType
 import javax.persistence.CollectionTable
 import javax.persistence.Column
@@ -41,7 +42,9 @@ data class UserJpa(
 ) {
     companion object {
         const val ENTITY_NAME = "User"
-        const val TABLE_NAME = "user"
+
+        // "user" is a reserved keyword in postgres, so we need to escape it :-/
+        const val TABLE_NAME = "\"user\""
     }
 }
 
@@ -101,6 +104,7 @@ data class CoverJpa(
     val book: BookJpa,
 
     @Lob
+    @Type(type = "org.hibernate.type.ImageType")
     @Column(name = "bytes")
     val bytes: ByteArray,
 ) {

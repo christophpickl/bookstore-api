@@ -15,6 +15,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
 @Repository
 class JpaBookRepository(
@@ -22,20 +23,24 @@ class JpaBookRepository(
     private val userRepo: JpaUserCrudRepository,
 ) : BookRepository {
 
+    @Transactional(readOnly = true)
     override fun findAll(search: Search): List<Book> =
         when (search) {
             is Search.Off -> bookRepo.findAllPublished()
             is Search.On -> bookRepo.searchAllPublished(search.term)
         }.map { it.toBook() }
 
+    @Transactional(readOnly = true)
     override fun findById(id: Id): Book? =
         bookRepo.findPublished(+id)?.toBook()
 
+    @Transactional
     override fun create(book: Book) {
         val user = findUser(book.author.userId)
         bookRepo.save(book.toBookJpa(user))
     }
 
+    @Transactional
     override fun update(book: Book) {
         if (bookRepo.findById(+book.id).isEmpty) {
             throw BookNotFoundException(book.id)

@@ -131,6 +131,8 @@ class CoverApiControllerWebTest(
 
             assertThat(response).isStatus(NO_CONTENT)
         }
+
+        // TODO test if no file was given, or invalid file type
     }
 
 

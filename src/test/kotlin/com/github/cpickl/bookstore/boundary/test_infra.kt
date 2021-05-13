@@ -35,11 +35,12 @@ fun TestRestTemplate.login(dto: LoginDto): Jwt {
 
 fun uploadEntity(
     bytesResource: ByteArrayResource,
-    jwt: Jwt? = null
+    jwt: Jwt? = null,
+    fileType: MediaType = MediaType.IMAGE_PNG,
 ): HttpEntity<LinkedMultiValueMap<String, Any>> = HttpEntity(
     LinkedMultiValueMap<String, Any>().apply {
         add("cover-file", HttpEntity(bytesResource, HttpHeaders().apply {
-            contentType = MediaType.IMAGE_PNG
+            contentType = fileType
         }))
     },
     HttpHeaders().apply {

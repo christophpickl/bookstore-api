@@ -1,3 +1,4 @@
+
 server:
   port: 80
   error:
@@ -13,36 +14,48 @@ spring:
     name: bookstore-api
   main:
     banner-mode: off
+  datasource:
+    auto-commit: false
+  jpa:
+    open-in-view: false
   servlet:
     multipart:
       max-file-size: 2MB
       max-request-size: 2MB
       enabled: true
+
 bookstore:
   printExceptions: false
 
 ---
+
 spring:
   config:
     activate:
       on-profile: prod
-    #datasource:
-    #url: jdbc:foobar
-    #username: ...
+  # datasource configured via docker-compose
 logging:
   level:
     org.hibernate: ERROR
 
 ---
-# -Dspring.profiles.active=dev,dummyData
+
 spring:
   config:
     activate:
       on-profile: dev
+  datasource:
+    url: jdbc:h2:file:./build/dev_db
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
 server:
+  port: 8042
   error:
     include-exception: true
 logging:
@@ -52,23 +65,38 @@ logging:
 bookstore:
   hashSecret: devSecret
   adminDefaultPassword: admin
+
 ---
+
 spring:
   config:
     activate:
-      on-profile: dummyData
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+bookstore:
+  hashSecret: testSecret
+  adminDefaultPassword: admin
+
 ---
+
+spring:
+  config:
+    activate:
+      on-profile: insertDummyData
+
+---
+
 spring:
   config:
     activate:
       on-profile: verboseErrorHandling
 bookstore:
   printExceptions: true
----
-spring:
-  config:
-    activate:
-      on-profile: test
-bookstore:
-  hashSecret: testSecret
-  adminDefaultPassword: admin
