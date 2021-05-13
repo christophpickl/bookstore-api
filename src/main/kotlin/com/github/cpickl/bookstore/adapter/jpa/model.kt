@@ -1,7 +1,6 @@
 package com.github.cpickl.bookstore.adapter.jpa
 
 import com.github.cpickl.bookstore.domain.Roles
-import org.hibernate.annotations.Type
 import javax.persistence.CascadeType
 import javax.persistence.CollectionTable
 import javax.persistence.Column
@@ -97,14 +96,14 @@ data class CoverJpa(
     @Column(name = "id", unique = true, nullable = false)
     val bookId: String,
 
-//    @OneToOne(cascade = [CascadeType.ALL], optional = false)
-//    @PrimaryKeyJoinColumn//(name = "book_id", referencedColumnName = "id")
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     val book: BookJpa,
 
+    // don't add @Lob, as it will change postgres from "bytea" (internally stored) to "oid" (referenced bytes)
+//    @Type(type = "org.hibernate.type.ImageType")
+//    @Type(type="org.hibernate.type.BinaryType")
     @Lob
-    @Type(type = "org.hibernate.type.ImageType")
     @Column(name = "bytes")
     val bytes: ByteArray,
 ) {

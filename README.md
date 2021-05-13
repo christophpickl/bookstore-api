@@ -48,26 +48,26 @@ provided [Postman collection](https://github.com/christophpickl/bookstore-api/tr
 _Now_:
 
 * DB migration (https://thorben-janssen.com/database-migration-with-spring-boot/)
-* H2 should only be for DEV mode, not for PROD mode!
+* H2 should only be included be for DEV mode, not for PROD mode!
 * change log date format when in prod mode
 * unit test for Id (equals, hashCode, ...)
 * test invalid currencyCode
 * gradle todo plugin: https://github.com/HoldYourWaffle/gradle-todo-plugin-fixed
 * admin scope CRUD users
+* docker compose enabled integration tests (seperate
+  project, `docker-compose -f ./docker-compose.integration-test.yml up`)
 
 _Later_:
 
 * pagination
 * custom sorting
+* cover image: validate/resize
+* make hibernate aware of custom ID type (no stringly typed anymore)
 * test SQL schema/"raw-values" (table name, column name, enum mapping values)
 * split UT from IT => measure coverage
 * document JWT in openAPI spec
-* docker compose enabled integration tests (seperate project)
-  * `docker-compose -f ./docker-compose.integration-test.yml up`
 * hardening: improve exception handling, input (bean) validation
 * replace password type from String to CharArray for security reasons
-* testcontainer: https://programmerfriend.com/spring-boot-integration-testing-done-right/
-* make hibernate aware of custom ID type (no stringly typed anymore)
 * DB layer hardening: cascade deletes (tests!)
 * security hardening: failed login (time delay? lock user?); token expired (tests)
 * when requesting nonexisting endpoint with invalid accept, tomact error is shown => show custom page

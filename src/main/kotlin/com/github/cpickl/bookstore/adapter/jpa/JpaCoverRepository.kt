@@ -15,6 +15,8 @@ class JpaCoverRepository(
     private val bookRepo: JpaBookCrudRepository,
 ) : CoverRepository {
 
+    // TODO add paramter to filter UNPUBLISHED (published logic should be in service-domain layer, not here)
+
     @Transactional(readOnly = true)
     override fun findById(bookId: Id): CoverImage.CustomImage? =
         coverRepo.findById(bookId.toString()).unwrap {

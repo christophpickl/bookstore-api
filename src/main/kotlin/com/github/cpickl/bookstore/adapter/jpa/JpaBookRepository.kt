@@ -23,6 +23,8 @@ class JpaBookRepository(
     private val userRepo: JpaUserCrudRepository,
 ) : BookRepository {
 
+    // TODO add paramter to filter UNPUBLISHED (published logic should be in service-domain layer, not here)
+
     @Transactional(readOnly = true)
     override fun findAll(search: Search): List<Book> =
         when (search) {

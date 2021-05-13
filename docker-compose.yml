@@ -2,10 +2,9 @@ version: "3.7"
 services:
   web_service:
     ### dont forget to run "docker-compose build" first
-    build: .
+    #build: .
+    image: "bookstore/bookstore-api:latest"
     container_name: bookstore-api-container
-    # image: "bookstore-api:1.0"
-    # image: "bookstore-api:latest"
     restart: always
     ports:
       - 80:80
@@ -19,15 +18,14 @@ services:
         "spring.datasource.username": "postgresUser",
         "spring.datasource.password": "postgresPass",
         "spring.datasource.driver-class": "org.postgresql.Driver",
-        "spring.jpa.properties.hibernate.dialect": "org.hibernate.dialect.PostgreSQLDialect",
+        "spring.jpa.properties.hibernate.dialect": "com.github.cpickl.bookstore.adapter.jpa.CustomPostgreSQLDialect",
         "spring.jpa.hibernate.ddl-auto": "update",
         "spring.datasource.initialization-mode": "always",
         "bookstore.hashSecret": "${BOOKSTORE_HASH_SECRET}",
         "bookstore.adminDefaultPassword": "${BOOKSTORE_ADMIN_PASSWORD}"
       }'
   postgres_db:
-    image: "postgres:11.4"
-    #image: "postgres:10.16-alpine"
+    image: "postgres:10.16"
     restart: always
     ports:
       - 5432:5432

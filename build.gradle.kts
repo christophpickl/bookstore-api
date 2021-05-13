@@ -61,6 +61,9 @@ dependencies {
     testImplementation("org.xmlunit:xmlunit-matchers:2.8.2")
     // spring's TestRestTemplate uses default JDK http client, which is not able to read body from 401 responses
     testRuntimeOnly("org.apache.httpcomponents:httpclient:4.5.13")
+    testImplementation("org.testcontainers:testcontainers:1.15.3")
+    testImplementation("org.testcontainers:junit-jupiter:1.15.3")
+    testImplementation("org.testcontainers:postgresql:1.15.3")
 }
 
 
